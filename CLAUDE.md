@@ -13,6 +13,7 @@
 - `compose.yaml`: 로컬·E2E용 PostgreSQL 17(`db` 서비스). 루트에서 `docker compose up -d db`로 띄운다. 통합 테스트와 E2E에는 Docker가 필요하다.
 - `backend/`, `frontend/`, `e2e/`에서 작업하기 전에는 그 폴더의 `CLAUDE.md`를 먼저 읽는다. 새 파일만 만드는 작업도 마찬가지다.
 - `scripts/verify.sh`: 모든 검증의 단일 진입점
+- `.claude/settings.json`, `.claude/hooks/stop-verify.sh`: 작업을 끝낼 때 `verify.sh quick`을 실행하는 Stop 훅
 - `docs/spec.md`(명세), `docs/test-matrix.md`(규칙-테스트 대응표), `docs/agent-log.md`(결함 탐지·수정 기록)
 
 ## 도메인 용어
@@ -62,9 +63,11 @@
 
 - `./scripts/verify.sh quick`: 백엔드 단위 테스트 + 프론트엔드 테스트. 작업 중 수시로 실행
 - `./scripts/verify.sh backend` | `frontend` | `e2e`: 영역별 전체 검증
-- `./scripts/verify.sh`: 전체 검증(백엔드 → 프론트엔드 → E2E). PR을 만들기 전에 반드시 통과
+- `./scripts/verify.sh harness`: 검증 스크립트와 Stop 훅 자체 테스트(`scripts/harness.test.sh`). 둘 중 하나를 고치면 실행
+- `./scripts/verify.sh`: 전체 검증(하네스 → 백엔드 → 프론트엔드 → E2E). PR을 만들기 전에 반드시 통과
+- 아직 만들지 않은 영역은 SKIP한다. 표식 파일(`backend/gradlew`, `frontend/package.json`, `e2e/package.json`)이 생기면 그 영역이 검증에 들어간다.
 - 테스트 하나만 빠르게 돌리는 명령은 각 폴더의 `CLAUDE.md`에 있다.
-- 실패하면 출력 끝의 실패 요약을 먼저 읽고, 요약에 적힌 리포트 경로에서 상세 내용을 확인한다.
+- 실패하면 출력 끝의 실패 요약과 실패 상세(첫 오류로 보이는 줄, 로그 끝부분)를 먼저 읽고, 요약에 적힌 리포트 경로에서 상세 내용을 확인한다.
 
 ## 작업 흐름
 
@@ -98,6 +101,7 @@
 3. 고친 뒤에는 실패했던 테스트 → `verify.sh quick` → 해당 영역 전체 순으로 다시 검증한다.
 4. 같은 실패를 고치는 시도는 최대 3번이다. 그래도 실패하면 아래 인계 절차를 따른다.
 5. 작업을 끝낼 때 Stop 훅이 `verify.sh quick`을 실행한다. 훅이 실패를 알리면 위 절차대로 처리한다.
+   훅은 같은 턴에서 한 번 막은 뒤에는 다시 막지 않고 사용자에게 경고만 남긴다. 그때까지 고치지 못했으면 실패 사실과 남은 일을 직접 보고한다.
 6. 결함을 찾아 고친 사례는 `docs/agent-log.md`에 Issue·PR 링크와 함께 한 줄로 기록한다.
 
 ## 금지 사항

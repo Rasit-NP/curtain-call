@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # 커튼콜 검증 스크립트: 모든 검증의 단일 진입점
 #
-# 사용법: ./scripts/verify.sh [quick|backend|frontend|e2e|all]
-#   quick     백엔드 단위 테스트 + 프론트엔드 테스트 (작업 중 수시로)
+# 사용법: ./scripts/verify.sh [quick|harness|backend|frontend|e2e|all]
+#   quick     백엔드 단위 테스트 + 프론트엔드 테스트 (작업 중 수시로, Stop 훅)
+#   harness   검증 스크립트와 Stop 훅 자체 테스트 (scripts/harness.test.sh)
 #   backend   백엔드 단위·통합 테스트, 빌드, 커버리지
 #   frontend  프론트엔드 타입 검사, 린트, 테스트(커버리지), 빌드
 #   e2e       DB를 띄우고 Playwright E2E 테스트
-#   all       backend → frontend → e2e (기본값, PR 전에 반드시 통과)
+#   all       harness → backend → frontend → e2e (기본값, PR 전에 반드시 통과)
 #
 # - 단계별 전체 로그는 .verify-logs/<단계>.log 에 남는다.
 # - 실패하면 마지막에 실패한 단계마다 첫 오류로 보이는 줄(줄 번호 포함), 로그 끝부분, 리포트 경로를 출력한다.
@@ -81,6 +82,11 @@ ensure_e2e_deps() {
   npx playwright install chromium
 }
 
+harness_all() {
+  area_ready harness scripts/harness.test.sh || return 0
+  run_step harness scripts "-" bash harness.test.sh
+}
+
 backend_unit() {
   run_step backend-unit backend "backend/build/reports/tests/test/index.html" \
     ./gradlew test
@@ -125,9 +131,9 @@ e2e_all() {
 }
 
 case "$MODE" in
-  quick|backend|frontend|e2e|all) ;;
+  quick|harness|backend|frontend|e2e|all) ;;
   *)
-    echo "사용법: $0 [quick|backend|frontend|e2e|all]" >&2
+    echo "사용법: $0 [quick|harness|backend|frontend|e2e|all]" >&2
     exit 2
     ;;
 esac
@@ -139,6 +145,9 @@ case "$MODE" in
     backend_quick
     frontend_quick
     ;;
+  harness)
+    harness_all
+    ;;
   backend)
     backend_all
     ;;
@@ -149,6 +158,7 @@ case "$MODE" in
     e2e_all
     ;;
   all)
+    harness_all
     backend_all
     frontend_all
     if [ "$FAILED" -eq 0 ]; then
