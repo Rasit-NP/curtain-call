@@ -11,6 +11,13 @@ spring:
   flyway:
     # 스키마 마이그레이션만 쓴다. 시드는 local·e2e에서만 더한다.
     locations: classpath:db/migration
+  jackson:
+    # 요청 본문의 숫자 필드는 JSON 숫자 그대로만 받는다(결정 0072). 끄지 않으면 정수 필드(id)에 온 1.5·1e3을 잘라 1·1000으로,
+    # 문자열 "1"을 1로 받는다. 정수가 아닌 값은 본문을 읽지 못해 400 INVALID_INPUT이다(spec 3, 3.1).
+    deserialization:
+      accept-float-as-int: false
+    mapper:
+      allow-coercion-of-scalars: false
 management:
   endpoint:
     health:
