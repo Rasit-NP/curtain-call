@@ -71,7 +71,7 @@ class HoldConcurrencyTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("R1: 겹치는 묶음(A-1·A-2와 A-2·A-3)을 동시에 선점하면 하나만 성공하고, 실패한 쪽 좌석은 하나도 잡히지 않는다")
+    @DisplayName("R1: 겹치는 묶음(A1·A2와 A2·A3)을 동시에 선점하면 하나만 성공하고, 실패한 쪽 좌석은 하나도 잡히지 않는다")
     void overlappingBundles() throws Exception {
         List<Long> users = createUsers("overlap", 2);
         for (int round = 1; round <= PAIR_REPETITIONS; round++) {
@@ -104,7 +104,7 @@ class HoldConcurrencyTest extends IntegrationTest {
      * 그중 하나를 끊으면 500이 된다. 좌석을 언제나 id 오름차순으로 잠그면 생기지 않는다(spec 2.4). 한 번에 걸리지 않을 수 있어 반복한다.
      */
     @Test
-    @DisplayName("R1: 같은 두 좌석을 반대 순서로 담은 묶음([A-1, A-2]와 [A-2, A-1])을 동시에 선점하기를 50회 반복해도 매번 하나만 성공하고 500이 나지 않는다")
+    @DisplayName("R1: 같은 두 좌석을 반대 순서로 담은 묶음([A1, A2]와 [A2, A1])을 동시에 선점하기를 50회 반복해도 매번 하나만 성공하고 500이 나지 않는다")
     void reversedBundlesNeverDeadlock() throws Exception {
         List<Long> users = createUsers("reversed", 2);
         for (int round = 1; round <= DEADLOCK_REPETITIONS; round++) {

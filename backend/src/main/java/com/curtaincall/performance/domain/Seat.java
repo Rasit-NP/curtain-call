@@ -18,7 +18,7 @@ import jakarta.persistence.Table;
  * 공연 좌석(spec 2.1). 공연마다 있고, 공연을 만들 때 공연장 배치({@link VenueSeat})의 값을 복사해 가진다(결정 0048).
  *
  * <ul>
- *   <li>{@code row}·{@code number}: 표시 이름({@code A-3}). 같은 공연에서 고유하다.</li>
+ *   <li>{@code row}·{@code number}: 표시 이름({@code A3}, 결정 0080). 같은 공연에서 고유하다.</li>
  *   <li>{@code gridRow}·{@code gridColumn}: 배치 격자의 줄·칸(1부터). 같은 공연에서 겹치지 않는다. 좌석이 없는 칸이 통로나 빈자리다.</li>
  *   <li>{@code status}: 저장 상태. 응답의 status는 API 상태다(만료 반영, spec 2.2, hold.domain.SeatAvailability).</li>
  *   <li>{@code holdId}: 좌석을 지금 잡은 선점(spec 2.1, 결정 0009). 저장 상태가 HELD일 때만 있다(DB 제약).

@@ -109,7 +109,7 @@ class HoldApiTest extends IntegrationTest {
     @DisplayName("선점에 성공하면 201 Hold다: status ACTIVE, performance는 PerformanceSummary, seats는 row·number 오름차순의 SeatRef, "
             + "amount는 가격 × 좌석 수, expiresAt은 요청 시각 + 5분")
     void createdHoldShape() throws Exception {
-        // 요청 순서, id 순서와 다른 표시 순서(A-2, A-10, B-1)를 만든다. number는 숫자 순(A-2가 A-10보다 앞)이다.
+        // 요청 순서, id 순서와 다른 표시 순서(A2, A10, B1)를 만든다. number는 숫자 순(A2가 A10보다 앞)이다.
         long b1 = performances.addSeat(performance, "B", 1, 2, 1);
         long a10 = performances.addSeat(performance, "A", 10, 1, 10);
         clock.setInstant(Instant.parse("2026-12-01T10:00:30Z"));

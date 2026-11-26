@@ -29,8 +29,8 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 정상 | R1: 유효한 선점이 없고 판매되지 않은 좌석만 선점할 수 있다고 판정한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/SeatAvailabilityTest.java`) |
 | 정상 | R1: 선택 가능한 좌석 묶음을 선점하면 201을 받고 묶음의 모든 좌석이 HELD로 보인다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 실패 | R1: 같은 좌석에 선점 요청 10개가 동시에 오면 하나만 201이고 나머지는 409 SEAT_ALREADY_HELD다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
-| 실패 | R1: 겹치는 묶음(A-1·A-2와 A-2·A-3)을 동시에 선점하면 하나만 성공하고, 실패한 쪽 좌석은 하나도 잡히지 않는다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
-| 실패 | R1: 같은 두 좌석을 반대 순서로 담은 묶음([A-1, A-2]와 [A-2, A-1])을 동시에 선점하기를 50회 반복해도 매번 하나만 성공하고 500이 나지 않는다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
+| 실패 | R1: 겹치는 묶음(A1·A2와 A2·A3)을 동시에 선점하면 하나만 성공하고, 실패한 쪽 좌석은 하나도 잡히지 않는다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
+| 실패 | R1: 같은 두 좌석을 반대 순서로 담은 묶음([A1, A2]와 [A2, A1])을 동시에 선점하기를 50회 반복해도 매번 하나만 성공하고 500이 나지 않는다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
 | 실패 | R1: 묶음 중 한 좌석이라도 이미 선점됐으면 409 SEAT_ALREADY_HELD이고 나머지 좌석도 선점되지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 실패 | R1: 판매된 좌석이나 내가 이미 선점한 좌석을 선점하면 409 SEAT_ALREADY_HELD다(보유 좌석 수는 한도 안에서) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 경계 | R1: 서로 다른 좌석을 동시에 선점하면 모두 성공한다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
