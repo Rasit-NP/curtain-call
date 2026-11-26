@@ -54,3 +54,6 @@
 | [0037](0037-errors-outside-mvc-v2.md) | MVC 밖 오류(개정): Tomcat이 거부한 요청은 별도 규칙으로 code를 정하고, 밸브는 공통 처리기와 같은 필드로 쓴다 | 제안(PR 병합 전) |
 | [0038](0038-jwt-validation-v2.md) | 토큰 검증(개정): sub는 1 이상의 long이어야 한다 | 제안(PR 병합 전) |
 | [0039](0039-current-user-id-v2.md) | 현재 사용자 id(개정): 토큰이 없으면 @CurrentUserId가 401 AUTH_REQUIRED를 낸다 | 제안(PR 병합 전) |
+| [0040](0040-frontend-auth-required-central.md) | 프론트: 401 AUTH_REQUIRED는 API 클라이언트가 토큰을 지우고 알리며, 최상위 레이아웃 한 곳이 로그인 화면으로 보낸다 | 제안(PR 병합 전) |
+| [0041](0041-frontend-login-return-path.md) | 프론트: 로그인 뒤 돌아갈 경로는 location state로 넘기고 앱 안의 경로만 받는다. 가드 이동에는 안내 문구를 붙이지 않는다 | 제안(PR 병합 전) |
+| [0042](0042-frontend-guard-test-route.md) | 프론트 테스트: 가드는 실제 라우트 구성에 테스트용 보호 화면을 더해 검증하고, user-event와 가짜 타이머는 shouldAdvanceTime으로 함께 쓴다 | 제안(PR 병합 전) |
