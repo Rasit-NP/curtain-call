@@ -123,11 +123,13 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 정상 | R6: 로그인 API로 받은 토큰은 인증을 통과하고(등록되지 않은 비공개 경로가 404), 토큰이 없으면 401이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 정상 | R6: 같은 키로 서명한 정상 토큰은 인증을 통과한다(등록되지 않은 비공개 경로가 404) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 실패 | R6: 토큰 없이 선점·선점 조회·해제·결제·내 예매를 부르면 401 AUTH_REQUIRED다(기능 경로가 없어도 보안 설정으로) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
-| 실패 | R6: 서명이 다르거나 형식이 잘못된 토큰은 401 AUTH_REQUIRED다(다른 키, 서명·내용 변조, alg none, JWT 아님, exp 없음, sub 없음·숫자 아님) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
+| 실패 | R6: 서명이 다르거나 형식이 잘못된 토큰은 401 AUTH_REQUIRED다(다른 키, 서명·내용 변조, alg none, JWT 아님, exp 없음, sub 없음·숫자 아님·long 범위 밖) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
+| 경계 | R6: sub가 long 최댓값인 토큰은 인증을 통과하고, 1 더 크면 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
+| 실패 | R6: 공개 경로에서 @CurrentUserId를 쓰면 토큰 없는 요청은 500이 아니라 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/api/CurrentUserIdTest.java`) |
 | 실패 | R6: Bearer 뒤가 비었거나 Bearer가 아닌 인증 헤더는 토큰이 없는 것과 같이 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 경계 | R6: exp 1초 전과 exp와 같은 시각의 토큰은 허용하고, exp 1초 뒤 토큰은 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 경계 | R6: 공연 목록과 공연 상세는 토큰 없이 200이다. 공연 Issue에서 작성한다 | 백엔드 통합 | 미작성 |
-| 경계 | 인증 없이 열리는 경로(POST 로그인, GET 공연, GET health)는 토큰 없이 인증 검사를 지나고, 공개 경로라도 정해진 메서드가 아니면 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
+| 경계 | R6: 인증 없이 열리는 경로(POST 로그인, GET 공연, GET health)는 토큰 없이 인증 검사를 지나고, 공개 경로라도 정해진 메서드가 아니면 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 실패 | R6: 로그인하지 않고 좌석 선택·결제·내 예매 화면에 들어가면 로그인 화면으로 보내고, 로그인하면 원래 화면으로 돌아온다 | 프론트 | 미작성 |
 | 실패 | R6: API가 401 AUTH_REQUIRED를 주면 토큰을 지우고 로그인 화면으로 보낸다 | 프론트 | 미작성 |
 | 경계 | R6: 로그인 실패(401 INVALID_CREDENTIALS)는 토큰을 지우거나 화면을 옮기지 않고 안내 문구만 보여 준다 | 프론트 | 미작성 |
@@ -166,7 +168,9 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 오류 형식(3.1) | `ApiException`으로 알린 오류는 그 코드의 상태·code·설명으로 응답하고, 코드를 정하지 않은 상태 예외(`ResponseStatusException`)는 500 INTERNAL_ERROR다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
 | 오류 형식(3.1) | 오류 코드와 상태는 루트 `CLAUDE.md`의 오류 코드 표와 같다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorCodeTest.java`) |
 | 오류 형식(3.1) | 공개 API에 잘못된 토큰을 붙이면 401 AUTH_REQUIRED이고, 토큰 검사를 지난 공개 경로에서도 지원하지 않는 메서드는 400 INVALID_INPUT, 없는 경로는 404 NOT_FOUND다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
-| 오류 형식(3.1) | MVC 밖 오류도 ProblemDetail과 code다: 공개 경로의 잘못된 쿼리·경로 퍼센트 인코딩과 인코딩된 슬래시, 폼 본문은 400 INVALID_INPUT(401이나 500이 아님), 서블릿 필터의 예외는 500 INTERNAL_ERROR(예외 내용 없음). 비공개 경로는 토큰 검사(401)가 먼저이고, /error를 직접 부르면 토큰 없이 401이다(실제 서버) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorPageTest.java`) |
+| 오류 형식(3.1) | MVC 밖 오류도 ProblemDetail과 code다: 공개 경로의 잘못된 쿼리·경로 퍼센트 인코딩, Tomcat이 거부한 인코딩된 슬래시, Spring Security 방화벽이 거부한 경로(세미콜론, 인코딩된 %, 이중 슬래시), 폼 본문은 400 INVALID_INPUT(401이나 500이 아님), 서블릿 필터의 예외는 500 INTERNAL_ERROR(예외 내용 없음). 비공개 경로는 토큰 검사(401)가 먼저이고, /error를 직접 부르면 토큰 없이 401이다(실제 서버) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorPageTest.java`) |
+| 오류 형식(3.1) | Tomcat이 거부한 잘못된 요청(지원하지 않는 HTTP 버전 505, Transfer-Encoding 501, Expect 417)은 500이 아니라 400 INVALID_INPUT이고, Tomcat이 거부한 요청의 본문은 공통 처리기의 본문과 필드가 같다(실제 서버) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorPageTest.java`) |
+| 오류 형식(3.1) | 코드 없이 상태만 정해진 오류의 code: 앱 안(MVC 예외, /error)은 입력 오류 상태만 INVALID_INPUT, Tomcat이 앱에 넘기기 전에 거부한 요청은 4xx와 501·505가 INVALID_INPUT, 404는 NOT_FOUND, 그 밖은 INTERNAL_ERROR | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorCodeStatusMappingTest.java`) |
 | E2E 지원(6.9) | reset 컨트롤러는 e2e 프로필에서만 등록된다. E2E 첫 설정 Issue에서 작성한다 | 백엔드 통합 | 미작성 |
 | E2E 지원(6.9) | e2e 프로필에서는 POST /api/test-support/reset을 토큰 없이 부를 수 있다(인증 검사를 지나 컨트롤러가 없으면 404) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/E2eProfileAuthTest.java`) |
 | E2E 지원(6.9) | e2e가 아닌 프로필에서 POST /api/test-support/reset은 토큰 없이 401 AUTH_REQUIRED, 유효한 토큰이면 404 NOT_FOUND다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
@@ -197,7 +201,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 프로필 | local·e2e·test는 저장소에 둔 개발 전용 JWT 서명 키(이름에 dev, 32바이트 이상)를 쓰고, prod는 JWT_SECRET으로만 받으며 없으면 값을 정할 수 없다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
 | 보안 설정 | JWT 서명 키가 없거나 32바이트보다 짧으면 키를 만들지 않아 애플리케이션이 시작되지 않는다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/auth/infra/JwtConfigTest.java`) |
 | 보안 설정 | 인증된 요청에도 세션과 쿠키를 만들지 않는다(STATELESS) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
-| 인증 도우미 | 컨트롤러의 @CurrentUserId는 로그인 토큰의 사용자 id이고, 테스트 도우미 AuthRequests.asUser(id)로 만든 요청이면 그 id다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/api/CurrentUserIdTest.java`) |
+| 인증 도우미 | 컨트롤러의 @CurrentUserId는 로그인 토큰의 사용자 id이고, 테스트 도우미 AuthRequests.asUser(id)로 만든 요청이면 그 id다(공개 경로에서도) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/api/CurrentUserIdTest.java`) |
 | 시계 | 운영 Clock 빈은 UTC 시스템 시계다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/common/infra/ClockConfigTest.java`) |
 | 시계 | 테스트 시계는 시각을 정하거나 옮길 수 있고 되돌리면 정해진 시각으로 돌아간다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/support/MutableClockTest.java`) |
 | 통합 기반 | 운영 코드에 주입되는 Clock은 테스트 시계이고, 테스트마다 정해진 시각으로 되돌린다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |

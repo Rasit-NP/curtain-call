@@ -46,8 +46,11 @@
 | [0029](0029-guard-main-checkout-hook.md) | 메인 체크아웃 파일 수정을 PreToolUse 훅으로 막고, 메인 워크트리는 git으로 판단한다 | 제안(PR 병합 전) |
 | [0030](0030-guard-undecidable-input.md) | 메인 체크아웃 훅: 판단할 수 없는 입력과 다른 저장소의 파일은 막지 않고, jq가 없으면 sed로 읽는다 | 제안(PR 병합 전) |
 | [0031](0031-security-paths-and-error-dispatch.md) | 보안 설정: 공개 경로는 메서드까지 정하고, 오류 전달(ERROR 디스패치)은 인증 없이 지나게 한다 | 제안(PR 병합 전) |
-| [0032](0032-jwt-validation.md) | 토큰 검증: 기본 검증기 대신 주입한 시계·허용 오차 0·exp 필수·sub 숫자 필수 | 제안(PR 병합 전) |
-| [0033](0033-current-user-id.md) | 컨트롤러는 현재 사용자 id를 @CurrentUserId로만 얻는다 | 제안(PR 병합 전) |
+| [0032](0032-jwt-validation.md) | 토큰 검증: 기본 검증기 대신 주입한 시계·허용 오차 0·exp 필수·sub 숫자 필수 | 대체됨(→0038) |
+| [0033](0033-current-user-id.md) | 컨트롤러는 현재 사용자 id를 @CurrentUserId로만 얻는다 | 대체됨(→0039) |
 | [0034](0034-login-and-auth-errors.md) | 로그인은 빈이 아닌 DaoAuthenticationProvider로 확인하고, 인증 오류 응답도 공통 처리기가 만든다 | 제안(PR 병합 전) |
-| [0035](0035-errors-outside-mvc.md) | MVC 밖 오류: /error 컨트롤러, Tomcat 파라미터 해석 예외, Tomcat 오류 보고 밸브 | 제안(PR 병합 전) |
+| [0035](0035-errors-outside-mvc.md) | MVC 밖 오류: /error 컨트롤러, Tomcat 파라미터 해석 예외, Tomcat 오류 보고 밸브 | 대체됨(→0037) |
 | [0036](0036-seed-accounts.md) | 계정 시드: 시연용 demo, E2E용 e2e-user1·e2e-user2, 테스트에서는 시드 파일을 직접 실행해 검증 | 제안(PR 병합 전) |
+| [0037](0037-errors-outside-mvc-v2.md) | MVC 밖 오류(개정): Tomcat이 거부한 요청은 별도 규칙으로 code를 정하고, 밸브는 공통 처리기와 같은 필드로 쓴다 | 제안(PR 병합 전) |
+| [0038](0038-jwt-validation-v2.md) | 토큰 검증(개정): sub는 1 이상의 long이어야 한다 | 제안(PR 병합 전) |
+| [0039](0039-current-user-id-v2.md) | 현재 사용자 id(개정): 토큰이 없으면 @CurrentUserId가 401 AUTH_REQUIRED를 낸다 | 제안(PR 병합 전) |

@@ -1,8 +1,8 @@
 # #27 백엔드 인증(R6)
 
-- 기간: 2026-11-26 ~
+- 기간: 2026-11-26 ~ 2026-11-27
 - Issue: [#27](https://github.com/Rasit-NP/curtain-call/issues/27), PR: [#32](https://github.com/Rasit-NP/curtain-call/pull/32)
-- 관련 결정: [0031](../decisions/0031-security-paths-and-error-dispatch.md)~[0036](../decisions/0036-seed-accounts.md)
+- 관련 결정: [0031](../decisions/0031-security-paths-and-error-dispatch.md)~[0039](../decisions/0039-current-user-id-v2.md)(0032·0033·0035는 리뷰 뒤 0038·0039·0037로 대체)
 
 ## 배경
 
@@ -36,20 +36,23 @@
 
 ## 리뷰
 
-`/code-review high`(인증 PR, [0023](../decisions/0023-review-depth-by-risk.md)). 리뷰 중 '`Accept: text/html`이면 진입점이 401 대신 빈 200을 낼 수 있다'는 가설은 직접 요청해 보니 Spring이 `application/problem+json`으로 돌려줘 기각했다. 중요한 결함은 없었고 사소한 지적 6건이 남았다(사람 확인 전이라 고치지 않음):
+`/code-review high`(인증 PR, [0023](../decisions/0023-review-depth-by-risk.md)). 리뷰 중 '`Accept: text/html`이면 진입점이 401 대신 빈 200을 낼 수 있다'는 가설은 직접 요청해 보니 Spring이 `application/problem+json`으로 돌려줘 기각했다. 중요한 결함은 없었고 사소한 지적 6건이 나왔다. 사람이 모두 고치라고 해(메인 세션을 거쳐 전달) 같은 PR에서 처리했다. 지적마다 실패하는 테스트로 먼저 재현했다.
 
-- sub 검증 정규식이 19자리 숫자를 허용해 `Long` 범위를 넘는 sub가 검증을 지나면 `@CurrentUserId`에서 500(서명 키가 있어야 만들 수 있음).
-- '보안 방화벽' 테스트가 실제로는 Tomcat 거부를 검사해, Spring Security 방화벽 거부(`;` 경로 등) → `/error` 경로는 테스트가 없음.
-- 표에 없는 컨테이너 상태(501·503·505)가 500 INTERNAL_ERROR로 바뀜.
-- 공개 경로에서 `@CurrentUserId`를 쓰면 익명 요청이 500.
-- R6 표의 '공개 경로' 행 테스트 이름에 `R6:`가 없음.
-- Tomcat 밸브가 공통 처리기 밖에서 오류 본문을 만듦(`backend/CLAUDE.md` '한곳에 모은다'의 예외, 결정 0035에 근거).
+| 지적 | 처리 |
+|---|---|
+| 1. Long 범위를 넘는 sub가 검증을 지나 `@CurrentUserId`에서 500 | 고침: sub는 1 이상의 long만 허용([0038](../decisions/0038-jwt-validation-v2.md)) |
+| 2. '보안 방화벽' 테스트가 실제로는 Tomcat 거부를 검사 | 고침: 이름을 Tomcat 거부로 바꾸고, Spring Security 방화벽 거부(`;`, `%25`, `//`) 테스트 추가. 동작은 이미 맞았고(400), ERROR 디스패치 허용을 빼면 실패하는 것을 확인 |
+| 3. 표에 없는 컨테이너 상태가 500 | 고침: 실험해 보니 505(HTTP 버전), 501(`Transfer-Encoding`), 417(`Expect`)이 500이었다. Tomcat 거부 단계에서는 4xx·501·505를 400 INVALID_INPUT으로, 503 등 서버 사정만 500으로([0037](../decisions/0037-errors-outside-mvc-v2.md)). 표 안의 코드로 처리해 사람에게 넘기지 않았다 |
+| 4. 공개 경로의 `@CurrentUserId`가 익명 요청에 500 | 고침: 토큰이 아니면 401 AUTH_REQUIRED([0039](../decisions/0039-current-user-id-v2.md)) |
+| 5. R6 표 행의 테스트 이름에 `R6:` 없음 | 고침: 표시 이름과 대응표 행에 `R6:` 추가 |
+| 6. 밸브가 공통 처리기 밖에서 오류 본문을 만듦 | 근거를 두고 유지: Tomcat이 거부한 요청은 서블릿에 닿지 않아 공통 처리기를 부를 수 없다. 대신 확인 중 찾은 필드 차이(`type`)를 고치고 필드 비교 테스트와 500 경고 로그를 더했다([0037](../decisions/0037-errors-outside-mvc-v2.md)). `backend/CLAUDE.md`에 예외로 적을지는 사람이 정한다 |
 
 ## 결과
 
-PR [#32](https://github.com/Rasit-NP/curtain-call/pull/32). `./scripts/verify.sh` 전체 통과(백엔드 단위 30개, 통합 72개, 프론트엔드, 하네스; E2E는 아직 없어 SKIP). 병합 전.
+PR [#32](https://github.com/Rasit-NP/curtain-call/pull/32). 처음 `./scripts/verify.sh` 전체 통과(백엔드 단위 30개, 통합 72개). 리뷰 지적을 고친 뒤 다시 전체 통과(백엔드 단위 50개, 통합 84개, 프론트엔드, 하네스; E2E는 아직 없어 SKIP). 병합 전.
 
 ## 배운 점
 
 - MockMvc는 서블릿 컨테이너의 해석과 `/error` 전달을 흉내 내지 않는다. "MVC 밖 오류"는 실제 서버로만 재현됐다.
 - 컨테이너가 거부하는 요청은 단계마다 처리하는 곳이 다르다(MVC 인자 해석 중, `/error` 전달, 앱에 닿기 전). 한 가지 수정으로 모두 막히지 않았고, 경우마다 테스트를 두어 각각 확인해야 했다.
+- 같은 형식을 두 곳에서 만들면 어긋난다. 밸브와 공통 처리기의 본문은 처음부터 `type` 하나가 달랐고, 리뷰 지적을 확인하며 필드 비교 테스트를 쓰고서야 드러났다.

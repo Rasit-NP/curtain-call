@@ -1,6 +1,6 @@
 # 0035. MVC 밖 오류: /error 컨트롤러, Tomcat 파라미터 해석 예외, Tomcat 오류 보고 밸브
 
-- 상태: 제안(PR 병합 전)
+- 상태: 대체됨(→0037)
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#27](https://github.com/Rasit-NP/curtain-call/issues/27), PR #8에서 넘겨받은 일, 결정 [0012](0012-backend-error-mapping.md)

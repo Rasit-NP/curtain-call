@@ -1,6 +1,6 @@
 # 0033. 컨트롤러는 현재 사용자 id를 @CurrentUserId로만 얻는다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 대체됨(→0039)
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트(Issue #27이 '한 가지로 정한다'를 요구)
 - 관련: Issue [#27](https://github.com/Rasit-NP/curtain-call/issues/27)
