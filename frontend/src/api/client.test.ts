@@ -164,7 +164,8 @@ describe('apiRequest 시간 제한(spec 7.5)', () => {
 
   /** apiRequest가 fetch에 넘긴 AbortSignal */
   function signalOf(fetchSpy: { mock: { calls: Parameters<typeof fetch>[] } }) {
-    return fetchSpy.mock.calls[0]?.[1]?.signal ?? undefined;
+    const [input, init] = fetchSpy.mock.calls[0] ?? [];
+    return init?.signal ?? (input instanceof Request ? input.signal : undefined);
   }
 
   it('시간 제한은 10초다', () => {
@@ -196,6 +197,27 @@ describe('apiRequest 시간 제한(spec 7.5)', () => {
     await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS - 1);
 
     await expect(result).resolves.toEqual([]);
+  });
+
+  it('응답 헤더를 받은 뒤 본문이 10초 안에 끝나지 않아도 요청을 끊고 응답 없음으로 넘긴다', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    // MSW로 본문 도중에 끊으면 undici가 잡히지 않은 예외(assert(!this.aborted))를 내므로, 이 경우는 fetch를 직접 흉내 낸다.
+    // 브라우저처럼 요청의 signal이 끊기면 본문 스트림도 오류로 끝난다.
+    vi.spyOn(globalThis, 'fetch').mockImplementationOnce(async (input) => {
+      const { signal } = input as Request;
+      const body = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('[{"id":'));
+          signal.addEventListener('abort', () => controller.error(signal.reason));
+        },
+      });
+      return new Response(body, { headers: { 'Content-Type': 'application/json' } });
+    });
+
+    const result = failureOf(apiRequest('/api/performances', { auth: false }));
+    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS);
+
+    await expect(result).resolves.toMatchObject({ status: null, code: NO_RESPONSE });
   });
 
   it('응답을 받은 뒤에는 10초가 지나도 요청을 끊지 않는다', async () => {
@@ -246,6 +268,31 @@ describe('apiRequest 토큰 첨부', () => {
     await apiRequest('/api/reservations', { auth: true });
 
     expect(authorization.value).toBeNull();
+  });
+});
+
+describe('apiRequest 호출 실수', () => {
+  // 응답 없음(NO_RESPONSE)은 결제 화면이 '같은 멱등 키로 다시 보냄'으로 해석하므로(R5), 요청을 보내지도 않은 실수와 섞이면 안 된다.
+  it('직렬화할 수 없는 본문은 요청을 보내지 않고, 응답 없음이 아닌 오류로 거부한다', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    const error = await apiRequest('/api/holds', { method: 'POST', body: { seatIds: [1n] }, auth: true }).catch(
+      (reason: unknown) => reason,
+    );
+
+    expect(error).toBeInstanceOf(TypeError);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('GET 요청에 본문을 넣으면 요청을 보내지 않고, 응답 없음이 아닌 오류로 거부한다', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    const error = await apiRequest('/api/holds', { body: { seatIds: [1] }, auth: true }).catch(
+      (reason: unknown) => reason,
+    );
+
+    expect(error).toBeInstanceOf(TypeError);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });
 

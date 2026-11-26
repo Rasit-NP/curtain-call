@@ -42,17 +42,21 @@ export async function apiRequest<T>(path: ApiPath, options: ApiRequestOptions): 
     }
   }
 
+  // 본문 직렬화와 Request 생성은 try 밖에서 한다. 직렬화할 수 없는 본문이나 GET 요청의 본문 같은 호출 실수가
+  // '응답 없음'으로 바뀌면, 결제 화면이 요청을 보내지도 않았는데 같은 멱등 키로 다시 보낸다(R5).
   const controller = new AbortController();
+  const request = new Request(new URL(path, window.location.href), {
+    method: options.method ?? 'GET',
+    headers,
+    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    signal: controller.signal,
+  });
+
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
     let response: Response;
     try {
-      response = await fetch(path, {
-        method: options.method ?? 'GET',
-        headers,
-        body: options.body === undefined ? undefined : JSON.stringify(options.body),
-        signal: controller.signal,
-      });
+      response = await fetch(request);
     } catch (cause) {
       throw new ApiError(NO_RESPONSE, null, { cause });
     }
