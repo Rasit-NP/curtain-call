@@ -138,7 +138,8 @@ describe('좌석 선택 화면: 표시', () => {
     expect(seat('A3 선택 가능')).toHaveStyle({ gridRow: '1', gridColumn: '4' });
     expect(seat('A5 선택 가능')).toHaveStyle({ gridRow: '1', gridColumn: '6' });
     expect(seat('B1 선택 가능')).toHaveStyle({ gridRow: '2', gridColumn: '1' });
-    // 격자 크기는 좌석 위치의 최댓값(2줄 6칸)이다.
+    // 격자 크기는 좌석 위치의 최댓값(2줄 6칸)이다. jsdom은 배치를 계산하지 않으므로, 명세 5장이 계약으로 정한
+    // CSS Grid 값(좌석의 grid-row·grid-column, 격자의 줄·칸 수)을 그대로 확인한다. 칸 크기는 검사하지 않는다(결정 0082).
     expect(grid.style.gridTemplateRows).toMatch(/^repeat\(2, /);
     expect(grid.style.gridTemplateColumns).toMatch(/^repeat\(6, /);
   });
@@ -231,7 +232,7 @@ describe('좌석 선택 화면: 표시', () => {
     expectSummary('A1, A2, A3, A4', '120,000원');
   });
 
-  it('안내 문구는 좌석을 고르거나 취소하면 지우고, 5번째 좌석을 다시 누르면 다시 보인다', async () => {
+  it('R2: 안내 문구는 좌석을 고르거나 취소하면 지우고, 5번째 좌석을 다시 누르면 다시 보인다', async () => {
     const { user } = await openPage();
     for (const name of ['A1', 'A2', 'A3', 'A4']) {
       await user.click(seat(`${name} 선택 가능`));
@@ -319,7 +320,7 @@ describe('좌석 선택 화면: 불러오기', () => {
     expect(page().queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('모든 좌석이 팔렸으면 빈 상태가 아니라 "선택 불가" 좌석으로 격자를 보여 준다', async () => {
+  it('R1: 모든 좌석이 팔렸으면 빈 상태가 아니라 "선택 불가" 좌석으로 격자를 보여 준다', async () => {
     saveAccessToken('token-1');
     server.use(performanceDetailHandler(detail({ seats: layout({ A1: 'SOLD', A2: 'SOLD', A3: 'SOLD', A4: 'SOLD', A5: 'SOLD', B1: 'SOLD', B2: 'SOLD', B5: 'SOLD' }) })));
 
@@ -413,7 +414,7 @@ describe('좌석 선택 화면: 좌석 선택 완료', () => {
     expect(router.state.location.pathname).toBe(PAGE_PATH);
   });
 
-  it('409 SEAT_ALREADY_HELD 뒤 다시 불러오는 동안 격자와 안내 문구를 그대로 두고 로딩 문구는 보여 주지 않으며, 다시 불러오기가 실패하면 실패 문구를 함께 보여 준다', async () => {
+  it('R1: 409 SEAT_ALREADY_HELD 뒤 다시 불러오는 동안 격자와 안내 문구를 그대로 두고 로딩 문구는 보여 주지 않으며, 다시 불러오기가 실패하면 실패 문구를 함께 보여 준다', async () => {
     saveAccessToken('token-1');
     const { open, opened } = gate();
     detailSequence(

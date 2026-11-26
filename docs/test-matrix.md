@@ -36,6 +36,8 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 경계 | R1: 서로 다른 좌석을 동시에 선점하면 모두 성공한다 | 백엔드 통합(동시성) | 미작성 |
 | 실패 | R1: 선점됨·판매됨 좌석은 '선택 불가'로 보이고 누를 수 없다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 실패 | R1: 선점 요청이 409 SEAT_ALREADY_HELD면 안내 문구를 보여 주고, 고른 좌석을 비운 뒤 좌석 상태를 다시 불러와 그 좌석을 '선택 불가'로 보여 준다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
+| 실패 | R1: 409 SEAT_ALREADY_HELD 뒤 다시 불러오는 동안 격자와 안내 문구를 그대로 두고 로딩 문구 없이 좌석을 막으며, 다시 불러오기가 실패하면 실패 문구를 함께 보여 준다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
+| 경계 | R1: 모든 좌석이 팔렸으면 빈 상태가 아니라 '선택 불가' 좌석으로 격자를 보여 준다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 실패 | R1: 다른 사용자가 먼저 선점한 좌석을 고르면 안내 문구가 보이고 선점되지 않는다(시나리오 2) | E2E | 미작성 |
 
 - 만료된 선점의 좌석을 다시 선점하는 경우는 R3에서 다룬다.
@@ -57,6 +59,7 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 실패 | R2: 5석 묶음은 409 HOLD_LIMIT_EXCEEDED이고 아무 좌석도 선점되지 않는다 | 백엔드 통합 | 미작성 |
 | 실패 | R2: 같은 사용자가 서로 다른 좌석 3석 묶음 두 개를 동시에 선점하면 하나만 201이고 나머지는 409 HOLD_LIMIT_EXCEEDED다 | 백엔드 통합(동시성) | 미작성 |
 | 경계 | R2: 4석까지는 고를 수 있고, 4석을 고른 뒤 5번째 좌석은 선택되지 않고 안내 문구가 보인다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
+| 경계 | R2: 안내 문구는 좌석을 고르거나 취소하면 지우고, 5번째 좌석을 다시 누르면 다시 보인다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 실패 | R2: 선점 요청이 409 HOLD_LIMIT_EXCEEDED면 안내 문구를 보여 주고 고른 좌석은 그대로 두며 좌석 상태를 다시 불러오지 않는다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 실패 | R2: 4석을 고른 뒤에는 5번째 좌석을 고를 수 없다(시나리오 3) | E2E | 미작성 |
 
@@ -233,12 +236,11 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 좌석 선택 화면(7.2) | 격자 위(1번째 줄 쪽)에 '무대'를, 범례로 '선택 가능'·'선택 불가' 두 가지를 보여 준다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 좌석 선택 화면(7.2) | 좌석 버튼은 표시 이름(`A1`)을 보여 주고, 누르면 '선택 가능'과 '선택됨'이 바뀐다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 좌석 선택 화면(7.2) | 고른 좌석은 좌석 순서로, 합계는 1석 가격 × 좌석 수로 보여 주고, 아무것도 고르지 않으면 '없음'과 0원이며 '좌석 선택 완료'를 누를 수 없다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
-| 좌석 선택 화면(7.2) | 안내 문구는 좌석을 고르거나 취소하거나 '좌석 선택 완료'를 누르면 지우고, 5번째 좌석을 다시 누르면 다시 보인다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
+| 좌석 선택 화면(7.2) | '좌석 선택 완료'를 누르면 이전 안내 문구를 지운다(좌석을 고르거나 취소할 때는 R2 행) | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 좌석 선택 화면(7.2) | 공연 상세가 404 NOT_FOUND면 안내 문구와 '공연 목록' 링크를 보여 주고, 링크를 누르면 공연 목록으로 간다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
-| 좌석 선택 화면(7.2) | 좌석이 하나도 없으면 공연 정보와 '좌석 정보가 없습니다.'(`role="status"`)만 보여 주고, 모든 좌석이 팔린 공연은 '선택 불가' 좌석의 격자로 보여 준다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
+| 좌석 선택 화면(7.2) | 좌석이 하나도 없으면 공연 정보와 '좌석 정보가 없습니다.'(`role="status"`)만 보여 주고 무대·범례·합계·완료 버튼은 보여 주지 않는다(모든 좌석이 팔린 공연은 R1 행) | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 좌석 선택 화면(7.2) | '좌석 선택 완료'는 고른 좌석으로 POST /api/holds를 보내고, 201이면 `/holds/{id}`로 일반 이동(push)한다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 좌석 선택 화면(6.4, 7.2) | 선점 요청 중에는 '좌석 선택 완료'와 좌석 버튼을 누를 수 없고, 두 번 눌러도 요청은 한 번만 간다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
-| 좌석 선택 화면(7.2) | 409 SEAT_ALREADY_HELD 뒤 다시 불러오는 동안 격자와 안내 문구를 그대로 두고 로딩 문구 없이 좌석을 막으며, 다시 불러오기가 실패하면 실패 문구를 함께 보여 준다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 좌석 선택 화면(7.2) | 선점 요청이 404 NOT_FOUND면 안내 문구와 '공연 목록' 링크를 보여 주고 고른 좌석은 그대로 둔다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 좌석 선택 화면(6.4, 7.2) | 선점 요청이 그 밖의 오류(500, 400, code 없는 응답, 응답 없음)면 code별 안내 문구를 보여 주고, 고른 좌석을 그대로 두며 자동으로 다시 보내지 않는다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 내 예매 화면(7.4) | 예매마다 공연 제목, 일시·장소, 좌석, 금액을 API가 준 순서(최신순)대로 보여 준다 | 프론트 | 작성(`frontend/src/pages/reservations/MyReservationsPage.test.tsx`) |
