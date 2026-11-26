@@ -3,8 +3,8 @@ import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import type { PerformanceSummary } from '../../api/types';
 import { saveAccessToken } from '../../auth/tokenStorage';
-import { aPerformance } from '../../test/data';
-import { PERFORMANCES_PATH, performancesHandler, problem } from '../../test/handlers';
+import { aPerformance, aPerformanceDetail } from '../../test/data';
+import { performanceDetailHandler, PERFORMANCES_PATH, performancesHandler, problem } from '../../test/handlers';
 import { renderApp } from '../../test/renderApp';
 import { server } from '../../test/server';
 
@@ -52,7 +52,12 @@ describe('공연 목록 화면', () => {
   });
 
   it('항목 전체가 좌석 선택 화면(/performances/{id}) 링크이고, 누르면 그 경로로 간다', async () => {
-    server.use(performancesHandler([aPerformance({ id: 7, title: '한여름 밤의 꿈' })]));
+    // 좌석 선택 화면은 로그인이 필요하고(가드), 들어가면 공연 상세를 불러온다.
+    saveAccessToken('token-1');
+    server.use(
+      performancesHandler([aPerformance({ id: 7, title: '한여름 밤의 꿈' })]),
+      performanceDetailHandler(aPerformanceDetail({ id: 7, title: '한여름 밤의 꿈' })),
+    );
     const { router, user } = renderApp('/');
 
     const link = await screen.findByRole('link', { name: /한여름 밤의 꿈/ });
@@ -65,6 +70,7 @@ describe('공연 목록 화면', () => {
 
     await user.click(link);
 
+    expect(await screen.findByRole('heading', { level: 1, name: '좌석 선택' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/performances/7');
   });
 

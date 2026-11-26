@@ -39,6 +39,6 @@ export function seatName(seat: Pick<SeatRef, 'row' | 'number'>): string {
 }
 
 /** 좌석을 받은 순서대로 'A1, A2' 형식으로 이어 붙인다. */
-export function formatSeats(seats: Pick<SeatRef, 'row' | 'number'>[]): string {
+export function formatSeats(seats: SeatRef[]): string {
   return seats.map(seatName).join(', ');
 }
