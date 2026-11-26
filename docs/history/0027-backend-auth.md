@@ -54,7 +54,7 @@
 
 ## 결과
 
-PR [#32](https://github.com/Rasit-NP/curtain-call/pull/32). 처음 `./scripts/verify.sh` 전체 통과(백엔드 단위 30개, 통합 72개). 리뷰 지적을 고친 뒤 다시 전체 통과(백엔드 단위 50개, 통합 84개, 프론트엔드, 하네스; E2E는 아직 없어 SKIP). `backend/CLAUDE.md`에 밸브 예외를 적은 뒤에는 문서만 바뀌어 `verify.sh harness`와 `quick`을 다시 통과시켰다. 병합 전.
+PR [#32](https://github.com/Rasit-NP/curtain-call/pull/32). 처음 `./scripts/verify.sh` 전체 통과(백엔드 단위 30개, 통합 72개). 리뷰 지적을 고친 뒤 다시 전체 통과(백엔드 단위 50개, 통합 84개, 프론트엔드, 하네스; E2E는 아직 없어 SKIP). `backend/CLAUDE.md`에 밸브 예외를 적은 뒤에는 문서만 바뀌어 `verify.sh harness`와 `quick`을 다시 통과시켰다. 사람이 PR #32를 main에 병합했다(병합 커밋 `5b69ad1`). 프론트엔드 인증 PR #31보다 먼저 병합돼, #31이 그 위에 리베이스했다.
 
 ## 배운 점
 
