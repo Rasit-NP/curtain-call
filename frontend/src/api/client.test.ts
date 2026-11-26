@@ -1,6 +1,7 @@
 import { delay, http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { saveAccessToken } from '../auth/tokenStorage';
+import { onAuthRequired } from '../auth/authRequired';
+import { getAccessToken, saveAccessToken } from '../auth/tokenStorage';
 import { server } from '../test/server';
 import { apiRequest, REQUEST_TIMEOUT_MS } from './client';
 import { ApiError, NO_RESPONSE } from './errors';
@@ -268,6 +269,60 @@ describe('apiRequest 토큰 첨부', () => {
     await apiRequest('/api/reservations', { auth: true });
 
     expect(authorization.value).toBeNull();
+  });
+});
+
+describe('apiRequest 401 AUTH_REQUIRED 공통 처리', () => {
+  function respondWith401(code: string) {
+    server.use(
+      http.get('/api/reservations', () =>
+        HttpResponse.json({ status: 401, code }, { status: 401, headers: { 'Content-Type': 'application/problem+json' } }),
+      ),
+    );
+  }
+
+  it('R6: 401 AUTH_REQUIRED를 받으면 저장된 토큰을 지우고 로그인이 필요하다고 알린 뒤 오류를 넘긴다', async () => {
+    saveAccessToken('expired-token');
+    respondWith401('AUTH_REQUIRED');
+    const listener = vi.fn();
+    const unsubscribe = onAuthRequired(listener);
+
+    try {
+      const error = await failureOf(apiRequest('/api/reservations', { auth: true }));
+
+      expect(error).toMatchObject({ status: 401, code: 'AUTH_REQUIRED' });
+      expect(getAccessToken()).toBeNull();
+      expect(listener).toHaveBeenCalledTimes(1);
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('R6: 401 INVALID_CREDENTIALS 같은 다른 401에는 토큰을 지우지 않고 알리지도 않는다', async () => {
+    saveAccessToken('token-abc');
+    respondWith401('INVALID_CREDENTIALS');
+    const listener = vi.fn();
+    const unsubscribe = onAuthRequired(listener);
+
+    try {
+      const error = await failureOf(apiRequest('/api/reservations', { auth: true }));
+
+      expect(error).toMatchObject({ status: 401, code: 'INVALID_CREDENTIALS' });
+      expect(getAccessToken()).toBe('token-abc');
+      expect(listener).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('구독을 끊으면 더 알리지 않는다', async () => {
+    respondWith401('AUTH_REQUIRED');
+    const listener = vi.fn();
+    onAuthRequired(listener)();
+
+    await failureOf(apiRequest('/api/reservations', { auth: true }));
+
+    expect(listener).not.toHaveBeenCalled();
   });
 });
 
