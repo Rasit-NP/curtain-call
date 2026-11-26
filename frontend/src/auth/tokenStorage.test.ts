@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACCESS_TOKEN_KEY, clearAccessToken, getAccessToken, saveAccessToken } from './tokenStorage';
+import { ACCESS_TOKEN_KEY, clearAccessToken, getAccessToken, saveAccessToken, subscribeAccessToken } from './tokenStorage';
 
 describe('액세스 토큰 저장', () => {
   it('저장한 적이 없으면 null을 돌려준다', () => {
@@ -32,5 +32,19 @@ describe('액세스 토큰 저장', () => {
 
     expect(getAccessToken()).toBeNull();
     expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
+  });
+});
+
+describe('액세스 토큰 변경 알림', () => {
+  it('토큰을 저장하거나 지우면 구독한 함수에 알리고, 구독을 끊으면 알리지 않는다', () => {
+    const seen: (string | null)[] = [];
+    const unsubscribe = subscribeAccessToken(() => seen.push(getAccessToken()));
+
+    saveAccessToken('token-1');
+    clearAccessToken();
+    unsubscribe();
+    saveAccessToken('token-2');
+
+    expect(seen).toEqual(['token-1', null]);
   });
 });
