@@ -31,6 +31,9 @@ spring:
     password: curtaincall-dev
   flyway:
     locations: classpath:db/migration, classpath:db/seed
+    # 시드(V1000__~)와 스키마 마이그레이션이 같은 이력을 쓰고, compose 볼륨이 이력을 유지한다.
+    # 시드가 적용된 뒤 추가된 V2 같은 마이그레이션도 적용하도록 순서를 따지지 않는다(끄면 검증 실패로 앱이 뜨지 않는다).
+    out-of-order: true
 
 ---
 # test: 통합 테스트. DB는 Testcontainers가 @ServiceConnection으로 연결하고, 시드를 넣지 않는다.

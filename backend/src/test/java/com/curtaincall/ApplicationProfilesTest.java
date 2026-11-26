@@ -49,6 +49,26 @@ class ApplicationProfilesTest {
         assertThat(flywayLocations(env)).isEqualTo(MIGRATION_AND_SEED);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"local", "e2e"})
+    @DisplayName("local과 e2e는 시드(V1000__~)가 적용된 DB에 나중에 추가된 마이그레이션도 적용하도록 out-of-order를 켠다")
+    void localAndE2eAllowOutOfOrderMigrations(String profile) {
+        // 시드와 스키마 마이그레이션이 같은 이력을 쓰고 compose 볼륨이 이력을 유지한다. 끄면 V1000 뒤에 추가된 V2가
+        // "Detected resolved migration not applied to database"로 검증에 걸려 앱이 뜨지 않는다.
+        StandardEnvironment env = load(Map.of(), profile);
+
+        assertThat(env.getProperty("spring.flyway.out-of-order")).isEqualTo("true");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"test", "prod"})
+    @DisplayName("시드를 쓰지 않는 test와 prod는 마이그레이션 순서를 지킨다(out-of-order 끔)")
+    void testAndProdKeepMigrationOrder(String profile) {
+        StandardEnvironment env = load(Map.of("DB_URL", "u", "DB_USERNAME", "n", "DB_PASSWORD", "p"), profile);
+
+        assertThat(env.getProperty("spring.flyway.out-of-order", "false")).isEqualTo("false");
+    }
+
     @Test
     @DisplayName("test는 DB 주소를 정하지 않고(Testcontainers가 연결) 시드를 쓰지 않는다")
     void testProfileUsesNoSeed() {
