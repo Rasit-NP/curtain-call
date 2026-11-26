@@ -1,7 +1,7 @@
 # #28 프론트엔드 인증(R6): 로그인 화면, 인증 가드, 401 AUTH_REQUIRED 처리
 
 - 기간: 2026-11-26 ~
-- Issue: [#28](https://github.com/Rasit-NP/curtain-call/issues/28), PR: (작성 중)
+- Issue: [#28](https://github.com/Rasit-NP/curtain-call/issues/28), PR: [#31](https://github.com/Rasit-NP/curtain-call/pull/31)
 - 관련 결정: [0040](../decisions/0040-frontend-auth-required-central.md), [0041](../decisions/0041-frontend-login-return-path.md), [0042](../decisions/0042-frontend-guard-test-route.md)
 
 ## 배경
