@@ -1,7 +1,7 @@
 # #36 프론트엔드 조회 화면(R6): 공연 목록, 내 예매, 공통 헤더와 로그아웃
 
 - 기간: 2026-11-27 ~
-- Issue: [#36](https://github.com/Rasit-NP/curtain-call/issues/36)
+- Issue: [#36](https://github.com/Rasit-NP/curtain-call/issues/36), PR: [#38](https://github.com/Rasit-NP/curtain-call/pull/38)
 - 관련 결정: [0060](../decisions/0060-frontend-query-screens.md), [0061](../decisions/0061-frontend-header-login-logout.md), [0062](../decisions/0062-frontend-load-status-role.md), [0063](../decisions/0063-frontend-header-token-subscription.md), [0064](../decisions/0064-frontend-date-format-intl.md), [0065](../decisions/0065-frontend-load-hook-and-screen-tests.md)
 
 ## 배경
@@ -35,6 +35,17 @@
 - **빈 목록 테스트가 로딩 문구를 잡음**: 빈 목록 문구와 로딩 문구가 모두 `role="status"`라, `findByRole('status')`가 먼저 보이는 로딩 문구를 잡았다. 문구가 바뀔 때까지 기다리게 고쳤다.
 - **R6 되돌림 확인 중 불안정한 테스트 발견**: 공연 목록 함수를 `auth: true`로 바꿨을 때 관계없는 내 예매 테스트도 실패했다. 원래 코드로 전체 테스트를 되풀이하자 가끔 실패해 불안정한 테스트였다. 실패 화면을 보니 라우터 위치는 `/login`인데 DOM은 아직 내 예매 화면이었다. React Router가 화면 이동을 transition으로 그려 DOM이 늦게 바뀌는데, 내 예매 화면도 받은 오류의 문구('로그인이 필요합니다.')를 잠깐 보여 줘서 테스트가 그것을 잡고 바로 로그인 입력을 찾았다. 이어서 전체 실행 15번 중 3번, 기존 로그인 화면 테스트('로그인에 성공하면 … 공연 목록(/)으로 간다')가 같은 이유로 실패했다. 위치(`/`)만 기다리고 로그인 버튼이 사라졌는지 검사했는데, `/`가 그릴 것이 있는 화면이 되면서 드러났다. 그려진 화면의 요소를 `findBy…`로 기다리게 고친 뒤 전체 실행 30번 모두 통과했다([0065](../decisions/0065-frontend-load-hook-and-screen-tests.md)).
 - **R6 되돌림 확인**: 내 예매를 가드에서 빼면 R6 테스트 3개(직접 들어감, 헤더의 내 예매, 로그인 화면의 헤더)가, 공연 목록 함수를 `auth: true`로 바꾸면 R6 테스트 2개(API 함수, 화면)와 내 예매 `AUTH_REQUIRED` 테스트가 실패했다. 헤더도 되돌려 보았다: 로그인 링크에 돌아갈 곳을 넘기지 않으면 2개, 로그인 화면에서도 지금 경로를 넘기면 1개, 토큰 변경 알림을 빼면 2개, 로그아웃이 토큰을 지우지 않으면 2개가 실패했다. 모두 원래대로 복구했다. 이번에는 모든 변경을 먼저 커밋한 뒤 되돌려, #28 때처럼 커밋하지 않은 작업이 지워질 위험이 없었다.
+
+## 결과
+
+PR [#38](https://github.com/Rasit-NP/curtain-call/pull/38)을 만들었다. `./scripts/verify.sh` 전체 통과(2026-11-27, 프론트엔드 테스트 119개, 이 Issue에서 39개 추가, E2E는 영역이 없어 SKIP).
+
+남은 일:
+
+- 좌석 선택·결제 화면의 실제 경로로 확인하는 R6 행과 E2E 시나리오 4는 3·4단계 화면 Issue가 완성한다.
+- 결제 화면에서 헤더로 이동하거나 로그아웃할 때의 선점 해제는 결제 화면 Issue(4단계)에서 만든다.
+- 결정 0062(로딩·빈 목록 `role="status"`)는 사람의 확인을 기다린다.
+- 실제 백엔드와 함께 브라우저에서 확인하는 것은 백엔드 조회(#35)가 병합된 뒤에 할 수 있다. 내 예매 API는 백엔드 5단계에서 생긴다.
 
 ## 배운 점
 
