@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# 하네스 테스트: scripts/verify.sh, Stop 훅(.claude/hooks/stop-verify.sh), .gitignore, 문서 목차(scripts/check-docs-index.sh)가
+# 하네스 테스트: scripts/verify.sh, Stop 훅(.claude/hooks/stop-verify.sh),
+# 메인 체크아웃 수정 차단 훅(.claude/hooks/guard-main-checkout.sh), .gitignore, 문서 목차(scripts/check-docs-index.sh)가
 # 문서대로 동작하는지 확인한다.
 #
 # 사용법: bash scripts/harness.test.sh   (./scripts/verify.sh harness 와 전체 검증에서도 실행된다)
@@ -205,6 +206,140 @@ test_hook_does_not_block_twice() {
   fi
 }
 
+# ---------- 메인 체크아웃 수정 차단 훅 ----------
+
+GUARD="$REPO/.claude/hooks/guard-main-checkout.sh"
+
+# new_git_repo <이름>: 커밋 하나가 있는 git 저장소(메인 워크트리)를 만들고, 그 안의 .claude/worktrees/wt에
+# 링크된 워크트리를 만든다. 실제 저장소처럼 링크된 워크트리가 경로상 메인 체크아웃 폴더 안에 있다.
+new_git_repo() {
+  local dir="$WORK/$1"
+  mkdir -p "$dir"
+  {
+    git -C "$dir" init -q &&
+      echo "# main" > "$dir/README.md" &&
+      git -C "$dir" add README.md &&
+      git -C "$dir" -c user.name=harness -c user.email=harness@example.invalid -c commit.gpgsign=false \
+        commit -q --no-verify -m init &&
+      git -C "$dir" worktree add -q -b wt "$dir/.claude/worktrees/wt"
+  } >/dev/null 2>&1 || { echo "임시 git 저장소를 만들지 못함: $dir" >&2; return 1; }
+  echo "$dir"
+}
+
+# guard_input <도구 이름> <대상 경로> [<cwd>]: Claude Code가 PreToolUse 훅에 넘기는 입력 JSON을 만든다.
+guard_input() {
+  local key=file_path
+  [ "$1" = NotebookEdit ] && key=notebook_path
+  printf '{"session_id":"harness","hook_event_name":"PreToolUse","cwd":"%s","tool_name":"%s","tool_input":{"%s":"%s"}}' \
+    "${3:-$WORK}" "$1" "$key" "$2"
+}
+
+# run_guard <프로젝트 폴더> <입력 JSON>: 입력 JSON을 stdin으로 넘겨 메인 체크아웃 수정 차단 훅을 실행한다.
+run_guard() {
+  printf '%s' "$2" | CLAUDE_PROJECT_DIR="$1" bash "$GUARD"
+}
+
+# expect_guard <기대 종료 코드> <프로젝트 폴더> <도구 이름> <대상 경로> [<cwd>]
+# 막을 때(2)는 stderr에 이유와 할 일이 있는지도 확인한다.
+expect_guard() {
+  local expected="$1" project="$2" err code
+  shift 2
+  err="$(run_guard "$project" "$(guard_input "$@")" 2>&1 >/dev/null)"; code=$?
+  assert_exit "$code" "$expected" "$err" || { echo "대상: $1 $2 (프로젝트: $project)"; return 1; }
+  if [ "$expected" -eq 2 ]; then
+    assert_contains "$err" "메인 체크아웃" && assert_contains "$err" "워크트리" ||
+      { echo "대상: $1 $2"; return 1; }
+  fi
+}
+
+test_guard_registered() {
+  local settings="$REPO/.claude/settings.json" matcher tool
+  [ -x "$GUARD" ] || fail ".claude/hooks/guard-main-checkout.sh가 없거나 실행 권한이 없음" || return 1
+  if ! command -v jq >/dev/null 2>&1; then
+    assert_contains "$(cat "$settings")" ".claude/hooks/guard-main-checkout.sh"
+    return
+  fi
+  matcher="$(jq -er '[.hooks.PreToolUse[]
+      | select(any(.hooks[]; .type == "command" and (.command | contains(".claude/hooks/guard-main-checkout.sh"))))]
+      | first | .matcher' "$settings")" ||
+    fail "settings.json에서 이 훅을 부르는 PreToolUse 항목과 matcher를 찾지 못함(JSON 오류 포함)" || return 1
+  # matcher는 도구 이름 전체와 맞춰 보는 정규식이다.
+  for tool in Edit Write NotebookEdit; do
+    printf '%s' "$tool" | grep -Eq "^(${matcher})\$" || fail "matcher '$matcher'가 $tool을 잡지 않음" || return 1
+  done
+  for tool in Read Bash Glob; do
+    if printf '%s' "$tool" | grep -Eq "^(${matcher})\$"; then
+      fail "matcher '$matcher'가 파일을 고치지 않는 도구 $tool까지 잡음"
+      return 1
+    fi
+  done
+}
+
+test_guard_blocks_main_checkout() {
+  local dir
+  dir="$(new_git_repo guard-block)" || return 1
+  mkdir -p "$dir/docs with space"
+  expect_guard 2 "$dir" Edit "$dir/README.md" &&
+    expect_guard 2 "$dir" Write "$dir/new/nested/file.md" &&
+    expect_guard 2 "$dir" Write "$dir/docs with space/a.md" &&
+    expect_guard 2 "$dir" NotebookEdit "$dir/notebook.ipynb" &&
+    expect_guard 2 "$dir" Write "$dir/.claude/worktrees/not-a-worktree/file.md"
+}
+
+test_guard_blocks_main_checkout_from_worktree_session() {
+  local dir wt
+  dir="$(new_git_repo guard-from-wt)" || return 1
+  wt="$dir/.claude/worktrees/wt"
+  # 워크트리 세션(CLAUDE_PROJECT_DIR가 링크된 워크트리)이 절대 경로로 메인 체크아웃 파일을 고치려는 경우
+  expect_guard 2 "$wt" Edit "$dir/README.md" &&
+    # 상대 경로는 입력의 cwd를 기준으로 판단한다.
+    expect_guard 2 "$dir" Edit "README.md" "$dir" &&
+    expect_guard 0 "$dir" Edit "README.md" "$wt"
+}
+
+test_guard_allows_worktree_and_outside() {
+  local dir wt other project
+  dir="$(new_git_repo guard-allow)" || return 1
+  wt="$dir/.claude/worktrees/wt"
+  other="$(new_git_repo guard-other-repo)" || return 1
+  mkdir -p "$WORK/outside dir"
+  for project in "$dir" "$wt"; do
+    expect_guard 0 "$project" Edit "$wt/README.md" &&
+      expect_guard 0 "$project" Write "$wt/new/nested/file.md" &&
+      expect_guard 0 "$project" NotebookEdit "$wt/notebook.ipynb" &&
+      expect_guard 0 "$project" Write "$WORK/outside dir/memory.md" &&
+      expect_guard 0 "$project" Write "$WORK/not-yet/created/file.md" &&
+      # 다른 저장소의 메인 워크트리는 이 저장소가 아니므로 막지 않는다.
+      expect_guard 0 "$project" Edit "$other/README.md" || return 1
+  done
+}
+
+test_guard_ignores_invalid_input() {
+  local dir input out code
+  dir="$(new_git_repo guard-invalid)" || return 1
+  for input in "" "not json" "[]" '{"tool_name":"Edit"}' '{"tool_name":"Edit","tool_input":{}}' \
+    '{"tool_name":"Edit","tool_input":{"file_path":""}}' '{"tool_name":"Edit","tool_input":{"file_path":42}}' \
+    '{"cwd":"relative-cwd","tool_name":"Write","tool_input":{"file_path":"not/yet.md"}}'; do
+    out="$(run_guard "$dir" "$input" 2>&1)"; code=$?
+    assert_exit "$code" 0 "$out" || { echo "입력: $input"; return 1; }
+  done
+}
+
+test_guard_works_without_jq() {
+  local dir bin out code tool
+  dir="$(new_git_repo guard-no-jq)" || return 1
+  bin="$WORK/guard-no-jq-bin"
+  mkdir -p "$bin"
+  for tool in git sed; do
+    ln -s "$(command -v "$tool")" "$bin/$tool" || return 1
+  done
+  out="$(guard_input Edit "$dir/README.md" | PATH="$bin" CLAUDE_PROJECT_DIR="$dir" "$BASH" "$GUARD" 2>&1)"; code=$?
+  assert_exit "$code" 2 "$out" || return 1
+  out="$(guard_input Edit "$dir/.claude/worktrees/wt/README.md" |
+    PATH="$bin" CLAUDE_PROJECT_DIR="$dir" "$BASH" "$GUARD" 2>&1)"; code=$?
+  assert_exit "$code" 0 "$out"
+}
+
 # ---------- .gitignore ----------
 
 test_gitignore_rules() {
@@ -214,8 +349,8 @@ test_gitignore_rules() {
     e2e/node_modules/x e2e/playwright-report/x e2e/test-results/x; do
     git -C "$REPO" check-ignore -q "$path" || fail "제외돼야 하는데 제외되지 않음: $path" || return 1
   done
-  for path in .env.example .claude/settings.json .claude/hooks/stop-verify.sh scripts/verify.sh \
-    backend/gradle/wrapper/gradle-wrapper.jar; do
+  for path in .env.example .claude/settings.json .claude/hooks/stop-verify.sh .claude/hooks/guard-main-checkout.sh \
+    scripts/verify.sh backend/gradle/wrapper/gradle-wrapper.jar; do
     if git -C "$REPO" check-ignore -q "$path"; then
       fail "남아야 하는데 제외됨: $path"
       return 1
@@ -278,6 +413,12 @@ run_test "Stop 훅: settings.json에 등록돼 있고 훅 스크립트를 실행
 run_test "Stop 훅: verify.sh가 통과하면 아무것도 출력하지 않고 멈춤을 허용한다" test_hook_passes_silently
 run_test "Stop 훅: verify.sh가 실패하면 종료 코드 2로 멈춤을 막고 결과를 에이전트에게 준다" test_hook_blocks_on_failure
 run_test "Stop 훅: 이미 훅으로 이어 가는 중이면 다시 막지 않고 사용자에게 경고만 남긴다" test_hook_does_not_block_twice
+run_test "메인 체크아웃 훅: settings.json에 Edit·Write·NotebookEdit만 잡는 PreToolUse 훅으로 등록돼 있다" test_guard_registered
+run_test "메인 체크아웃 훅: 메인 워크트리의 파일(있는 파일, 아직 없는 경로, 공백 경로, 노트북)은 종료 코드 2로 막고 이유와 할 일을 알린다" test_guard_blocks_main_checkout
+run_test "메인 체크아웃 훅: 워크트리 세션에서도 메인 체크아웃 파일은 막고, 상대 경로는 cwd 기준으로 판단한다" test_guard_blocks_main_checkout_from_worktree_session
+run_test "메인 체크아웃 훅: 링크된 워크트리, 저장소 밖, 다른 저장소의 파일은 막지 않는다" test_guard_allows_worktree_and_outside
+run_test "메인 체크아웃 훅: 대상 경로를 알 수 없는 입력은 막지 않는다" test_guard_ignores_invalid_input
+run_test "메인 체크아웃 훅: jq가 없어도 판단한다" test_guard_works_without_jq
 run_test ".gitignore: 생성 파일과 비밀값은 제외하고, 설정·스크립트·.env.example은 남긴다" test_gitignore_rules
 run_test "문서 목차: docs/decisions와 docs/history의 목차가 실제 파일과 맞다" test_docs_index_matches_repo
 run_test "문서 목차: 목차에 없는 파일과 파일이 없는 목차 항목을 찾아 실패한다" test_docs_index_detects_mismatch

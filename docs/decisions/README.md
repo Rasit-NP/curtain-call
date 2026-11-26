@@ -40,3 +40,8 @@
 | [0023](0023-review-depth-by-risk.md) | 리뷰 강도는 PR 위험도로 정하고 항상 명시 | 채택 |
 | [0024](0024-docs-two-tracks.md) | 문서화를 작업용 결정 기록과 포트폴리오용 진행 기록으로 나눈다 | 제안(PR 병합 전) |
 | [0025](0025-msw-unhandled-error-strategy.md) | 프론트 테스트: 핸들러 없는 요청은 MSW 'error' 전략으로 막고, 테스트가 끝날 때 처리 중인 요청을 기다린다 | 채택 |
+| [0026](0026-issue-creation-scope.md) | Issue 등록은 로드맵에서 지금 진행할 단계만, 더 필요하면 목록을 먼저 보여 주고 묻는다 | 제안(PR 병합 전) |
+| [0027](0027-issue-per-worktree-session.md) | Issue 작업은 Issue마다 별도 세션과 그 세션의 git 워크트리에서, 메인 체크아웃은 고치지 않는다 | 제안(PR 병합 전) |
+| [0028](0028-instruction-scope.md) | 사람의 마지막 지시에 적힌 일만 하고, 행동은 그 행동을 지시받은 뒤에 한다 | 제안(PR 병합 전) |
+| [0029](0029-guard-main-checkout-hook.md) | 메인 체크아웃 파일 수정을 PreToolUse 훅으로 막고, 메인 워크트리는 git으로 판단한다 | 제안(PR 병합 전) |
+| [0030](0030-guard-undecidable-input.md) | 메인 체크아웃 훅: 판단할 수 없는 입력과 다른 저장소의 파일은 막지 않고, jq가 없으면 sed로 읽는다 | 제안(PR 병합 전) |
