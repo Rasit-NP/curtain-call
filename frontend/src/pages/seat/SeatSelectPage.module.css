@@ -1,0 +1,128 @@
+.page {
+  max-width: 40rem;
+  margin: 2rem auto;
+}
+
+.title {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+.detail {
+  margin: 0.25rem 0 0;
+}
+
+/* 좁은 화면에서는 좌석 배치만 가로로 스크롤한다. */
+.hall {
+  margin: 1.5rem 0 1rem;
+  overflow-x: auto;
+}
+
+.hallInner {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 100%;
+}
+
+.stage {
+  padding: 0.375rem;
+  border-radius: 0.25rem;
+  background: #eaecf0;
+  color: #344054;
+  font-size: 0.875rem;
+  letter-spacing: 0.5em;
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  gap: 0.375rem;
+  justify-content: center;
+}
+
+.seat {
+  padding: 0;
+  border: 1px solid;
+  border-radius: 0.375rem 0.375rem 0.125rem 0.125rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.seat:disabled {
+  cursor: not-allowed;
+}
+
+.seat:focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
+.available {
+  border-color: #667085;
+  background: #fff;
+  color: #344054;
+}
+
+.seat.available:hover:not(:disabled) {
+  border-color: #1d4ed8;
+}
+
+.selected {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.unavailable {
+  border-color: #d0d5dd;
+  background: #d0d5dd;
+  color: #98a2b3;
+}
+
+/* 선점 요청 중에 막힌 좌석은 모양을 바꾸지 않고 흐리게만 한다. */
+.seat.available:disabled,
+.seat.selected:disabled {
+  opacity: 0.6;
+}
+
+.legend {
+  display: flex;
+  gap: 1rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  font-size: 0.875rem;
+  list-style: none;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.swatch {
+  width: 1rem;
+  height: 1rem;
+  /* border 축약형은 상태 클래스(.available, .unavailable)의 테두리 색을 덮으므로 두께와 모양만 정한다. */
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 0.25rem;
+}
+
+.summary p {
+  margin: 0.25rem 0 0;
+}
+
+.alert {
+  color: #b42318;
+}
+
+.alert p {
+  margin: 0.5rem 0 0;
+}
+
+.submit {
+  margin-top: 1rem;
+  padding: 0.625rem 1.25rem;
+}

@@ -33,7 +33,12 @@ export function formatPrice(won: number): string {
   return `${won.toLocaleString('ko-KR')}원`;
 }
 
-/** 좌석을 받은 순서대로 'A-1, A-2' 형식으로 이어 붙인다. 좌석 표시 이름은 {row}-{number}다(spec 2.1). */
+/** 좌석 표시 이름. 줄과 번호를 붙여 'A3'처럼 쓴다(spec 2.1). 모든 화면이 이 함수로 좌석 이름을 만든다. */
+export function seatName(seat: Pick<SeatRef, 'row' | 'number'>): string {
+  return `${seat.row}${seat.number}`;
+}
+
+/** 좌석을 받은 순서대로 'A1, A2' 형식으로 이어 붙인다. */
 export function formatSeats(seats: SeatRef[]): string {
-  return seats.map((seat) => `${seat.row}-${seat.number}`).join(', ');
+  return seats.map(seatName).join(', ');
 }

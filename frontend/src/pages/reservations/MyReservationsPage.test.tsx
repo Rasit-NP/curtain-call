@@ -62,11 +62,11 @@ describe('내 예매 화면', () => {
     expect(items).toHaveLength(2);
     expect(within(items[0]).getByRole('heading', { name: '한여름 밤의 꿈' })).toBeInTheDocument();
     expect(items[0]).toHaveTextContent('2027. 1. 16.(토) 00:30 · 혜화 소극장');
-    expect(items[0]).toHaveTextContent('좌석 B-3');
+    expect(items[0]).toHaveTextContent('좌석 B3');
     expect(items[0]).toHaveTextContent('금액 45,000원');
     expect(within(items[1]).getByRole('heading', { name: '작은 방의 햄릿' })).toBeInTheDocument();
     expect(items[1]).toHaveTextContent('2026. 12. 20.(일) 19:00 · 대학로 커튼홀');
-    expect(items[1]).toHaveTextContent('좌석 A-1, A-2');
+    expect(items[1]).toHaveTextContent('좌석 A1, A2');
     expect(items[1]).toHaveTextContent('금액 60,000원');
   });
 
