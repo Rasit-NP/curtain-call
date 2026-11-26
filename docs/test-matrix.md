@@ -128,7 +128,7 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 실패 | R6: 공개 경로에서 @CurrentUserId를 쓰면 토큰 없는 요청은 500이 아니라 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/api/CurrentUserIdTest.java`) |
 | 실패 | R6: Bearer 뒤가 비었거나 Bearer가 아닌 인증 헤더는 토큰이 없는 것과 같이 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 경계 | R6: exp 1초 전과 exp와 같은 시각의 토큰은 허용하고, exp 1초 뒤 토큰은 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
-| 경계 | R6: 공연 목록과 공연 상세는 토큰 없이 200이다. 공연 Issue에서 작성한다 | 백엔드 통합 | 미작성 |
+| 경계 | R6: 공연 목록과 공연 상세는 토큰 없이 200이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
 | 경계 | R6: 인증 없이 열리는 경로(POST 로그인, GET 공연, GET health)는 토큰 없이 인증 검사를 지나고, 공개 경로라도 정해진 메서드가 아니면 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 실패 | R6: 로그인하지 않고 좌석 선택·결제·내 예매 화면에 들어가면 로그인 화면으로 보내고, 로그인하면 원래 화면으로 돌아온다(실제 경로. 화면 Issue에서 작성) | 프론트 | 미작성 |
 | 실패 | R6: 토큰 없이 로그인이 필요한 화면에 들어가면 로그인 화면으로 보내고, 로그인하면 원래 경로(쿼리 포함)로 돌아온다(가드 아래 테스트용 화면) | 프론트 | 작성(`frontend/src/auth/RequireAuth.test.tsx`) |
@@ -162,7 +162,13 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 로그인(6.1) | 없는 아이디와 틀린 비밀번호는 모두 401 INVALID_CREDENTIALS다(설명도 같다) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/api/LoginApiTest.java`) |
 | 로그인(6.1) | 아이디 대소문자나 앞뒤 공백이 다르면 다른 아이디로 보고, 비밀번호가 BCrypt 한도(72바이트)를 넘어도 500이 아니라 401 INVALID_CREDENTIALS다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/api/LoginApiTest.java`) |
 | 로그인(6.1) | 아이디나 비밀번호가 없거나 비었거나 공백뿐이면, 또는 본문이 없거나 JSON이 아니면 400 INVALID_INPUT이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/api/LoginApiTest.java`) |
-| 공연(6.2, 6.3) | 공연 목록은 시작 시각 오름차순(같으면 id 순)이고, 없는 공연의 상세는 404 NOT_FOUND다 | 백엔드 통합 | 미작성 |
+| 공연(6.2, 6.3) | 공연 목록은 시작 시각 오름차순(같으면 id 순)이고, 없는 공연의 상세는 404 NOT_FOUND다(0·음수 포함) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
+| 공연(6.2) | 공연이 없으면 공연 목록은 빈 목록이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
+| 공연(5, 6.2) | 공연 목록 항목은 PerformanceSummary(id, title, venue, startsAt, price)이고 venue는 공연장 이름이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
+| 공연(5, 6.3) | 공연 상세는 PerformanceSummary에 seats를 더하고, 좌석은 id·row·number·gridRow·gridColumn·status다. 좌석은 row, number 오름차순(number는 숫자 순)이고 그 공연의 좌석만 나온다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
+| 공연(6.3) | 선점이 생기기 전 단계의 좌석 status는 저장 상태(AVAILABLE·HELD·SOLD)를 그대로 쓴다. 만료 반영은 R3 행에서 선점 Issue가 작성한다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
+| 공연(6.3) | performanceId가 정수가 아니면(long 범위 밖 포함) 400 INVALID_INPUT이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
+| 좌석(2.1) | 같은 공연에서 (row, number)와 (gridRow, gridColumn)은 겹치지 않고(다른 공연은 겹쳐도 됨), 공연장 배치도 같은 공연장 안에서 같다. 번호와 위치는 1 이상, row는 빈 문자열이 아니고, 저장 상태는 AVAILABLE·HELD·SOLD만이다(DB 제약) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/domain/SeatSchemaTest.java`) |
 | 선점(6.4) | 없는 공연이나 그 공연에 없는 좌석으로 선점하면 404 NOT_FOUND다 | 백엔드 통합 | 미작성 |
 | 선점(6.4) | seatIds가 비었거나 중복이 있으면 400 INVALID_INPUT이다 | 백엔드 통합 | 미작성 |
 | 선점 조회(6.5) | 다른 사용자의 선점과 해제·결제된 선점은 404 NOT_FOUND다 | 백엔드 통합 | 미작성 |
@@ -186,6 +192,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | E2E 지원(6.9) | e2e 프로필에서는 POST /api/test-support/reset을 토큰 없이 부를 수 있다(인증 검사를 지나 컨트롤러가 없으면 404) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/E2eProfileAuthTest.java`) |
 | E2E 지원(6.9) | e2e가 아닌 프로필에서 POST /api/test-support/reset은 토큰 없이 401 AUTH_REQUIRED, 유효한 토큰이면 404 NOT_FOUND다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 시드(2.5) | 시드 계정(시연용 demo, E2E용 e2e-user1·e2e-user2)으로 로그인할 수 있다(시드 파일을 실제 스키마에서 실행) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/E2eProfileAuthTest.java`) |
+| 시드(2.5) | 공연장·공연 시드를 실제 스키마에서 실행하면 공연이 2개 이상이고 공연 상세마다 빈 좌석이 5석 이상이며, 공연 좌석은 그 공연장 배치와 같고, 배치가 다른 공연장과 통로·빈자리가 있는 배치가 있다(값이 아닌 성질만 확인) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/PerformanceSeedTest.java`) |
 | 상태 확인(6.10) | `GET /actuator/health`는 200 `{"status":"UP"}`이다(다른 속성 없음) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/HealthCheckTest.java`) |
 | 결제 화면(7.3) | 승인 전에(402 뒤 포함) 앱 안의 다른 화면으로 이동하면 해제 요청을 보내고, 승인된 뒤에는 보내지 않는다 | 프론트 | 미작성 |
 | 결제 화면(7.3) | 결제가 승인되면 예매 완료를 보여 주고, 402면 안내 문구와 함께 다시 결제할 수 있다 | 프론트 | 미작성 |
@@ -223,6 +230,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 시계 | 테스트 시계는 시각을 정하거나 옮길 수 있고 되돌리면 정해진 시각으로 돌아간다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/support/MutableClockTest.java`) |
 | 통합 기반 | 운영 코드에 주입되는 Clock은 테스트 시계이고, 테스트마다 정해진 시각으로 되돌린다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
 | 통합 기반 | 테스트마다 시작 전에 테이블을 비우고, Flyway 이력 테이블은 남긴다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
+| 시드 실행 | 시드 테스트는 시드 파일을 파일 이름 문자열이 아니라 버전 번호 순서로 실행하고(V10000은 V1001 뒤), 버전 번호를 읽을 수 없는 이름은 거부한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/support/SeedFilesTest.java`) |
 | 프론트 MSW | 핸들러가 없는 요청은 실제 네트워크로 나가지 않고 실패한다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |
 | 프론트 MSW | 테스트가 끝날 때 핸들러가 없는 요청이 있었으면(아직 처리 중이던 요청 포함) 테스트를 실패로 만든다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |
 | 프론트 MSW | 테스트가 끝날 때 처리 중인 요청은 그 테스트의 핸들러로 처리한다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |

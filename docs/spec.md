@@ -24,12 +24,18 @@ CGV 예매 방식을 따른다.
 | 엔티티 | 주요 속성 | 설명 |
 |---|---|---|
 | 사용자(User) | `id`, `username`, `passwordHash` | `username`은 고유하다. 회원가입은 없고 시드로만 만든다. |
-| 공연(Performance) | `id`, `title`, `venue`, `startsAt`, `price` | 날짜와 시간이 정해진 한 회차다. `price`는 1석 가격(원)이고 전석이 같다. |
-| 좌석(Seat) | `id`, `performanceId`, `row`, `number`, `status`, `holdId` | (`performanceId`, `row`, `number`)는 고유하다. 표시 이름은 `{row}-{number}`(예: `A-3`)다. `status`는 `AVAILABLE`, `HELD`, `SOLD`. `holdId`는 지금 이 좌석을 잡은 선점이고 `HELD`일 때만 있다. 만료된 선점의 좌석을 새 선점이 덮어쓰면 한 좌석이 두 선점의 좌석 목록에 들어 있게 되므로, 좌석을 잡은 선점은 이 값으로 판단한다. |
+| 공연장(Venue) | `id`, `name`, 좌석 배치 | `name`은 고유하고 공연 응답의 `venue`로 나간다. 좌석 배치는 공연장마다 다르고, 통로와 빈자리까지 표현한다. |
+| 공연장 좌석 배치(VenueSeat) | `id`, `venueId`, `row`, `number`, `gridRow`, `gridColumn` | 공연장 배치의 좌석 하나다. 같은 공연장에서 (`row`, `number`)는 고유하고 (`gridRow`, `gridColumn`)은 겹치지 않는다. |
+| 공연(Performance) | `id`, `title`, `venueId`, `startsAt`, `price` | 날짜와 시간이 정해진 한 회차다. 한 공연장에서 열린다. `price`는 1석 가격(원)이고 전석이 같다. |
+| 좌석(Seat) | `id`, `performanceId`, `row`, `number`, `gridRow`, `gridColumn`, `status`, `holdId` | 공연마다 있고, 공연을 만들 때 그 공연장 배치를 복사한다. 그래서 같은 공연장의 공연은 같은 배치다. (`performanceId`, `row`, `number`)는 고유하고 (`performanceId`, `gridRow`, `gridColumn`)은 겹치지 않는다. 표시 이름은 `{row}-{number}`(예: `A-3`)다. 좌석 위치는 아래 '좌석 위치'를 따른다. `status`는 `AVAILABLE`, `HELD`, `SOLD`. `holdId`는 지금 이 좌석을 잡은 선점이고 `HELD`일 때만 있다. 만료된 선점의 좌석을 새 선점이 덮어쓰면 한 좌석이 두 선점의 좌석 목록에 들어 있게 되므로, 좌석을 잡은 선점은 이 값으로 판단한다. |
 | 선점(Hold) | `id`, `userId`, `performanceId`, 좌석 1~4개, `createdAt`, `expiresAt`, `status` | 한 공연의 좌석 묶음을 결제 전에 잡아 둔다. `expiresAt`은 `createdAt` + 5분(R3)이고 늘리지 않는다. `status`는 `ACTIVE`, `RELEASED`, `PAID`. |
 | 예매(Reservation) | `id`, `userId`, `performanceId`, 좌석, `amount`, `reservedAt` | 결제가 승인된 선점으로 만든다. 취소 기능은 없다. |
 | 결제(Payment) | `id`, `userId`, `holdId`, `amount`, `status`, `reservationId` | 모의 결제를 부를 때마다 하나 생긴다. `status`는 `SUCCEEDED`, `FAILED`. 승인되면 `reservationId`가 있다. |
 | 멱등 기록(IdempotencyRecord) | `userId`, `idempotencyKey`, `holdId`, 저장한 응답, `createdAt` | 검증을 통과한 결제 요청마다 하나 생긴다. (`userId`, `idempotencyKey`)는 유니크다(R5). 같은 키로 다시 요청하면 돌려줄 응답(상태 코드와 본문)을 저장한다(6.7.1). |
+
+**좌석 위치**: 좌석 배치는 격자다. `gridRow`·`gridColumn`은 1부터 세는 정수이고, 좌석이 격자의 몇 번째 줄·칸에 있는지를 나타낸다.
+격자 1번째 줄이 무대 쪽이다. 좌석이 없는 칸이 통로와 빈자리다. `row`·`number`는 표시 이름이라 위치와 다를 수 있다(예: 통로 오른쪽 `A-5`가 격자 6번째 칸).
+격자 크기는 따로 두지 않고, 좌석 위치의 최댓값으로 정한다(`gridRow` 최댓값 = 줄 수, `gridColumn` 최댓값 = 칸 수). 방향과 크기는 [결정 0051](decisions/0051-seat-grid-orientation-and-size.md)이다.
 
 ### 2.2 판정 규칙
 
@@ -79,10 +85,14 @@ CGV 예매 방식을 따른다.
 
 ### 2.5 시드 데이터
 
-`local`, `e2e` 프로필의 시드는 E2E를 돌릴 수 있게 최소한 다음을 넣는다. 정확한 값은 시드를 만드는 Issue에서 정한다.
+`local`, `e2e` 프로필의 시드는 E2E를 돌릴 수 있게 최소한 다음을 넣는다.
 
 - 공연 2개 이상, 공연마다 빈 좌석 5석 이상(시나리오 3은 5번째 좌석이 필요하다)
+- 배치가 서로 다른 공연장, 통로나 빈자리가 있는 배치
 - 시연용 계정 1개(README에 안내)와 E2E용 계정 2개(시나리오 2의 '다른 사용자')
+
+공연장, 배치, 공연, 일시, 가격 같은 시드 값은 샘플 데이터다. 코드와 테스트는 시드 값에 기대지 않는다(테스트는 데이터를 직접 만들고,
+시드 테스트는 위 조건만 확인한다). E2E도 공연·좌석 ID나 제목을 가정하지 않고 공연 목록·상세 API로 찾는다(6.9).
 
 ## 3. API 공통
 
@@ -157,14 +167,15 @@ CGV 예매 방식을 따른다.
 
 ```text
 PerformanceSummary { id, title, venue, startsAt, price }
-Seat               { id, row, number, status }   status: AVAILABLE | HELD | SOLD
+Seat               { id, row, number, gridRow, gridColumn, status }   status: AVAILABLE | HELD | SOLD
 SeatRef            { id, row, number }
 Hold               { id, status, performance: PerformanceSummary, seats: SeatRef[], amount, expiresAt }
                                                  status: ACTIVE | EXPIRED
 Reservation        { id, performance: PerformanceSummary, seats: SeatRef[], amount, reservedAt }
 ```
 
-- 좌석 목록은 `row`, `number` 오름차순이다.
+- 좌석 목록은 `row`, `number` 오름차순이다. `row`는 문자열 코드 포인트 순서, `number`는 숫자 순서다(`A-2`가 `A-10`보다 앞).
+- `Seat.gridRow`·`gridColumn`은 2.1 '좌석 위치'의 격자 위치다. 화면은 이 값을 CSS Grid의 `grid-row`·`grid-column`에 넣어 그린다.
 - `Hold.status`는 유효한 선점이면 `ACTIVE`, 만료된 선점이면 `EXPIRED`다. 해제·결제된 선점은 응답으로 나오지 않는다(조회하면 404).
 
 ## 6. 엔드포인트
@@ -214,20 +225,22 @@ Reservation        { id, performance: PerformanceSummary, seats: SeatRef[], amou
   "startsAt": "2026-12-20T10:00:00Z",
   "price": 30000,
   "seats": [
-    { "id": 101, "row": "A", "number": 1, "status": "AVAILABLE" },
-    { "id": 102, "row": "A", "number": 2, "status": "HELD" },
-    { "id": 103, "row": "A", "number": 3, "status": "SOLD" },
-    { "id": 104, "row": "A", "number": 4, "status": "AVAILABLE" }
+    { "id": 101, "row": "A", "number": 1, "gridRow": 1, "gridColumn": 1, "status": "AVAILABLE" },
+    { "id": 102, "row": "A", "number": 2, "gridRow": 1, "gridColumn": 2, "status": "HELD" },
+    { "id": 103, "row": "A", "number": 3, "gridRow": 1, "gridColumn": 4, "status": "SOLD" },
+    { "id": 104, "row": "A", "number": 4, "gridRow": 1, "gridColumn": 5, "status": "AVAILABLE" }
   ]
 }
 ```
+
+예시의 A줄은 2번과 3번 좌석 사이(격자 3번째 칸)가 통로다.
 
 - `status`는 2.2의 API 상태다(R3 만료 반영). 누가 선점했는지는 알려 주지 않는다.
 
 | 순서 | 상태 | code | 상황 |
 |---|---|---|---|
-| 1 | 400 | `INVALID_INPUT` | `performanceId`가 정수가 아님 |
-| 2 | 404 | `NOT_FOUND` | 공연이 없음 |
+| 1 | 400 | `INVALID_INPUT` | `performanceId`가 정수가 아님(long 범위를 넘는 값 포함, [결정 0050](decisions/0050-performance-detail-id-errors.md)) |
+| 2 | 404 | `NOT_FOUND` | 공연이 없음(0이나 음수 포함) |
 
 ### 6.4 `POST /api/holds` 좌석 묶음 선점
 
