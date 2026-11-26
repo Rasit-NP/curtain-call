@@ -1,0 +1,6 @@
+// JDK 21이 없는 기계에서는 Gradle이 툴체인을 내려받는다.
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'curtain-call'

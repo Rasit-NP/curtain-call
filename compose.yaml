@@ -1,0 +1,22 @@
+# 로컬 개발·E2E용 PostgreSQL. 루트에서 `docker compose up -d --wait db`로 띄운다.
+# 접속 정보는 개발 전용 값이다(실제 비밀번호가 아님). 백엔드 local·e2e 프로필과 같은 값을 쓴다.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: curtaincall
+      POSTGRES_USER: curtaincall
+      POSTGRES_PASSWORD: curtaincall-dev
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      # TCP로 확인한다. 초기화 중 임시 서버는 소켓으로만 받으므로, 소켓 확인은 재시작 전에 통과할 수 있다.
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-p", "5432", "-U", "curtaincall", "-d", "curtaincall"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  db-data:
