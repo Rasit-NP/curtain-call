@@ -30,6 +30,11 @@ class IntegrationTestConfig {
     }
 
     @Bean
+    TestHolds testHolds(JdbcTemplate jdbcTemplate) {
+        return new TestHolds(jdbcTemplate);
+    }
+
+    @Bean
     TestUsers testUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return new TestUsers(userRepository, passwordEncoder);
     }
