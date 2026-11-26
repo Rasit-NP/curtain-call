@@ -1,0 +1,30 @@
+# IDE와 OS
+.idea/
+*.iml
+/out/
+.vscode/
+.DS_Store
+
+# 비밀값: 이름만 .env.example에 적는다
+.env
+.env.*
+!.env.example
+
+# Claude Code 개인 설정
+.claude/settings.local.json
+
+# 검증 로그 (scripts/verify.sh)
+.verify-logs/
+
+# 백엔드 빌드 산출물
+backend/.gradle/
+backend/build/
+
+# 프론트엔드·E2E 의존성과 산출물
+node_modules/
+frontend/dist/
+frontend/coverage/
+e2e/playwright-report/
+e2e/test-results/
+e2e/blob-report/
+e2e/playwright/.cache/
