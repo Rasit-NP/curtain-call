@@ -3,7 +3,11 @@ package com.curtaincall.hold.domain;
 import java.time.Instant;
 import java.util.Collection;
 
-/** R2 한도. 구현 전 뼈대. */
+/**
+ * R2: 한 사용자는 공연 하나에서 최대 4석(유효한 선점 + 예매)까지 가진다(spec 2.2 '보유 좌석 수').
+ *
+ * <p>이 단계(선점 생성)에는 예매가 없어 보유 좌석 수는 유효한 선점의 좌석만 센다. 예매 좌석은 결제 단계에서 더한다.
+ */
 public final class HoldLimit {
 
     public static final int MAX_SEATS_PER_PERFORMANCE = 4;
@@ -11,11 +15,19 @@ public final class HoldLimit {
     private HoldLimit() {
     }
 
+    /**
+     * 보유 좌석 수 중 선점 몫: 넘겨받은 선점 중 현재 시각에 유효한 선점의 좌석 수. 만료·해제된 선점은 세지 않고,
+     * 결제된 선점의 좌석은 예매로 한 번만 센다(spec 2.2). 같은 사용자·같은 공연의 선점만 넘기는 것은 호출하는 쪽의 몫이다.
+     */
     public static int heldSeatCount(Collection<Hold> holds, Instant now) {
-        throw new UnsupportedOperationException("구현 전");
+        return holds.stream()
+                .filter(hold -> hold.isValidAt(now))
+                .mapToInt(hold -> hold.getSeatIds().size())
+                .sum();
     }
 
+    /** 보유 좌석 수 + 요청 좌석 수가 4 이하면 허용한다. 넘으면 409 HOLD_LIMIT_EXCEEDED(5석 이상을 한 번에 요청한 경우 포함). */
     public static boolean allows(int heldSeats, int requestedSeats) {
-        throw new UnsupportedOperationException("구현 전");
+        return (long) heldSeats + requestedSeats <= MAX_SEATS_PER_PERFORMANCE;
     }
 }
