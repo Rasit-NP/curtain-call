@@ -5,6 +5,9 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.curtaincall.auth.domain.UserRepository;
 
 @TestConfiguration(proxyBeanMethods = false)
 class IntegrationTestConfig {
@@ -19,5 +22,10 @@ class IntegrationTestConfig {
     @Bean
     DatabaseCleaner databaseCleaner(JdbcTemplate jdbcTemplate, Flyway flyway) {
         return new DatabaseCleaner(jdbcTemplate, flyway);
+    }
+
+    @Bean
+    TestUsers testUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        return new TestUsers(userRepository, passwordEncoder);
     }
 }

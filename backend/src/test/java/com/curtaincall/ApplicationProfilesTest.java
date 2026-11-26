@@ -3,6 +3,7 @@ package com.curtaincall;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ import org.springframework.core.env.StandardEnvironment;
 class ApplicationProfilesTest {
 
     private static final String COMPOSE_DB_URL = "jdbc:postgresql://localhost:5432/curtaincall";
+    private static final String JWT_SECRET = "curtaincall.jwt.secret";
     private static final List<String> MIGRATION_ONLY = List.of("classpath:db/migration");
     private static final List<String> MIGRATION_AND_SEED = List.of("classpath:db/migration", "classpath:db/seed");
 
@@ -112,6 +114,33 @@ class ApplicationProfilesTest {
 
         assertThat(env.getProperty("spring.jpa.open-in-view")).isEqualTo("false");
         assertThat(env.getProperty("spring.jpa.hibernate.ddl-auto")).isEqualTo("validate");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"local", "e2e", "test"})
+    @DisplayName("local·e2e·test는 저장소에 둔 개발 전용 JWT 서명 키(이름에 dev, 32바이트 이상)를 환경변수 없이 쓴다")
+    void devProfilesUseDevJwtKey(String profile) {
+        StandardEnvironment env = load(Map.of(), profile);
+
+        String secret = env.getProperty(JWT_SECRET);
+        assertThat(secret).contains("dev");
+        assertThat(secret.getBytes(StandardCharsets.UTF_8).length).isGreaterThanOrEqualTo(32);
+    }
+
+    @Test
+    @DisplayName("prod는 JWT 서명 키를 환경변수 JWT_SECRET으로만 받는다")
+    void prodReadsJwtSecretFromEnvironment() {
+        StandardEnvironment env = load(Map.of("JWT_SECRET", "prod-secret-from-environment-0123456789"), "prod");
+
+        assertThat(env.getProperty(JWT_SECRET)).isEqualTo("prod-secret-from-environment-0123456789");
+    }
+
+    @Test
+    @DisplayName("prod는 JWT 서명 키에 기본값이 없어 JWT_SECRET이 없으면 값을 정할 수 없다(개발 키로 뜨지 않는다)")
+    void prodHasNoJwtSecretDefault() {
+        StandardEnvironment env = load(Map.of("DB_URL", "u", "DB_USERNAME", "n", "DB_PASSWORD", "p"), "prod");
+
+        assertThatThrownBy(() -> env.getProperty(JWT_SECRET)).isInstanceOf(IllegalArgumentException.class);
     }
 
     private static StandardEnvironment load(Map<String, Object> envVars, String... profiles) {
