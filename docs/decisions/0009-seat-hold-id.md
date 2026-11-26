@@ -1,6 +1,6 @@
 # 0009. 좌석에 지금 잡은 선점(holdId)을 둔다
 
-- 상태: 채택
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트(독립 리뷰), 사람 병합
 - 관련: Issue [#3](https://github.com/Rasit-NP/curtain-call/issues/3), PR [#4](https://github.com/Rasit-NP/curtain-call/pull/4)

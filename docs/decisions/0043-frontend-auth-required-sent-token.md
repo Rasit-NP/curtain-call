@@ -1,6 +1,6 @@
 # 0043. 프론트: 401 AUTH_REQUIRED 공통 처리는 그 요청에 보낸 토큰이 지금 토큰과 같을 때만 한다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 에이전트 결정
 - 날짜: 2026-11-27
 - 결정한 사람: 에이전트(PR #31 리뷰 반영, 사람이 수정 지시)
 - 관련: Issue [#28](https://github.com/Rasit-NP/curtain-call/issues/28), PR [#31](https://github.com/Rasit-NP/curtain-call/pull/31)

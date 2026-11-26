@@ -25,3 +25,4 @@
 | [0027](0027-backend-auth.md) | 백엔드 인증(R6) | 진행 중 |
 | [0028](0028-frontend-auth.md) | 프론트엔드 인증(R6): 로그인 화면, 인증 가드, 401 AUTH_REQUIRED 처리 | 진행 중 |
 | [0029](0029-agent-workflow-rules.md) | 작업 방식 규칙과 메인 체크아웃 수정 차단 훅 | 진행 중 |
+| [0033](0033-ask-policy-decisions.md) | 정책 결정은 구현 전에 묻고, 결정 상태 '제안'은 물었을 때만 쓴다 | 진행 중 |

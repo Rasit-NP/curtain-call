@@ -1,6 +1,6 @@
 # 0015. health 응답을 {"status":"UP"}로 두려고 프로브 그룹을 끈다
 
-- 상태: 채택
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#5](https://github.com/Rasit-NP/curtain-call/issues/5), PR [#8](https://github.com/Rasit-NP/curtain-call/pull/8)

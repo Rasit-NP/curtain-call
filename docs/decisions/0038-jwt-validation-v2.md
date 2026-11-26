@@ -1,6 +1,6 @@
 # 0038. 토큰 검증(개정): sub는 1 이상의 long이어야 한다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 에이전트 결정
 - 날짜: 2026-11-27
 - 결정한 사람: 에이전트(PR #32 리뷰 지적을 고치라는 사람의 지시에 따라)
 - 관련: Issue [#27](https://github.com/Rasit-NP/curtain-call/issues/27), PR [#32](https://github.com/Rasit-NP/curtain-call/pull/32), 대체하는 결정 [0032](0032-jwt-validation.md)

@@ -1,6 +1,6 @@
 # 0006. 멱등 키는 사용자별, 검증을 통과한 결제 결과는 모두 저장, 같은 키 동시 요청은 기다림
 
-- 상태: 채택
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트 제안, 사람 병합(같은 키·다른 선점 400은 사람 결정)
 - 관련: Issue [#3](https://github.com/Rasit-NP/curtain-call/issues/3), PR [#4](https://github.com/Rasit-NP/curtain-call/pull/4), `docs/spec.md` 6.7.1

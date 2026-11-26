@@ -1,6 +1,6 @@
 # 0018. 프론트: code가 없는 오류 응답은 INTERNAL_ERROR
 
-- 상태: 채택(PR #7 병합으로 확인)
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#6](https://github.com/Rasit-NP/curtain-call/issues/6) '참고', PR [#7](https://github.com/Rasit-NP/curtain-call/pull/7)

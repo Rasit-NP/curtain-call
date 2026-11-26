@@ -1,6 +1,6 @@
 # 0030. 메인 체크아웃 훅: 판단할 수 없는 입력과 다른 저장소의 파일은 막지 않고, jq가 없으면 sed로 읽는다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#29](https://github.com/Rasit-NP/curtain-call/issues/29), 결정 [0029](0029-guard-main-checkout-hook.md)

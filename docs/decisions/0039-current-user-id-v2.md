@@ -1,6 +1,6 @@
 # 0039. 현재 사용자 id(개정): 토큰이 없으면 @CurrentUserId가 401 AUTH_REQUIRED를 낸다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 에이전트 결정
 - 날짜: 2026-11-27
 - 결정한 사람: 에이전트(PR #32 리뷰 지적을 고치라는 사람의 지시에 따라)
 - 관련: Issue [#27](https://github.com/Rasit-NP/curtain-call/issues/27), PR [#32](https://github.com/Rasit-NP/curtain-call/pull/32), 대체하는 결정 [0033](0033-current-user-id.md)

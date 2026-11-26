@@ -1,6 +1,6 @@
 # 0029. 메인 체크아웃 파일 수정을 PreToolUse 훅으로 막고, 메인 워크트리는 git으로 판단한다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 채택
 - 날짜: 2026-11-26
 - 결정한 사람: 사람(대화에서 지시). 판단 세부는 [0030](0030-guard-undecidable-input.md)(에이전트)
 - 관련: Issue [#29](https://github.com/Rasit-NP/curtain-call/issues/29)

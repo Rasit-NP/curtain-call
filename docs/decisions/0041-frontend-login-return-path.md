@@ -1,6 +1,6 @@
 # 0041. 프론트: 로그인 뒤 돌아갈 경로는 location state로 넘기고 앱 안의 경로만 받는다. 가드 이동에는 안내 문구를 붙이지 않는다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#28](https://github.com/Rasit-NP/curtain-call/issues/28)
