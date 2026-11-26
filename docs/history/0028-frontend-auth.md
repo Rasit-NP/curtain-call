@@ -42,13 +42,14 @@ PR #31을 만든 뒤 이 세션에서 `/code-review high`로 리뷰했다(서브
 
 ## 결과
 
-리뷰 반영 뒤 `./scripts/verify.sh` 전체 통과(2026-11-27, 프론트엔드 테스트 80개, 이 Issue에서 29개 추가, E2E는 영역이 없어 SKIP). PR #31은 사람의 병합을 기다린다.
+- **main에 리베이스(2026-11-27)**: 백엔드 인증 PR #32가 먼저 병합돼 PR #31이 충돌했다. 메인 세션의 요청(사람 지시 "#32 먼저 병합했어요. #31 리베이스해 주세요")으로 `origin/main` 위에 리베이스했다. 충돌은 문서 4개(`docs/decisions/README.md`, `docs/history/README.md`, `docs/test-matrix.md`, `docs/agent-log.md`)뿐이었고, main 쪽 행(결정 0031~0039, 진행 기록 0027, 백엔드 행, 결함 기록)은 그대로 두고 이 PR의 행을 번호 순서에 맞게 더했다. 대응표의 '현황' 문장은 두 PR 결과를 함께 적도록 고쳤다.
+
+리뷰 반영 뒤 `./scripts/verify.sh` 전체 통과(2026-11-27, 프론트엔드 테스트 80개, 이 Issue에서 29개 추가, E2E는 영역이 없어 SKIP). 리베이스 뒤 백엔드 인증이 들어간 main 위에서 다시 실행해 통과했다(PR 본문의 검증 결과). PR #31은 사람의 병합을 기다린다.
 
 남은 일:
 
 - 로그인이 필요한 실제 화면으로 가드를 확인하는 R6 행과 E2E 시나리오 4는 화면 Issue(2~4단계)가 완성한다.
 - 결제 화면이 떠날 때 보내는 선점 해제와 `AUTH_REQUIRED` 이동이 겹치는 경우는 결제 화면 Issue에서 확인한다([0043](../decisions/0043-frontend-auth-required-sent-token.md)).
-- `docs/test-matrix.md`의 '현황' 줄과 두 README 목차는 백엔드 #27 PR과 겹칠 수 있어, 병합 순서가 정해진 뒤 맞춘다.
 
 ## 배운 점
 
