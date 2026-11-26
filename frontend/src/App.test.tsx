@@ -11,4 +11,12 @@ describe('라우터', () => {
 
     expect(screen.getByRole('main')).toBeInTheDocument();
   });
+
+  it('/login 경로에서 로그인 화면을 그린다', () => {
+    const router = createMemoryRouter(routes, { initialEntries: ['/login'] });
+
+    render(<RouterProvider router={router} />);
+
+    expect(screen.getByRole('button', { name: '로그인' })).toBeInTheDocument();
+  });
 });

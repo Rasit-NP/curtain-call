@@ -3,7 +3,7 @@
 R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 계층에서 검증할지 정한다.
 동작의 기준은 [`spec.md`](spec.md)이고, 괄호 안의 숫자는 그 문서의 절 번호다.
 
-현황(2026-11-26): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 그 밖의 R1~R6 테스트는 미작성이다.
+현황(2026-11-27): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 실제 기능 경로와 화면이 있어야 하는 R6 행과 R1~R5 테스트는 미작성이다.
 
 ## 읽는 법
 
@@ -130,9 +130,20 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 경계 | R6: exp 1초 전과 exp와 같은 시각의 토큰은 허용하고, exp 1초 뒤 토큰은 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 경계 | R6: 공연 목록과 공연 상세는 토큰 없이 200이다. 공연 Issue에서 작성한다 | 백엔드 통합 | 미작성 |
 | 경계 | R6: 인증 없이 열리는 경로(POST 로그인, GET 공연, GET health)는 토큰 없이 인증 검사를 지나고, 공개 경로라도 정해진 메서드가 아니면 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
-| 실패 | R6: 로그인하지 않고 좌석 선택·결제·내 예매 화면에 들어가면 로그인 화면으로 보내고, 로그인하면 원래 화면으로 돌아온다 | 프론트 | 미작성 |
-| 실패 | R6: API가 401 AUTH_REQUIRED를 주면 토큰을 지우고 로그인 화면으로 보낸다 | 프론트 | 미작성 |
-| 경계 | R6: 로그인 실패(401 INVALID_CREDENTIALS)는 토큰을 지우거나 화면을 옮기지 않고 안내 문구만 보여 준다 | 프론트 | 미작성 |
+| 실패 | R6: 로그인하지 않고 좌석 선택·결제·내 예매 화면에 들어가면 로그인 화면으로 보내고, 로그인하면 원래 화면으로 돌아온다(실제 경로. 화면 Issue에서 작성) | 프론트 | 미작성 |
+| 실패 | R6: 토큰 없이 로그인이 필요한 화면에 들어가면 로그인 화면으로 보내고, 로그인하면 원래 경로(쿼리 포함)로 돌아온다(가드 아래 테스트용 화면) | 프론트 | 작성(`frontend/src/auth/RequireAuth.test.tsx`) |
+| 경계 | R6: 가드가 보낸 로그인 화면에서 한 번 실패해도, 다시 로그인하면 원래 경로로 돌아온다 | 프론트 | 작성(`frontend/src/auth/RequireAuth.test.tsx`) |
+| 정상 | R6: 토큰이 있으면 로그인이 필요한 화면을 그대로 보여 준다 | 프론트 | 작성(`frontend/src/auth/RequireAuth.test.tsx`) |
+| 실패 | R6: API가 401 AUTH_REQUIRED를 주면 토큰을 지우고 로그인 화면으로 보내며 로그인이 필요하다는 문구를 보여 준다 | 프론트 | 작성(`frontend/src/auth/AuthRequiredRedirect.test.tsx`, `frontend/src/api/client.test.ts`) |
+| 실패 | R6: AUTH_REQUIRED로 로그인 화면에 온 뒤 로그인하면 원래 화면(쿼리 포함)으로 돌아온다 | 프론트 | 작성(`frontend/src/auth/AuthRequiredRedirect.test.tsx`) |
+| 경계 | R6: 요청 두 개가 AUTH_REQUIRED를 받고 두 번째가 로그인 화면에 온 뒤에 끝나도, 로그인하면 원래 화면으로 돌아온다 | 프론트 | 작성(`frontend/src/auth/AuthRequiredRedirect.test.tsx`) |
+| 경계 | R6: 인증이 필요한 API의 다른 401(INVALID_CREDENTIALS)에는 토큰을 지우거나 화면을 옮기지 않는다 | 프론트 | 작성(`frontend/src/auth/AuthRequiredRedirect.test.tsx`, `frontend/src/api/client.test.ts`) |
+| 경계 | R6: 인증이 필요한 API의 다른 오류(500)에는 토큰을 지우거나 화면을 옮기지 않는다 | 프론트 | 작성(`frontend/src/auth/AuthRequiredRedirect.test.tsx`) |
+| 경계 | R6: 다시 로그인한 뒤에 끝난 이전 요청의 AUTH_REQUIRED는 새 토큰을 지우거나 로그인 화면으로 다시 보내지 않는다(보낸 토큰과 지금 토큰 비교) | 프론트 | 작성(`frontend/src/auth/AuthRequiredRedirect.test.tsx`, `frontend/src/api/client.test.ts`) |
+| 경계 | R6: 토큰 없이 보낸 요청이 AUTH_REQUIRED를 받으면 알리고, 그 사이 로그인했으면 알리지 않는다 | 프론트 | 작성(`frontend/src/api/client.test.ts`) |
+| 경계 | R6: 로그인 화면 경로 끝에 /가 붙어 있어도(/login/) 늦게 온 AUTH_REQUIRED가 돌아갈 경로를 덮지 않는다 | 프론트 | 작성(`frontend/src/auth/AuthRequiredRedirect.test.tsx`) |
+| 경계 | R6: 로그인 실패(401 INVALID_CREDENTIALS)는 토큰을 지우거나 화면을 옮기지 않고 안내 문구만 보여 준다 | 프론트 | 작성(`frontend/src/pages/login/LoginPage.test.tsx`) |
+| 정상 | R6: 로그인 요청에는 저장된 토큰이 있어도 Authorization 헤더를 붙이지 않는다 | 프론트 | 작성(`frontend/src/api/auth.test.ts`) |
 | 정상 | R6: 공개 API 요청에는 저장된 토큰이 있어도 붙이지 않는다 | 프론트 | 작성(`frontend/src/api/client.test.ts`) |
 | 정상 | R6: 인증이 필요한 요청에는 저장된 토큰을 Bearer로 붙인다 | 프론트 | 작성(`frontend/src/api/client.test.ts`) |
 | 경계 | R6: 인증이 필요한 요청이라도 저장된 토큰이 없으면 헤더 없이 보낸다 | 프론트 | 작성(`frontend/src/api/client.test.ts`) |
@@ -182,7 +193,13 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 화면 공통(7.5) | API 요청이 10초 동안 응답하지 않거나 응답 헤더 뒤 본문이 10초 안에 끝나지 않으면 끊고 응답 없음으로 넘기며, 9,999ms에 온 응답은 받고, 응답을 받은 뒤에는 끊지 않는다 | 프론트(API 클라이언트) | 작성(`frontend/src/api/client.test.ts`) |
 | 화면 공통(7.5) | 네트워크 오류와 본문을 받는 중 연결 끊김은 응답 없음으로 넘긴다 | 프론트(API 클라이언트) | 작성(`frontend/src/api/client.test.ts`) |
 | 화면 공통(7.5) | 직렬화할 수 없는 본문, GET 요청의 본문 같은 호출 실수는 요청을 보내지 않고 응답 없음이 아닌 오류로 거부한다 | 프론트(API 클라이언트) | 작성(`frontend/src/api/client.test.ts`) |
-| 화면 공통(7.5) | API 요청이 응답 없음(10초 시간 초과, 네트워크 오류)으로 끝나면 '서버에 연결할 수 없습니다' 문구를 보여 준다 | 프론트 | 미작성 |
+| 화면 공통(7.5) | API 요청이 응답 없음(10초 시간 초과, 네트워크 오류)으로 끝나면 '서버에 연결할 수 없습니다' 문구를 보여 준다(로그인 화면. 9.5초까지는 문구가 없고 10초에 바로 보인다) | 프론트 | 작성(`frontend/src/pages/login/LoginPage.test.tsx`) |
+| 로그인 화면(6.1, 7.1) | 입력 이름은 '아이디'·'비밀번호', 버튼 이름은 '로그인'이고, 처음에는 안내 문구가 없다 | 프론트 | 작성(`frontend/src/pages/login/LoginPage.test.tsx`) |
+| 로그인 화면(6.1, 7.1) | 로그인에 성공하면 입력한 값으로 요청하고, 토큰을 저장한 뒤 돌아갈 화면이 없으면 공연 목록(/)으로 간다 | 프론트 | 작성(`frontend/src/pages/login/LoginPage.test.tsx`) |
+| 로그인 화면(7.5, 7.6) | 400 INVALID_INPUT, 500 INTERNAL_ERROR, code 없는 응답, 네트워크 오류는 code별 안내 문구를 `role="alert"`로 보여 주고 화면에 머문다 | 프론트 | 작성(`frontend/src/pages/login/LoginPage.test.tsx`) |
+| 로그인 화면 | 로그인 요청 중에는 로그인 버튼을 누를 수 없고, 다시 누르면 이전 안내 문구를 지운다 | 프론트 | 작성(`frontend/src/pages/login/LoginPage.test.tsx`) |
+| 로그인 화면 | 로그인 뒤 돌아갈 경로가 앱 안의 경로가 아니면(`//host`) 공연 목록(/)으로 간다 | 프론트 | 작성(`frontend/src/auth/RequireAuth.test.tsx`) |
+| 로그인 API(6.1) | 아이디와 비밀번호를 POST /api/auth/login으로 보내고 토큰 응답을 돌려준다 | 프론트 | 작성(`frontend/src/api/auth.test.ts`) |
 | 오류 형식(3.1) | 오류 응답이면 상태와 `code`를 호출한 쪽에 넘기고, `code`가 없거나 오류 코드 표에 없거나 본문이 JSON이 아니면 `INTERNAL_ERROR`로 본다 | 프론트(API 클라이언트) | 작성(`frontend/src/api/client.test.ts`) |
 | 안내 문구(7.6) | 루트 `CLAUDE.md` 오류 코드 표의 모든 code와 응답 없음에 명세와 같은 문구가 있다 | 프론트 | 작성(`frontend/src/api/errorMessages.test.ts`) |
 | 토큰 저장(3.2) | 액세스 토큰을 `localStorage`에 저장하고 읽고 지운다 | 프론트 | 작성(`frontend/src/auth/tokenStorage.test.ts`) |
@@ -210,6 +227,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 프론트 MSW | 테스트가 끝날 때 핸들러가 없는 요청이 있었으면(아직 처리 중이던 요청 포함) 테스트를 실패로 만든다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |
 | 프론트 MSW | 테스트가 끝날 때 처리 중인 요청은 그 테스트의 핸들러로 처리한다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |
 | 프론트 라우터 | 첫 화면 경로(/)에서 오류 없이 공통 레이아웃을 그린다 | 프론트 | 작성(`frontend/src/App.test.tsx`) |
+| 프론트 라우터 | /login 경로에서 로그인 화면을 그린다 | 프론트 | 작성(`frontend/src/App.test.tsx`) |
 
 ## E2E 시나리오 대응
 

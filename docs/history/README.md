@@ -23,4 +23,5 @@
 | [0009](0009-review-depth.md) | 리뷰 강도를 PR 위험도에 맞추기 | 완료 |
 | [0011](0011-docs-two-tracks.md) | 문서화 이원화 | 진행 중 |
 | [0027](0027-backend-auth.md) | 백엔드 인증(R6) | 진행 중 |
+| [0028](0028-frontend-auth.md) | 프론트엔드 인증(R6): 로그인 화면, 인증 가드, 401 AUTH_REQUIRED 처리 | 진행 중 |
 | [0029](0029-agent-workflow-rules.md) | 작업 방식 규칙과 메인 체크아웃 수정 차단 훅 | 진행 중 |
