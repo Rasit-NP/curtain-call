@@ -25,6 +25,11 @@ class IntegrationTestConfig {
     }
 
     @Bean
+    TestPerformances testPerformances(JdbcTemplate jdbcTemplate) {
+        return new TestPerformances(jdbcTemplate);
+    }
+
+    @Bean
     TestUsers testUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return new TestUsers(userRepository, passwordEncoder);
     }

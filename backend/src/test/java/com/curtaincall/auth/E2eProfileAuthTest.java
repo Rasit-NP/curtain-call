@@ -6,8 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Comparator;
 
 import javax.sql.DataSource;
 
@@ -18,13 +16,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.curtaincall.support.IntegrationTest;
+import com.curtaincall.support.SeedFiles;
 
 /**
  * e2e 프로필의 보안 설정과 계정 시드(spec 2.5, 6.9).
@@ -43,10 +39,7 @@ class E2eProfileAuthTest extends IntegrationTest {
 
     @BeforeEach
     void applySeed() throws IOException {
-        Resource[] seeds = new PathMatchingResourcePatternResolver().getResources("classpath:db/seed/*.sql");
-        Arrays.sort(seeds, Comparator.comparing(Resource::getFilename));
-        assertThat(seeds).isNotEmpty();
-        new ResourceDatabasePopulator(seeds).execute(dataSource);
+        SeedFiles.apply(dataSource);
     }
 
     @Test
