@@ -152,6 +152,15 @@ EOF
     assert_contains "$out" "1:HoldService.java:10: error: cannot find symbol"
 }
 
+test_all_runs_harness_tests() {
+  local dir out code
+  dir="$(new_repo harness)"
+  printf '#!/usr/bin/env bash\necho "fake harness"\nexit 1\n' > "$dir/scripts/harness.test.sh"
+  out="$(run_verify "$dir" all)"; code=$?
+  assert_exit "$code" 1 "$out" &&
+    assert_contains "$out" "FAIL  harness"
+}
+
 # ---------- Stop 훅 ----------
 
 test_hook_registered() {
@@ -202,6 +211,7 @@ run_test "verify.sh: 실행 권한이 있다" test_verify_is_executable
 run_test "verify.sh: 표식 파일이 없는 영역은 CLAUDE.md가 있어도 SKIP하고 통과한다" test_skip_areas_without_marker
 run_test "verify.sh: 표식 파일이 있는 영역은 실행하고, 실패하면 종료 코드 1로 끝난다" test_run_areas_with_marker
 run_test "verify.sh: 실패 상세에 로그 앞쪽의 첫 오류 줄을 줄 번호와 함께 보여 준다" test_failure_shows_first_error_line
+run_test "verify.sh: 전체 검증은 하네스 테스트를 실행하고, 실패하면 전체를 실패로 본다" test_all_runs_harness_tests
 run_test "Stop 훅: settings.json에 등록돼 있고 훅 스크립트를 실행할 수 있다" test_hook_registered
 run_test "Stop 훅: verify.sh가 통과하면 아무것도 출력하지 않고 멈춤을 허용한다" test_hook_passes_silently
 run_test "Stop 훅: verify.sh가 실패하면 종료 코드 2로 멈춤을 막고 결과를 에이전트에게 준다" test_hook_blocks_on_failure
