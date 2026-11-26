@@ -1,22 +1,20 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll } from 'vitest';
-import { onUnhandledFrame, server, takeUnhandledRequests } from './server';
+import { finishFile, finishTest } from './lifecycle';
+import { server, UNHANDLED_REQUEST_STRATEGY } from './server';
 
 beforeAll(() => {
-  server.listen({ onUnhandledFrame });
+  server.listen({ onUnhandledFrame: UNHANDLED_REQUEST_STRATEGY });
 });
 
-afterEach(() => {
-  cleanup();
-  server.resetHandlers();
-  localStorage.clear();
-  const unhandled = takeUnhandledRequests();
-  if (unhandled.length > 0) {
-    throw new Error(`핸들러가 없는 요청이 있었습니다:\n${unhandled.join('\n')}`);
+afterEach(async () => {
+  await finishTest();
+});
+
+afterAll(async () => {
+  try {
+    await finishFile();
+  } finally {
+    server.close();
   }
-});
-
-afterAll(() => {
-  server.close();
 });
