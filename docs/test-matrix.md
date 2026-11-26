@@ -3,7 +3,7 @@
 R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 계층에서 검증할지 정한다.
 동작의 기준은 [`spec.md`](spec.md)이고, 괄호 안의 숫자는 그 문서의 절 번호다.
 
-현황(2026-11-27): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 실제 기능 경로와 화면이 있어야 하는 R6 행과 R1~R5 테스트는 미작성이다.
+현황(2026-11-27): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 조회 단계에서 프론트엔드(#36)는 공연 목록·내 예매 화면, 공통 헤더와 로그아웃, 내 예매 화면의 실제 경로로 R6 가드 테스트를 썼다. 좌석 선택·결제 화면이 있어야 하는 R6 행과 R1~R5 테스트는 미작성이다.
 
 ## 읽는 법
 
@@ -130,7 +130,10 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 경계 | R6: exp 1초 전과 exp와 같은 시각의 토큰은 허용하고, exp 1초 뒤 토큰은 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 경계 | R6: 공연 목록과 공연 상세는 토큰 없이 200이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
 | 경계 | R6: 인증 없이 열리는 경로(POST 로그인, GET 공연, GET health)는 토큰 없이 인증 검사를 지나고, 공개 경로라도 정해진 메서드가 아니면 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
-| 실패 | R6: 로그인하지 않고 좌석 선택·결제·내 예매 화면에 들어가면 로그인 화면으로 보내고, 로그인하면 원래 화면으로 돌아온다(실제 경로. 화면 Issue에서 작성) | 프론트 | 미작성 |
+| 실패 | R6: 로그인하지 않고 내 예매 화면에 들어가면 로그인 화면으로 보내고, 로그인하면 내 예매 화면으로 돌아온다(실제 경로) | 프론트 | 작성(`frontend/src/pages/reservations/MyReservationsPage.test.tsx`) |
+| 실패 | R6: 로그인 전에 헤더의 내 예매를 누르면 로그인 화면으로 가고, 로그인하면 내 예매 화면으로 온다 | 프론트 | 작성(`frontend/src/components/Header.test.tsx`) |
+| 실패 | R6: 내 예매 요청이 401 AUTH_REQUIRED면 화면이 따로 처리하지 않아도 공통 처리로 로그인 화면에 가고, 로그인하면 내 예매로 돌아온다 | 프론트 | 작성(`frontend/src/pages/reservations/MyReservationsPage.test.tsx`) |
+| 실패 | R6: 로그인하지 않고 좌석 선택·결제 화면에 들어가면 로그인 화면으로 보내고, 로그인하면 원래 화면으로 돌아온다(실제 경로. 3·4단계 화면 Issue에서 작성) | 프론트 | 미작성 |
 | 실패 | R6: 토큰 없이 로그인이 필요한 화면에 들어가면 로그인 화면으로 보내고, 로그인하면 원래 경로(쿼리 포함)로 돌아온다(가드 아래 테스트용 화면) | 프론트 | 작성(`frontend/src/auth/RequireAuth.test.tsx`) |
 | 경계 | R6: 가드가 보낸 로그인 화면에서 한 번 실패해도, 다시 로그인하면 원래 경로로 돌아온다 | 프론트 | 작성(`frontend/src/auth/RequireAuth.test.tsx`) |
 | 정상 | R6: 토큰이 있으면 로그인이 필요한 화면을 그대로 보여 준다 | 프론트 | 작성(`frontend/src/auth/RequireAuth.test.tsx`) |
@@ -144,6 +147,9 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 경계 | R6: 로그인 화면 경로 끝에 /가 붙어 있어도(/login/) 늦게 온 AUTH_REQUIRED가 돌아갈 경로를 덮지 않는다 | 프론트 | 작성(`frontend/src/auth/AuthRequiredRedirect.test.tsx`) |
 | 경계 | R6: 로그인 실패(401 INVALID_CREDENTIALS)는 토큰을 지우거나 화면을 옮기지 않고 안내 문구만 보여 준다 | 프론트 | 작성(`frontend/src/pages/login/LoginPage.test.tsx`) |
 | 정상 | R6: 로그인 요청에는 저장된 토큰이 있어도 Authorization 헤더를 붙이지 않는다 | 프론트 | 작성(`frontend/src/api/auth.test.ts`) |
+| 정상 | R6: 공연 목록 요청에는 저장된 토큰이 있어도 Authorization 헤더를 붙이지 않는다(API 함수와 공연 목록 화면) | 프론트 | 작성(`frontend/src/api/performances.test.ts`, `frontend/src/pages/performances/PerformanceListPage.test.tsx`) |
+| 정상 | R6: 로그인하지 않아도 공연 목록을 볼 수 있다 | 프론트 | 작성(`frontend/src/pages/performances/PerformanceListPage.test.tsx`) |
+| 정상 | R6: 내 예매 요청(GET /api/reservations)에는 저장된 토큰을 Bearer로 붙인다 | 프론트 | 작성(`frontend/src/api/reservations.test.ts`) |
 | 정상 | R6: 공개 API 요청에는 저장된 토큰이 있어도 붙이지 않는다 | 프론트 | 작성(`frontend/src/api/client.test.ts`) |
 | 정상 | R6: 인증이 필요한 요청에는 저장된 토큰을 Bearer로 붙인다 | 프론트 | 작성(`frontend/src/api/client.test.ts`) |
 | 경계 | R6: 인증이 필요한 요청이라도 저장된 토큰이 없으면 헤더 없이 보낸다 | 프론트 | 작성(`frontend/src/api/client.test.ts`) |
@@ -196,7 +202,11 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 상태 확인(6.10) | `GET /actuator/health`는 200 `{"status":"UP"}`이다(다른 속성 없음) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/HealthCheckTest.java`) |
 | 결제 화면(7.3) | 승인 전에(402 뒤 포함) 앱 안의 다른 화면으로 이동하면 해제 요청을 보내고, 승인된 뒤에는 보내지 않는다 | 프론트 | 미작성 |
 | 결제 화면(7.3) | 결제가 승인되면 예매 완료를 보여 주고, 402면 안내 문구와 함께 다시 결제할 수 있다 | 프론트 | 미작성 |
-| 화면 공통(7.5) | 데이터를 불러오는 화면마다 로딩·빈 목록·오류 상태를 보여 준다 | 프론트 | 미작성 |
+| 화면 공통(7.5) | 좌석 선택·결제 화면도 로딩·빈 목록·오류 상태를 보여 준다(3·4단계 화면 Issue에서 작성) | 프론트 | 미작성 |
+| 화면 공통(7.5) | 공연 목록·내 예매 화면은 응답 전에 '불러오는 중입니다.'를 `role="status"`로 보여 주고, 받으면 지운다 | 프론트 | 작성(`frontend/src/pages/performances/PerformanceListPage.test.tsx`, `frontend/src/pages/reservations/MyReservationsPage.test.tsx`) |
+| 화면 공통(7.5) | 공연 목록·내 예매 화면은 빈 목록 문구를 `role="status"`로 보여 준다 | 프론트 | 작성(`frontend/src/pages/performances/PerformanceListPage.test.tsx`, `frontend/src/pages/reservations/MyReservationsPage.test.tsx`) |
+| 화면 공통(7.5, 7.6) | 공연 목록·내 예매 화면은 오류(500, 400, code 없는 응답, 응답 없음)면 code별 안내 문구를 `role="alert"`로 보여 주고 목록·빈 목록 문구는 보여 주지 않는다 | 프론트 | 작성(`frontend/src/pages/performances/PerformanceListPage.test.tsx`, `frontend/src/pages/reservations/MyReservationsPage.test.tsx`) |
+| 화면 공통(7.5) | 일시는 UTC를 한국 시간 `2026. 12. 20.(일) 19:00` 형식으로 바꾸고 날짜·해가 바뀌는 경계(UTC 15:00)를 지킨다. 가격은 `30,000원`, 좌석은 `A-1, A-2` 형식이다 | 프론트 | 작성(`frontend/src/format.test.ts`) |
 | 화면 공통(7.5) | API 요청이 10초 동안 응답하지 않거나 응답 헤더 뒤 본문이 10초 안에 끝나지 않으면 끊고 응답 없음으로 넘기며, 9,999ms에 온 응답은 받고, 응답을 받은 뒤에는 끊지 않는다 | 프론트(API 클라이언트) | 작성(`frontend/src/api/client.test.ts`) |
 | 화면 공통(7.5) | 네트워크 오류와 본문을 받는 중 연결 끊김은 응답 없음으로 넘긴다 | 프론트(API 클라이언트) | 작성(`frontend/src/api/client.test.ts`) |
 | 화면 공통(7.5) | 직렬화할 수 없는 본문, GET 요청의 본문 같은 호출 실수는 요청을 보내지 않고 응답 없음이 아닌 오류로 거부한다 | 프론트(API 클라이언트) | 작성(`frontend/src/api/client.test.ts`) |
@@ -207,9 +217,20 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 로그인 화면 | 로그인 요청 중에는 로그인 버튼을 누를 수 없고, 다시 누르면 이전 안내 문구를 지운다 | 프론트 | 작성(`frontend/src/pages/login/LoginPage.test.tsx`) |
 | 로그인 화면 | 로그인 뒤 돌아갈 경로가 앱 안의 경로가 아니면(`//host`) 공연 목록(/)으로 간다 | 프론트 | 작성(`frontend/src/auth/RequireAuth.test.tsx`) |
 | 로그인 API(6.1) | 아이디와 비밀번호를 POST /api/auth/login으로 보내고 토큰 응답을 돌려준다 | 프론트 | 작성(`frontend/src/api/auth.test.ts`) |
+| 공연 목록 API(6.2) | GET /api/performances로 공연 목록을 불러와 받은 순서대로 돌려준다 | 프론트 | 작성(`frontend/src/api/performances.test.ts`) |
+| 공연 목록 화면(7.7) | 공연마다 제목·일시(한국 시간)·장소·가격을 API가 준 순서대로 보여 준다 | 프론트 | 작성(`frontend/src/pages/performances/PerformanceListPage.test.tsx`) |
+| 공연 목록 화면(7.7) | 항목 전체가 좌석 선택 화면(`/performances/{id}`) 링크이고, 누르면 그 경로로 간다 | 프론트 | 작성(`frontend/src/pages/performances/PerformanceListPage.test.tsx`) |
+| 내 예매 화면(7.4) | 예매마다 공연 제목, 일시·장소, 좌석, 금액을 API가 준 순서(최신순)대로 보여 준다 | 프론트 | 작성(`frontend/src/pages/reservations/MyReservationsPage.test.tsx`) |
+| 내 예매 화면(7.4) | 예매가 없으면 '예매 내역이 없습니다.'와 공연 목록 링크를 보여 주고, 링크를 누르면 공연 목록으로 간다 | 프론트 | 작성(`frontend/src/pages/reservations/MyReservationsPage.test.tsx`) |
+| 공통 헤더(7.8) | 로그인 전에는 커튼콜(공연 목록)·내 예매·로그인 링크를, 로그인한 뒤에는 로그인 대신 로그아웃 버튼을 보여 준다 | 프론트 | 작성(`frontend/src/components/Header.test.tsx`) |
+| 공통 헤더(7.8) | 로그인하거나 AUTH_REQUIRED로 토큰이 지워지면 헤더가 바로 바뀐다(로그인 화면에 있어 화면 이동이 없어도) | 프론트 | 작성(`frontend/src/components/Header.test.tsx`) |
+| 공통 헤더(7.8) | 헤더의 로그인을 눌러 로그인하면 보던 화면(쿼리 포함)으로 돌아온다 | 프론트 | 작성(`frontend/src/components/Header.test.tsx`) |
+| 공통 헤더(7.8) | 로그인 화면에도 헤더가 있고, 로그인 링크는 지금 화면으로 표시되며(`aria-current="page"`) 눌러도 돌아갈 화면을 잃지 않는다 | 프론트 | 작성(`frontend/src/components/Header.test.tsx`) |
+| 로그아웃(7.8) | 로그아웃을 누르면 토큰을 지우고 공연 목록(/)으로 가며, 헤더가 로그인으로 바뀌고 안내 문구는 없다(공연 목록에서 눌러도 같다) | 프론트 | 작성(`frontend/src/components/Header.test.tsx`) |
 | 오류 형식(3.1) | 오류 응답이면 상태와 `code`를 호출한 쪽에 넘기고, `code`가 없거나 오류 코드 표에 없거나 본문이 JSON이 아니면 `INTERNAL_ERROR`로 본다 | 프론트(API 클라이언트) | 작성(`frontend/src/api/client.test.ts`) |
 | 안내 문구(7.6) | 루트 `CLAUDE.md` 오류 코드 표의 모든 code와 응답 없음에 명세와 같은 문구가 있다 | 프론트 | 작성(`frontend/src/api/errorMessages.test.ts`) |
 | 토큰 저장(3.2) | 액세스 토큰을 `localStorage`에 저장하고 읽고 지운다 | 프론트 | 작성(`frontend/src/auth/tokenStorage.test.ts`) |
+| 토큰 저장(3.2) | 토큰을 저장하거나 지우면 구독한 함수에 알리고, 구독을 끊으면 알리지 않는다(헤더가 바로 바뀌는 데 쓴다) | 프론트 | 작성(`frontend/src/auth/tokenStorage.test.ts`) |
 | 기본 흐름(1) | 로그인 → 공연 선택 → 좌석 2석 선점 → 결제 → 예매 완료 → 내 예매에서 확인(시나리오 1) | E2E | 미작성 |
 
 ## 테스트 기반과 설정

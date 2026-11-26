@@ -1,6 +1,6 @@
 import type { SeatRef } from './api/types';
 
-// 화면에 보여 줄 값의 형식(spec 7.7). API의 시각은 UTC이고 화면에는 한국 시간으로 보여 준다(spec 3장).
+// 화면에 보여 줄 값의 형식(spec 7.5). API의 시각은 UTC이고 화면에는 한국 시간으로 보여 준다(spec 3장).
 
 const KOREA_TIME_ZONE = 'Asia/Seoul';
 

@@ -72,3 +72,9 @@
 | [0049](0049-performance-seed.md) | 공연 시드: 배치가 다른 공연장 2곳, 공연 3개, 모든 좌석 AVAILABLE. 시드 테스트는 값이 아닌 성질만 본다 | 에이전트 결정 |
 | [0050](0050-performance-detail-id-errors.md) | 공연 상세의 performanceId: long으로 해석할 수 없으면 400 INVALID_INPUT, 0·음수는 없는 공연(404) | 채택 |
 | [0051](0051-seat-grid-orientation-and-size.md) | 좌석 배치 격자: 1번째 줄이 무대 쪽이고, 격자 크기는 좌석 위치의 최댓값으로 정한다 | 채택 |
+| [0060](0060-frontend-query-screens.md) | 프론트: 공연 목록·내 예매 화면 표시, 공통 헤더, 로그아웃 | 채택 |
+| [0061](0061-frontend-header-login-logout.md) | 프론트: 헤더 로그인 뒤에는 보던 화면으로, 로그인 화면에도 헤더, 로그아웃 뒤 안내 문구 없음 | 채택 |
+| [0062](0062-frontend-load-status-role.md) | 프론트: 화면 제목·항목 배치, 로딩·빈 목록 문구는 role="status"이고 오류 문구만 role="alert" | 에이전트 결정 |
+| [0063](0063-frontend-header-token-subscription.md) | 프론트: 헤더의 로그인 상태는 토큰 저장소의 변경 알림으로 다시 그리고, 로그아웃은 일반 이동(push)으로 보낸다 | 에이전트 결정 |
+| [0064](0064-frontend-date-format-intl.md) | 프론트: 일시는 Intl.DateTimeFormat(Asia/Seoul)의 부분을 받아 직접 이어 붙인다 | 에이전트 결정 |
+| [0065](0065-frontend-load-hook-and-screen-tests.md) | 프론트: 화면 데이터는 useLoad 훅으로 불러오고, 화면 테스트는 라우터 위치가 아니라 그려진 화면을 기다린다 | 에이전트 결정 |
