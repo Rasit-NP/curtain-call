@@ -43,6 +43,7 @@
 - 오류 응답은 `ProblemDetail`(RFC 9457) 형식에 `code` 속성을 더한다.
   예: `{"status": 409, "code": "SEAT_ALREADY_HELD", "detail": "이미 선점된 좌석입니다."}`
 - 오류 코드는 루트 CLAUDE.md의 'API 오류 코드' 표에 있는 것만 쓴다. 예외 처리는 `@RestControllerAdvice` 한곳에 모은다.
+  - 예외: 요청이 앱에 닿기 전에 Tomcat이 거부한 오류는 공통 처리기를 부를 수 없어 `ProblemDetailErrorReportValve`가 공통 처리기와 같은 필드로 쓴다(결정 0037). 공통 처리기 밖에서 오류 본문을 만드는 곳은 이 밸브 하나뿐이고, 더 만들지 않는다.
 - 처리하지 못한 예외는 `500 INTERNAL_ERROR`로 응답하고, 스택 트레이스를 응답 본문에 넣지 않는다.
 
 ## 프로필

@@ -2,7 +2,7 @@
 
 - 상태: 제안(PR 병합 전)
 - 날짜: 2026-11-27
-- 결정한 사람: 에이전트(PR #32 리뷰 지적을 고치라는 사람의 지시에 따라)
+- 결정한 사람: 에이전트(PR #32 리뷰 지적을 고치라는 사람의 지시에 따라). `backend/CLAUDE.md`에 이 밸브를 예외로 적는 것은 사람이 정했다(2026-11-27, 메인 세션 대화).
 - 관련: Issue [#27](https://github.com/Rasit-NP/curtain-call/issues/27), PR [#32](https://github.com/Rasit-NP/curtain-call/pull/32), 대체하는 결정 [0035](0035-errors-outside-mvc.md), 결정 [0012](0012-backend-error-mapping.md)
 
 ## 결정
@@ -32,5 +32,5 @@
 
 ## 적용과 남은 점
 
-- `backend/CLAUDE.md` 'API'의 "예외 처리는 `@RestControllerAdvice` 한곳에 모은다"에 이 밸브가 예외라는 것을 적을지는 사람이 정한다(규칙 문서 변경).
+- `backend/CLAUDE.md` 'API'의 "예외 처리는 `@RestControllerAdvice` 한곳에 모은다" 아래에 이 밸브가 유일한 예외라고 적었다. 사람이 2026-11-27에 PR #32에 적기로 정했다. 규칙 문서와 코드를 함께 병합해, 이후 세션과 리뷰가 밸브를 규칙 위반으로 보고 지우거나 다시 지적하지 않게 하고, 공통 처리기 밖의 오류 처리가 늘지 않게 하려는 것이다.
 - 2와 3은 Tomcat에 묶인 코드다. 서버를 바꾸면 `ErrorPageTest`로 다시 확인해야 한다.
