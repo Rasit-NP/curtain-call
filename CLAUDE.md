@@ -49,6 +49,7 @@
 | 400 | `INVALID_INPUT` | 입력 검증 실패, 결제 요청에 `Idempotency-Key` 없음 |
 | 401 | `INVALID_CREDENTIALS` | 로그인 실패 |
 | 401 | `AUTH_REQUIRED` | 토큰이 없거나 잘못됨 (R6) |
+| 402 | `PAYMENT_FAILED` | 모의 결제가 승인되지 않음 |
 | 404 | `NOT_FOUND` | 공연, 좌석, 선점, 예매가 없음 |
 | 409 | `SEAT_ALREADY_HELD` | 이미 선점되거나 판매된 좌석 (R1) |
 | 409 | `HOLD_LIMIT_EXCEEDED` | 4석 초과 (R2) |
