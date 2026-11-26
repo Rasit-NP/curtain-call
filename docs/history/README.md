@@ -22,4 +22,5 @@
 | [0006](0006-frontend-setup.md) | 프론트엔드 첫 설정 | 완료 |
 | [0009](0009-review-depth.md) | 리뷰 강도를 PR 위험도에 맞추기 | 완료 |
 | [0011](0011-docs-two-tracks.md) | 문서화 이원화 | 진행 중 |
+| [0027](0027-backend-auth.md) | 백엔드 인증(R6) | 진행 중 |
 | [0029](0029-agent-workflow-rules.md) | 작업 방식 규칙과 메인 체크아웃 수정 차단 훅 | 진행 중 |

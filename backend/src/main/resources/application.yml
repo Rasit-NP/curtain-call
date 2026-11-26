@@ -36,6 +36,16 @@ spring:
     out-of-order: true
 
 ---
+# local·e2e·test의 JWT 서명 키. 개발 전용 값이다(실제 비밀값이 아님). prod는 아래 prod 문서에서 JWT_SECRET으로만 받는다.
+spring:
+  config:
+    activate:
+      on-profile: local | e2e | test
+curtaincall:
+  jwt:
+    secret: curtain-call-dev-only-jwt-signing-key-do-not-use-in-prod
+
+---
 # test: 통합 테스트. DB는 Testcontainers가 @ServiceConnection으로 연결하고, 시드를 넣지 않는다.
 spring:
   config:
@@ -45,7 +55,8 @@ spring:
     locations: classpath:db/migration
 
 ---
-# prod: 배포용. DB 접속 정보는 환경변수로만 받는다(이름은 루트 .env.example). 기본값을 두지 않는다.
+# prod: 배포용. DB 접속 정보와 JWT 서명 키는 환경변수로만 받는다(이름은 루트 .env.example). 기본값을 두지 않는다.
+# JWT_SECRET이 없으면 값을 정할 수 없고, 32바이트보다 짧으면 JwtConfig가 실패해 애플리케이션이 시작되지 않는다.
 spring:
   config:
     activate:
@@ -56,3 +67,6 @@ spring:
     password: ${DB_PASSWORD}
   flyway:
     locations: classpath:db/migration
+curtaincall:
+  jwt:
+    secret: ${JWT_SECRET}

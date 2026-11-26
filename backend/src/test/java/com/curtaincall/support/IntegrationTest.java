@@ -45,6 +45,9 @@ public abstract class IntegrationTest {
     @Autowired
     protected DatabaseCleaner databaseCleaner;
 
+    @Autowired
+    protected TestUsers testUsers;
+
     @BeforeEach
     void resetSharedState() {
         clock.reset();
