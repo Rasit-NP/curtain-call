@@ -1,7 +1,7 @@
 # #29 작업 방식 규칙과 메인 체크아웃 수정 차단 훅
 
 - 기간: 2026-11-26
-- Issue: [#29](https://github.com/Rasit-NP/curtain-call/issues/29)
+- Issue: [#29](https://github.com/Rasit-NP/curtain-call/issues/29), PR: [#30](https://github.com/Rasit-NP/curtain-call/pull/30)
 - 관련 결정: [0026](../decisions/0026-issue-creation-scope.md), [0027](../decisions/0027-issue-per-worktree-session.md), [0028](../decisions/0028-instruction-scope.md), [0029](../decisions/0029-guard-main-checkout-hook.md), [0030](../decisions/0030-guard-undecidable-input.md)
 
 ## 배경
@@ -48,7 +48,9 @@
 
 ## 결과
 
-(PR 뒤 채운다)
+PR [#30](https://github.com/Rasit-NP/curtain-call/pull/30)을 열었다(병합 전). `./scripts/verify.sh` 전체 통과(harness PASS, 백엔드·프론트엔드 PASS, e2e는 `e2e/package.json`이 없어 SKIP). 하네스 테스트는 12개에서 18개가 됐다.
+
+사람이 정할 것으로 남긴 것: git이 무시하는 메인 체크아웃 파일(`.claude/settings.local.json` 등)을 예외로 둘지([0029](../decisions/0029-guard-main-checkout-hook.md)), 'Issue를 진행하라'는 지시가 PR 생성까지 포함하는지 문구를 더 정할지([0028](../decisions/0028-instruction-scope.md)), 판단할 수 없는 입력을 막지 않는 선택을 받아들일지([0030](../decisions/0030-guard-undecidable-input.md)).
 
 ## 배운 점
 
