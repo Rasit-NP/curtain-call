@@ -78,6 +78,11 @@
 | [0063](0063-frontend-header-token-subscription.md) | 프론트: 헤더의 로그인 상태는 토큰 저장소의 변경 알림으로 다시 그리고, 로그아웃은 일반 이동(push)으로 보낸다 | 에이전트 결정 |
 | [0064](0064-frontend-date-format-intl.md) | 프론트: 일시는 Intl.DateTimeFormat(Asia/Seoul)의 부분을 받아 직접 이어 붙인다 | 에이전트 결정 |
 | [0065](0065-frontend-load-hook-and-screen-tests.md) | 프론트: 화면 데이터는 useLoad 훅으로 불러오고, 화면 테스트는 라우터 위치가 아니라 그려진 화면을 기다린다 | 에이전트 결정 |
+| [0070](0070-hold-schema.md) | 선점 테이블: holds와 hold_seats, 좌석의 hold_id, HELD일 때만 hold_id가 있다는 DB 제약 | 에이전트 결정 |
+| [0071](0071-missing-token-user-not-handled.md) | 토큰의 사용자가 DB에 없으면 따로 처리하지 않는다(선점을 저장할 때 외래 키가 막아 500) | 채택 |
+| [0072](0072-json-numbers-strict.md) | 요청 본문의 숫자 필드는 JSON 숫자 그대로만 받는다(정수 자리의 소수와 숫자 문자열은 400 INVALID_INPUT) | 채택 |
+| [0073](0073-hold-concurrency.md) | 선점 동시성: 사용자 행 잠금으로 같은 사용자 요청을 한 줄로, 좌석은 id 오름차순 한 문장으로 잠그고, 404·한도 검사는 좌석을 잠그기 전에 | 에이전트 결정 |
+| [0074](0074-valid-hold-single-place.md) | 유효한 선점의 판정은 Hold.isValidAt 한 곳에 둔다: 보유 좌석 수와 좌석의 API 상태도 이 판정을 쓴다 | 에이전트 결정 |
 | [0080](0080-frontend-seat-selection-human.md) | 프론트: 좌석 선택 화면 — 범례 두 가지, 표시 이름 A3, 409는 선택을 비우고 다시 불러오기, 5번째 좌석은 눌러도 선택되지 않음 | 채택 |
 | [0081](0081-frontend-seat-selection-recommended.md) | 프론트: 좌석 선택 화면 — 공연 정보, 무대, 고른 좌석·합계, 빈 상태, 요청 중 막기, 문구 지우기, 409 뒤 다시 불러오기, 이동 방식 | 에이전트 결정 |
 | [0082](0082-frontend-seat-selection-impl.md) | 프론트: 좌석 선택 화면은 공연마다 새로 만들고, 409 뒤 다시 불러오기는 화면이 직접 하며 그동안도 막는다. 격자 위치는 인라인 스타일로 검증한다 | 에이전트 결정 |
