@@ -149,6 +149,12 @@ class PerformanceApiTest extends IntegrationTest {
                 .andExpect(jsonPath("$.seats[*].id", contains(asInt(mine), asInt(mine2))));
     }
 
+    /**
+     * 선점이 없는 단계라 HELD·SOLD 좌석을 선점·예매 없이 상태만 바꿔 만든다. spec 2.1에서 HELD 좌석은 holdId가 있어야 하므로,
+     * 선점 생성 Issue(3단계)가 hold_id와 그 제약을 더하면 이 테스트의 데이터를 만들 수 없게 된다. 그때 이 테스트는 지우지 말고
+     * 대응표 R3 행('공연 상세는 만료 시각 1초 전까지 HELD, 만료 시각부터 AVAILABLE')처럼 실제 선점으로 HELD를 만드는 테스트로 바꾼다.
+     * 기대값(저장 상태가 응답에 나온다)을 바꾸려고 고치는 것이 아니다.
+     */
     @Test
     @DisplayName("이 단계(선점 전)의 좌석 status는 저장 상태 AVAILABLE·HELD·SOLD를 그대로 쓴다")
     void seatStatusIsStoredStatus() throws Exception {
