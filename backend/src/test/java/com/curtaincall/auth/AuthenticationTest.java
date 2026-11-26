@@ -86,7 +86,11 @@ class AuthenticationTest extends IntegrationTest {
                 Arguments.of("sub 없음", (TokenFactory) encoder -> TestTokens.sign(encoder,
                         c -> c.issuedAt(now).expiresAt(exp))),
                 Arguments.of("sub가 사용자 id(숫자)가 아님", (TokenFactory) encoder -> TestTokens.sign(encoder,
-                        c -> c.subject("alice").issuedAt(now).expiresAt(exp))));
+                        c -> c.subject("alice").issuedAt(now).expiresAt(exp))),
+                Arguments.of("sub가 사용자 id 범위(long)를 넘음", (TokenFactory) encoder -> TestTokens.sign(encoder,
+                        c -> c.subject("9223372036854775808").issuedAt(now).expiresAt(exp))),
+                Arguments.of("sub가 19자리 최댓값(long 범위 밖)", (TokenFactory) encoder -> TestTokens.sign(encoder,
+                        c -> c.subject("9999999999999999999").issuedAt(now).expiresAt(exp))));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -103,6 +107,17 @@ class AuthenticationTest extends IntegrationTest {
     void emptyOrNonBearerHeader() throws Exception {
         expectAuthRequired(mockMvc.perform(get(UNREGISTERED_PRIVATE).header(HttpHeaders.AUTHORIZATION, "Bearer ")));
         expectAuthRequired(mockMvc.perform(get(UNREGISTERED_PRIVATE).header(HttpHeaders.AUTHORIZATION, "Basic YTpi")));
+    }
+
+    @Test
+    @DisplayName("R6: sub가 long 최댓값인 토큰은 인증을 통과하고, 1 더 크면 401 AUTH_REQUIRED다")
+    void subjectRangeBoundary() throws Exception {
+        Instant exp = clock.instant().plus(Duration.ofHours(1));
+        String max = TestTokens.sign(jwtEncoder, c -> c.subject(String.valueOf(Long.MAX_VALUE)).issuedAt(clock.instant()).expiresAt(exp));
+        String overflow = TestTokens.sign(jwtEncoder, c -> c.subject("9223372036854775808").issuedAt(clock.instant()).expiresAt(exp));
+
+        expectProblem(withToken(get(UNREGISTERED_PRIVATE), max), 404, "NOT_FOUND");
+        expectAuthRequired(withToken(get(UNREGISTERED_PRIVATE), overflow));
     }
 
     @Test
@@ -150,7 +165,7 @@ class AuthenticationTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("인증 없이 열리는 경로(POST 로그인, GET 공연, GET health)는 토큰 없이 인증 검사를 지난다")
+    @DisplayName("R6: 인증 없이 열리는 경로(POST 로그인, GET 공연, GET health)는 토큰 없이 인증 검사를 지난다")
     void publicPathsWithoutToken() throws Exception {
         expectProblem(mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content("{}")),
                 400, "INVALID_INPUT");
@@ -159,7 +174,7 @@ class AuthenticationTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("공개 경로라도 정해진 메서드가 아니면 인증이 필요하다(토큰 없이 401 AUTH_REQUIRED)")
+    @DisplayName("R6: 공개 경로라도 정해진 메서드가 아니면 인증이 필요하다(토큰 없이 401 AUTH_REQUIRED)")
     void publicPathsAreMethodSpecific() throws Exception {
         expectAuthRequired(mockMvc.perform(get("/api/auth/login")));
         expectAuthRequired(mockMvc.perform(post(UNREGISTERED_PUBLIC)));

@@ -8,9 +8,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -65,11 +68,43 @@ class ErrorPageTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("보안 방화벽이 거부하는 경로(인코딩된 슬래시 등)는 400 INVALID_INPUT이다")
-    void firewallRejectedPath() throws IOException {
+    @DisplayName("Tomcat이 앱에 넘기기 전에 거부하는 경로(인코딩된 슬래시 %2F)는 400 INVALID_INPUT이다")
+    void tomcatRejectedEncodedSlash() throws IOException {
         RawResponse response = send("GET /api/performances/a%2F..%2Fb HTTP/1.0\r\nHost: localhost\r\n\r\n");
 
         response.assertProblem(400, "INVALID_INPUT");
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = {"/api/performances/a;b", "/api/performances/a%25b", "/api/performances//a"})
+    @DisplayName("Spring Security 방화벽(StrictHttpFirewall)이 거부하는 공개 경로(세미콜론, 인코딩된 %, 이중 슬래시)는 /error를 거쳐 400 INVALID_INPUT이다")
+    void springSecurityFirewallRejectedPath(String path) throws IOException {
+        RawResponse response = send("GET " + path + " HTTP/1.0\r\nHost: localhost\r\n\r\n");
+
+        response.assertProblem(400, "INVALID_INPUT");
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = {
+            "GET /api/performances/1 HTTP/2.0\r\n\r\n",
+            "GET /api/performances/1 HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: foo\r\nConnection: close\r\n\r\n",
+            "GET /api/performances/1 HTTP/1.1\r\nHost: localhost\r\nExpect: foo\r\nConnection: close\r\n\r\n",
+    })
+    @DisplayName("Tomcat이 거부하는 잘못된 요청(지원하지 않는 HTTP 버전 505, Transfer-Encoding 501, Expect 417)은 500이 아니라 400 INVALID_INPUT이다")
+    void tomcatRejectedProtocolErrors(String rawRequest) throws IOException {
+        RawResponse response = send(rawRequest);
+
+        response.assertProblem(400, "INVALID_INPUT");
+    }
+
+    @Test
+    @DisplayName("Tomcat이 거부한 요청의 오류 본문은 공통 처리기가 만든 오류 본문과 필드가 같다")
+    void tomcatRejectionHasSameFieldsAsAdvice() throws IOException {
+        RawResponse tomcat = send("GET /api/performances/%zz HTTP/1.0\r\nHost: localhost\r\n\r\n");
+        RawResponse advice = send("GET " + PUBLIC_PROBE + "?x=%zz HTTP/1.0\r\nHost: localhost\r\n\r\n");
+
+        assertThat(JsonPath.<Map<String, Object>>read(tomcat.body(), "$").keySet())
+                .isEqualTo(JsonPath.<Map<String, Object>>read(advice.body(), "$").keySet());
     }
 
     @Test

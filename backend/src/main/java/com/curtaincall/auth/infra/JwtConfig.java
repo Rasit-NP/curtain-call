@@ -30,7 +30,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
  *   <li>서명 키: local·e2e·test는 application.yml의 개발 전용 키, prod는 환경변수 JWT_SECRET만 쓴다.
  *       값이 없거나 32바이트(HS256 키 길이)보다 짧으면 이 설정이 실패해 애플리케이션이 시작되지 않는다.</li>
  *   <li>만료는 주입한 Clock으로 판정하고 허용 오차는 0이다. exp와 같은 시각의 토큰은 유효하다(JwtTimestampValidator).</li>
- *   <li>exp가 없거나, sub가 사용자 id(숫자)가 아닌 토큰은 거부한다. 컨트롤러는 sub를 그대로 id로 쓴다(@CurrentUserId).</li>
+ *   <li>exp가 없거나, sub가 사용자 id(1 이상의 long)가 아닌 토큰은 거부한다. 컨트롤러는 sub를 그대로 id로 쓴다(@CurrentUserId).</li>
  * </ul>
  */
 @Configuration(proxyBeanMethods = false)
@@ -67,9 +67,21 @@ public class JwtConfig {
         JwtTimestampValidator timestamp = new JwtTimestampValidator(Duration.ZERO);
         timestamp.setClock(clock);
         timestamp.setAllowEmptyExpiryClaim(false);
-        JwtClaimValidator<Object> numericSubject = new JwtClaimValidator<>(JwtClaimNames.SUB,
-                sub -> sub instanceof String value && value.matches("[1-9][0-9]{0,18}"));
+        JwtClaimValidator<Object> numericSubject = new JwtClaimValidator<>(JwtClaimNames.SUB, JwtConfig::isUserId);
         return new DelegatingOAuth2TokenValidator<>(timestamp, numericSubject);
+    }
+
+    /** sub가 사용자 id로 쓸 수 있는 값(1 이상의 long, 앞자리 0이나 부호 없음)인지. */
+    static boolean isUserId(Object sub) {
+        if (!(sub instanceof String value) || !value.matches("[1-9][0-9]*")) {
+            return false;
+        }
+        try {
+            Long.parseLong(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     static SecretKey signingKey(@Nullable String secret) {

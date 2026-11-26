@@ -3,6 +3,7 @@ package com.curtaincall.auth.api;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +26,8 @@ import com.jayway.jsonpath.JsonPath;
 class CurrentUserIdTest extends IntegrationTest {
 
     private static final String WHO_AM_I = "/api/test/who-am-i";
+    /** 공개 경로(GET /api/performances/**)에서 @CurrentUserId를 쓰는 시험용 경로. */
+    private static final String PUBLIC_WHO_AM_I = "/api/performances/test-who-am-i";
 
     @Test
     @DisplayName("로그인 API로 받은 토큰이면 @CurrentUserId는 그 사용자의 id다")
@@ -51,12 +54,34 @@ class CurrentUserIdTest extends IntegrationTest {
                 .andExpect(content().string("7"));
     }
 
+    @Test
+    @DisplayName("R6: 공개 경로에서 @CurrentUserId를 쓰면 토큰 없는 요청은 500이 아니라 401 AUTH_REQUIRED다")
+    void anonymousOnPublicPathIsAuthRequired() throws Exception {
+        mockMvc.perform(get(PUBLIC_WHO_AM_I))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
+    }
+
+    @Test
+    @DisplayName("공개 경로에서 @CurrentUserId를 써도 토큰이 있으면 그 사용자의 id다")
+    void tokenOnPublicPathGivesUserId() throws Exception {
+        mockMvc.perform(get(PUBLIC_WHO_AM_I).with(AuthRequests.asUser(9L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("9"));
+    }
+
     /** 현재 사용자 id를 그대로 돌려주는 시험용 컨트롤러. 이 테스트 컨텍스트에만 등록된다. */
     @RestController
     static class WhoAmIController {
 
         @GetMapping(WHO_AM_I)
         String whoAmI(@CurrentUserId long userId) {
+            return String.valueOf(userId);
+        }
+
+        @GetMapping(PUBLIC_WHO_AM_I)
+        String publicWhoAmI(@CurrentUserId long userId) {
             return String.valueOf(userId);
         }
     }

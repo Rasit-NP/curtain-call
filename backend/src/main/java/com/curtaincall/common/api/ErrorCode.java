@@ -55,4 +55,24 @@ public enum ErrorCode {
         }
         return INTERNAL_ERROR;
     }
+
+    /**
+     * 요청이 앱에 닿기 전에 Tomcat이 거부한 오류의 code(결정 0037). 이 단계의 4xx와 501(지원하지 않는 Transfer-Encoding 등)·505
+     * (지원하지 않는 HTTP 버전)는 모두 클라이언트가 보낸 요청을 해석할 수 없다는 뜻이라 INVALID_INPUT이다. 404는 NOT_FOUND,
+     * 그 밖의 5xx(503 등 서버 사정)는 INTERNAL_ERROR.
+     *
+     * <p>앱 안의 상태({@link #forFrameworkStatus(int)})와 나눈 이유: 앱 코드가 정한 409·501 같은 상태를 조용히 400으로
+     * 바꾸지 않기 위해서다(결정 0012).
+     */
+    public static ErrorCode forContainerStatus(int status) {
+        if (status == HttpStatus.NOT_FOUND.value()) {
+            return NOT_FOUND;
+        }
+        if ((status >= 400 && status < 500)
+                || status == HttpStatus.NOT_IMPLEMENTED.value()
+                || status == HttpStatus.HTTP_VERSION_NOT_SUPPORTED.value()) {
+            return INVALID_INPUT;
+        }
+        return INTERNAL_ERROR;
+    }
 }

@@ -16,12 +16,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
  * HoldResponse create(@CurrentUserId long userId, @Valid @RequestBody CreateHoldRequest request) { ... }
  * }</pre>
  *
- * <p>인증이 필요한 경로에서만 쓴다. sub가 숫자인 토큰만 인증을 통과하므로(JwtConfig의 검증기) 변환은 실패하지 않는다.
+ * <p>sub가 1 이상의 long인 토큰만 인증을 통과한다(JwtConfig의 검증기). 공개 경로에서 쓰면 토큰 없는 요청은
+ * 401 AUTH_REQUIRED다({@link CurrentUserIds}).
  * 테스트에서는 {@code AuthRequests.asUser(id)}로 요청을 만든다.
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@AuthenticationPrincipal(expression = "T(java.lang.Long).parseLong(subject)", errorOnInvalidType = true)
+@AuthenticationPrincipal(expression = "T(com.curtaincall.auth.api.CurrentUserIds).from(#this)", errorOnInvalidType = true)
 public @interface CurrentUserId {
 }
