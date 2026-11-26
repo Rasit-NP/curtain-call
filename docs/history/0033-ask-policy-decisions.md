@@ -53,7 +53,7 @@ main에 있던 0001~0043을 각 파일의 '결정한 사람'에 따라 다시 �
 
 ## 결과
 
-PR [#34](https://github.com/Rasit-NP/curtain-call/pull/34)를 열었다(병합 전). `./scripts/verify.sh` 전체 통과(harness, 백엔드, 프론트엔드 PASS, e2e는 `e2e/package.json`이 없어 SKIP). 결정 33개의 상태를 바꿨다.
+PR [#34](https://github.com/Rasit-NP/curtain-call/pull/34)를 열었다. `./scripts/verify.sh` 전체 통과(harness, 백엔드, 프론트엔드 PASS, e2e는 `e2e/package.json`이 없어 SKIP). 결정 33개의 상태를 바꿨다. 사람이 PR #34를 main에 병합했다(병합 커밋 `f6c59f4`).
 
 ## 배운 점
 
