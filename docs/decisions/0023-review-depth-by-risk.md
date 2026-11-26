@@ -1,6 +1,6 @@
 # 0023. 리뷰 강도는 PR 위험도로 정하고 항상 명시
 
-- 상태: 제안(PR 병합 전)
+- 상태: 채택
 - 날짜: 2026-11-26
 - 결정한 사람: 사람 지적, 에이전트 제안
 - 관련: Issue [#9](https://github.com/Rasit-NP/curtain-call/issues/9), PR [#10](https://github.com/Rasit-NP/curtain-call/pull/10)

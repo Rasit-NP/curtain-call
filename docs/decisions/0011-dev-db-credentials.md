@@ -1,6 +1,6 @@
 # 0011. 로컬·E2E DB 접속 정보는 개발 전용 값으로 저장소에 둔다
 
-- 상태: 제안(사람 확인 대기)
+- 상태: 채택(PR #8 병합으로 확인)
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#5](https://github.com/Rasit-NP/curtain-call/issues/5) '참고', PR [#8](https://github.com/Rasit-NP/curtain-call/pull/8)

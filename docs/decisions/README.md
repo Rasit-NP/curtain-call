@@ -25,17 +25,18 @@
 | [0008](0008-auth-required-only.md) | 프론트의 '401이면 토큰 삭제·로그인 이동'은 AUTH_REQUIRED에만 | 채택 |
 | [0009](0009-seat-hold-id.md) | 좌석에 지금 잡은 선점(holdId)을 둔다 | 채택 |
 | [0010](0010-security-in-auth-issue.md) | 첫 설정에서 Spring Security를 빼고 인증 Issue에서 한 번에 넣는다 | 채택 |
-| [0011](0011-dev-db-credentials.md) | 로컬·E2E DB 접속 정보는 개발 전용 값으로 저장소에 둔다 | 제안(사람 확인 대기) |
-| [0012](0012-backend-error-mapping.md) | 백엔드 오류 응답: 입력 오류 상태만 INVALID_INPUT, 기능 오류는 ApiException, 나머지는 500 | 제안(PR 병합 전) |
-| [0013](0013-flyway-out-of-order-local.md) | local·e2e에서 Flyway out-of-order를 켠다 | 제안(PR 병합 전) |
-| [0014](0014-error-code-table-test.md) | 오류 코드 enum은 루트 CLAUDE.md 표를 읽어 검사하고, Gradle 입력으로 선언한다 | 제안(PR 병합 전) |
-| [0015](0015-health-probes-off.md) | health 응답을 {"status":"UP"}로 두려고 프로브 그룹을 끈다 | 제안(PR 병합 전) |
-| [0016](0016-integration-test-base.md) | 통합 테스트는 컨테이너 하나 공유, 테스트 시계, 테이블 비우기 | 제안(PR 병합 전) |
-| [0017](0017-java21-toolchain.md) | Java 21을 Gradle 툴체인으로 고정 | 제안(PR 병합 전) |
-| [0018](0018-frontend-error-fallback.md) | 프론트: code가 없는 오류 응답은 INTERNAL_ERROR | 제안(사람 확인 대기) |
-| [0019](0019-frontend-no-response.md) | 프론트: '응답 없음'은 프론트 전용 NO_RESPONSE, 본문 수신 중 끊김도 포함 | 제안(사람 확인 대기) |
-| [0020](0020-frontend-auth-option.md) | 프론트 API 클라이언트의 auth는 기본값 없는 필수 옵션 | 제안(PR 병합 전) |
-| [0021](0021-frontend-lint-boundaries.md) | fetch는 src/api, localStorage는 src/auth에서만 쓰도록 ESLint로 막는다 | 제안(PR 병합 전) |
-| [0022](0022-nvmrc-exact.md) | .nvmrc는 정확한 버전으로 고정 | 제안(PR 병합 전) |
-| [0023](0023-review-depth-by-risk.md) | 리뷰 강도는 PR 위험도로 정하고 항상 명시 | 제안(PR 병합 전) |
+| [0011](0011-dev-db-credentials.md) | 로컬·E2E DB 접속 정보는 개발 전용 값으로 저장소에 둔다 | 채택(PR #8 병합으로 확인) |
+| [0012](0012-backend-error-mapping.md) | 백엔드 오류 응답: 입력 오류 상태만 INVALID_INPUT, 기능 오류는 ApiException, 나머지는 500 | 채택 |
+| [0013](0013-flyway-out-of-order-local.md) | local·e2e에서 Flyway out-of-order를 켠다 | 채택 |
+| [0014](0014-error-code-table-test.md) | 오류 코드 enum은 루트 CLAUDE.md 표를 읽어 검사하고, Gradle 입력으로 선언한다 | 채택 |
+| [0015](0015-health-probes-off.md) | health 응답을 {"status":"UP"}로 두려고 프로브 그룹을 끈다 | 채택 |
+| [0016](0016-integration-test-base.md) | 통합 테스트는 컨테이너 하나 공유, 테스트 시계, 테이블 비우기 | 채택 |
+| [0017](0017-java21-toolchain.md) | Java 21을 Gradle 툴체인으로 고정 | 채택 |
+| [0018](0018-frontend-error-fallback.md) | 프론트: code가 없는 오류 응답은 INTERNAL_ERROR | 채택(PR #7 병합으로 확인) |
+| [0019](0019-frontend-no-response.md) | 프론트: '응답 없음'은 프론트 전용 NO_RESPONSE, 본문 수신 중 끊김도 포함 | 채택 |
+| [0020](0020-frontend-auth-option.md) | 프론트 API 클라이언트의 auth는 기본값 없는 필수 옵션 | 채택 |
+| [0021](0021-frontend-lint-boundaries.md) | fetch는 src/api, localStorage는 src/auth에서만 쓰도록 ESLint로 막는다 | 채택 |
+| [0022](0022-nvmrc-exact.md) | .nvmrc는 정확한 버전으로 고정 | 채택 |
+| [0023](0023-review-depth-by-risk.md) | 리뷰 강도는 PR 위험도로 정하고 항상 명시 | 채택 |
 | [0024](0024-docs-two-tracks.md) | 문서화를 작업용 결정 기록과 포트폴리오용 진행 기록으로 나눈다 | 제안(PR 병합 전) |
+| [0025](0025-msw-unhandled-error-strategy.md) | 프론트 테스트: 핸들러 없는 요청은 MSW 'error' 전략으로 막고, 테스트가 끝날 때 처리 중인 요청을 기다린다 | 채택 |

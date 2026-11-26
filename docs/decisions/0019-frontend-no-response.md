@@ -1,6 +1,6 @@
 # 0019. 프론트: '응답 없음'은 프론트 전용 NO_RESPONSE, 본문 수신 중 끊김도 포함
 
-- 상태: 제안(사람 확인 대기)
+- 상태: 채택
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#6](https://github.com/Rasit-NP/curtain-call/issues/6), PR [#7](https://github.com/Rasit-NP/curtain-call/pull/7)
@@ -20,4 +20,4 @@
 
 ## 적용과 남은 점
 
-PR #7 리뷰 지적: `JSON.stringify` 실패나 GET에 본문을 넣는 프로그래밍 오류도 지금은 `NO_RESPONSE`가 된다.
+PR #7 리뷰에서 `JSON.stringify` 실패나 GET 요청의 본문 같은 호출 실수도 `NO_RESPONSE`가 된다는 것을 찾았다. 결제 화면이 보내지도 않은 요청을 같은 키로 다시 보내게 되므로, 본문 직렬화와 `Request` 생성을 `try` 밖으로 옮겨 호출 실수는 그대로 예외로 나가게 했다. 본문이 멈춘 경우의 시간 제한 테스트도 추가했다.

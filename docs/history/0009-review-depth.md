@@ -1,7 +1,7 @@
 # #9 리뷰 강도를 PR 위험도에 맞추기
 
 - 기간: 2026-11-26
-- Issue: [#9](https://github.com/Rasit-NP/curtain-call/issues/9), PR: [#10](https://github.com/Rasit-NP/curtain-call/pull/10) (병합 전)
+- Issue: [#9](https://github.com/Rasit-NP/curtain-call/issues/9), PR: [#10](https://github.com/Rasit-NP/curtain-call/pull/10) (병합)
 - 관련 결정: [0023](../decisions/0023-review-depth-by-risk.md)
 
 ## 무슨 일이 있었나

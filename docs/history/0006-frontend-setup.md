@@ -1,8 +1,8 @@
 # #6 프론트엔드 첫 설정
 
-- 기간: 2026-11-26 ~ (진행 중)
-- Issue: [#6](https://github.com/Rasit-NP/curtain-call/issues/6), PR: [#7](https://github.com/Rasit-NP/curtain-call/pull/7) (리뷰 중, 병합 전)
-- 관련 결정: [0014](../decisions/0014-error-code-table-test.md), [0018](../decisions/0018-frontend-error-fallback.md)~[0022](../decisions/0022-nvmrc-exact.md)
+- 기간: 2026-11-26
+- Issue: [#6](https://github.com/Rasit-NP/curtain-call/issues/6), PR: [#7](https://github.com/Rasit-NP/curtain-call/pull/7) (병합)
+- 관련 결정: [0014](../decisions/0014-error-code-table-test.md), [0018](../decisions/0018-frontend-error-fallback.md)~[0022](../decisions/0022-nvmrc-exact.md), [0025](../decisions/0025-msw-unhandled-error-strategy.md)
 
 ## 배경
 
@@ -28,17 +28,28 @@
 - **타이머 정리 테스트가 MSW 내부 타이머까지 셈**: 타이머 개수 대신 '응답 뒤 10초가 지나도 signal이 끊기지 않는다'를 검사하도록 바꿨다.
 - 결함 기록: [`docs/agent-log.md`](../agent-log.md)
 
-## 리뷰에서 나온 지적 (정리 전)
+## 리뷰와 반영
 
-PR #7을 max 강도로 리뷰해 후보 15개를 모두 검증했다(확인 14, 가능성 있음 1). 주요 지적은 다음과 같다.
+PR #7을 max 강도로 리뷰해 후보 15개를 모두 검증했다(확인 14, 가능성 있음 1). 세션이 실패하는 테스트로 먼저 재현한 뒤 고친 것은 다음과 같다.
 
-- **[중요] 핸들러가 없는 요청이 실제 네트워크로 나간다.** MSW 3.0.8에서 커스텀 `onUnhandledFrame`의 `defaults.error()`는 메시지만 찍는다. 요청은 `localhost:3000`으로 실제로 나가고, 토큰과 본문도 함께 나간다. 위 '옵션 이름 변경' 수정이 의도와 다르게 동작한 것이다.
-- `afterEach`가 기록을 동기적으로 확인해, 진행 중이던 요청이 다음 테스트 탓이 되거나 보고되지 않는다.
-- `JSON.stringify` 실패나 GET에 본문을 넣는 프로그래밍 오류가 `NO_RESPONSE`가 된다.
-- 본문 수신 중 시간 초과, `afterEach` 가드 자체를 검사하는 테스트가 없다.
-- 백엔드가 꺼졌을 때 Vite 프록시의 빈 502가 `INTERNAL_ERROR`가 된다.
-- 규칙 관련: `fetch`를 직접 흉내 낸 테스트는 '`API는 MSW로 흉내 낸다`' 규칙의 예외다. R6 되돌림 확인이 3개 중 1개만 기록됐다. 대응표 이름이 테스트 이름과 다르다.
+- **[중요] 핸들러가 없는 요청이 실제 네트워크로 나감**: 위 'MSW 3 옵션 이름 변경' 수정이 의도와 다르게 동작했다. 커스텀 콜백의 `defaults.error()`는 메시지만 찍고 요청을 `localhost:3000`으로 보냈다. 콜백에서 예외를 던지는 첫 수정은 500 응답이 돼서, 내장 `'error'` 전략과 이벤트 기록으로 바꿨다([0025](../decisions/0025-msw-unhandled-error-strategy.md)).
+- **테스트가 끝날 때 처리 중인 요청을 놓침**: `afterEach`가 처리 중인 요청을 기다린 뒤 검사하고 `afterAll`에서도 검사하게 했다. 이어서 `'error'` 전략에는 `request:end`가 오지 않아 매번 최대 대기 시간을 채우는 것을 테스트 시간으로 발견해 고쳤다.
+- **호출 실수가 '응답 없음'이 됨**: 본문 직렬화와 `Request` 생성을 `try` 밖으로 옮겼다([0019](../decisions/0019-frontend-no-response.md)).
+- **본문이 멈춘 경우의 시간 제한 테스트 추가**: MSW로 만들면 undici가 잡히지 않은 예외를 내 vitest가 실패해서, 이 테스트도 `fetch`를 직접 흉내 냈다.
+
+처리하지 않고 남은 지적(후속 Issue 필요):
+
+- 백엔드가 꺼졌을 때 Vite 프록시의 빈 502가 '응답 없음'이 아니라 `INTERNAL_ERROR`가 된다([0018](../decisions/0018-frontend-error-fallback.md)).
+- 공개 엔드포인트 호출이 `auth: false`를 쓰는지 대응표에서 추적되지 않는다([0020](../decisions/0020-frontend-auth-option.md)).
+- `errorMessages.test.ts`가 루트 `CLAUDE.md`를 실행 위치 기준으로 읽고, 주석의 이유가 틀렸다. 안내 문구 테스트는 명세가 아니라 복사본과 비교한다.
+- `localStorage`가 차단된 브라우저에서는 원시 예외가 나온다(현실성 낮음).
+- 규칙 관련: `fetch`를 직접 흉내 낸 테스트 2개는 'API는 MSW로 흉내 낸다' 규칙의 예외인데 사람에게 확인받지 않았다. R6 되돌림 확인이 3개 중 1개만 기록됐다. 대응표의 행 이름이 테스트 이름과 다르고, 일부 행은 명세가 정하지 않은 동작에 명세 절 번호를 붙였다.
 
 ## 결과
 
-`verify.sh` 전체 통과(테스트 45개). PR #8과 합친 트리에서도 전체 통과.
+main(#8, #10)을 병합한 뒤 `verify.sh` 전체 통과(프론트엔드 테스트 51개). 2026-11-26 병합.
+
+## 배운 점
+
+- 라이브러리 메이저 버전이 바뀌면 옵션 이름만이 아니라 동작도 바뀐다. 타입 정의만 보고 고친 설정이 다른 결함(실제 네트워크 호출)을 만들었고, 리뷰가 라이브러리 소스와 실제 실행으로 찾아냈다.
+- 테스트 설정 자체에도 테스트가 필요하다. 가드가 동작하지 않아도 모든 테스트가 통과하는 상태였다.

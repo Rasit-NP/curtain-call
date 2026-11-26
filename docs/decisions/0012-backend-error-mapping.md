@@ -1,6 +1,6 @@
 # 0012. 백엔드 오류 응답: 입력 오류 상태만 INVALID_INPUT, 기능 오류는 ApiException, 나머지는 500
 
-- 상태: 제안(PR 병합 전)
+- 상태: 채택
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트(독립 리뷰 반영)
 - 관련: Issue [#5](https://github.com/Rasit-NP/curtain-call/issues/5), PR [#8](https://github.com/Rasit-NP/curtain-call/pull/8)
@@ -21,4 +21,4 @@
 
 ## 적용과 남은 점
 
-PR #8 리뷰에서 남은 지적: 서블릿 필터·컨테이너 단계 오류는 `/error`로 가서 `code`가 없다. `ConstraintViolationException`은 서버 쪽 검증 실패도 400으로 만든다. 처리는 PR #8 리뷰 정리에서 정한다.
+PR #8 리뷰에서 남은 지적: 서블릿 필터·컨테이너 단계 오류는 `/error`로 가서 `code`가 없다. `ConstraintViolationException`은 서버 쪽 검증 실패도 400으로 만든다. 리뷰 검증을 중단한 채 병합돼 아직 처리하지 않았다(후속 Issue 필요).

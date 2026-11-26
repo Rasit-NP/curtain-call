@@ -1,7 +1,7 @@
 # #5 백엔드 첫 설정
 
-- 기간: 2026-11-26 ~ (진행 중)
-- Issue: [#5](https://github.com/Rasit-NP/curtain-call/issues/5), PR: [#8](https://github.com/Rasit-NP/curtain-call/pull/8) (리뷰 중, 병합 전)
+- 기간: 2026-11-26
+- Issue: [#5](https://github.com/Rasit-NP/curtain-call/issues/5), PR: [#8](https://github.com/Rasit-NP/curtain-call/pull/8) (병합)
 - 관련 결정: [0010](../decisions/0010-security-in-auth-issue.md)~[0017](../decisions/0017-java21-toolchain.md)
 
 ## 배경
@@ -32,9 +32,9 @@
   - 오류 코드 표만 바꾸면 `:test UP-TO-DATE`로 `ErrorCodeTest`가 돌지 않는다. 재현한 뒤 Gradle 입력으로 선언했다([0014](../decisions/0014-error-code-table-test.md)).
 - 결함 기록: [`docs/agent-log.md`](../agent-log.md)
 
-## 리뷰에서 남은 지적 (정리 전)
+## 리뷰에서 남은 지적 (처리 안 함, 후속 Issue 필요)
 
-PR #8을 max 강도로 리뷰했을 때 나온 후보 중 아직 처리하지 않은 것이다. 검증 단계는 [0023](../decisions/0023-review-depth-by-risk.md) 결정에 따라 중단했다.
+PR #8을 max 강도로 리뷰했을 때 리뷰 에이전트가 찾은 후보 중, 병합 전에 처리하지 않은 것이다. 후보 검증 단계는 [0023](../decisions/0023-review-depth-by-risk.md) 결정에 따라 중단했고, PR은 그 상태로 병합됐다. 여러 에이전트가 따로 찾았거나 실제 실행으로 재현한 것만 적는다.
 
 - 서블릿 필터·컨테이너 단계 오류(잘못된 퍼센트 인코딩, 폼 본문 등)는 `/error`로 가서 `code`가 없거나 500이 된다.
 - `ConstraintViolationException`은 서버 쪽 검증 실패(엔티티 검증, 반환값 검증)도 400으로 만들고 DEBUG로만 남긴다.
@@ -45,4 +45,9 @@ PR #8을 max 강도로 리뷰했을 때 나온 후보 중 아직 처리하지 �
 
 ## 결과
 
-`verify.sh` 전체 통과(단위 20개, 통합 22개). PR #7과 합친 트리에서도 전체 통과(문서 두 파일만 충돌).
+`verify.sh` 전체 통과(단위 20개, 통합 22개). PR #7과 합친 트리에서도 전체 통과(문서 두 파일만 충돌). 2026-11-26 병합.
+
+## 배운 점
+
+- 독립 리뷰와 PR 리뷰가 각각 테스트로 재현되는 결함을 찾았다(Flyway 이력, Gradle 입력). 둘 다 지금 당장은 드러나지 않고 다음 Issue에서 터질 결함이었다.
+- 반대로 골격 PR 리뷰에 지나친 비용을 썼다(#9). 그 결과 일부 지적은 검증하지 않은 채 남았다.

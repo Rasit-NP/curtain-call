@@ -1,6 +1,6 @@
 # 0020. 프론트 API 클라이언트의 auth는 기본값 없는 필수 옵션
 
-- 상태: 제안(PR 병합 전)
+- 상태: 채택
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#6](https://github.com/Rasit-NP/curtain-call/issues/6), PR [#7](https://github.com/Rasit-NP/curtain-call/pull/7)
@@ -20,4 +20,4 @@
 
 ## 적용과 남은 점
 
-PR #7 리뷰 지적: 공개 엔드포인트 호출이 `auth: false`를 쓰는지는 대응표에서 더 이상 추적되지 않는다.
+남은 점(PR #7 리뷰 지적, 아직 처리 안 함): 공개 엔드포인트 호출이 `auth: false`를 쓰는지는 대응표에서 더 이상 추적되지 않는다.

@@ -1,6 +1,6 @@
 # 0014. 오류 코드 enum은 루트 CLAUDE.md 표를 읽어 검사하고, Gradle 입력으로 선언한다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 채택
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트(PR 리뷰 반영)
 - 관련: Issue [#5](https://github.com/Rasit-NP/curtain-call/issues/5), PR [#8](https://github.com/Rasit-NP/curtain-call/pull/8)
@@ -20,4 +20,4 @@
 
 ## 적용과 남은 점
 
-프론트엔드 테스트는 `process.cwd()` 기준으로 표를 읽어 `frontend/`에서 실행해야 한다는 지적이 PR #7 리뷰에 있다.
+프론트엔드 테스트는 `process.cwd()` 기준으로 표를 읽어 `frontend/`에서 실행해야 한다는 지적이 PR #7 리뷰에 있다(아직 처리 안 함).
