@@ -14,7 +14,8 @@ function header() {
 
 async function login(user: ReturnType<typeof renderApp>['user']) {
   server.use(http.post('/api/auth/login', () => HttpResponse.json({ accessToken: 'token-1', expiresIn: 3600 })));
-  await user.type(screen.getByLabelText('아이디'), 'user1');
+  // 라우터는 화면 이동을 transition으로 그려, 위치가 바뀐 뒤에도 잠시 이전 화면이 남아 있을 수 있다.
+  await user.type(await screen.findByLabelText('아이디'), 'user1');
   await user.type(screen.getByLabelText('비밀번호'), 'password1');
   await user.click(screen.getByRole('button', { name: '로그인' }));
 }
@@ -72,6 +73,7 @@ describe('공통 헤더', () => {
   it('로그인 화면에도 헤더가 있고, 로그인 링크는 지금 화면으로 표시되며 눌러도 돌아갈 화면을 잃지 않는다', async () => {
     server.use(reservationsHandler([]));
     const { router, user } = renderApp('/reservations');
+    expect(await screen.findByLabelText('아이디')).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/login');
 
     const loginLink = header().getByRole('link', { name: '로그인' });
@@ -136,9 +138,10 @@ describe('401 AUTH_REQUIRED와 헤더', () => {
     saveAccessToken('expired-token');
     server.use(http.get(RESERVATIONS_PATH, () => problem(401, 'AUTH_REQUIRED')));
 
-    renderApp('/reservations');
+    const { router } = renderApp('/reservations');
 
     expect(await header().findByRole('link', { name: '로그인' })).toBeInTheDocument();
+    await vi.waitFor(() => expect(router.state.location.pathname).toBe('/login'));
     expect(header().queryByRole('button', { name: '로그아웃' })).not.toBeInTheDocument();
   });
 

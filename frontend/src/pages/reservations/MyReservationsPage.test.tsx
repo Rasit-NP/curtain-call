@@ -14,7 +14,8 @@ function page() {
 
 async function login(user: ReturnType<typeof renderApp>['user'], token = 'token-1') {
   server.use(http.post('/api/auth/login', () => HttpResponse.json({ accessToken: token, expiresIn: 3600 })));
-  await user.type(screen.getByLabelText('아이디'), 'user1');
+  // 라우터는 화면 이동을 transition으로 그려, 위치가 바뀐 뒤에도 잠시 이전 화면이 남아 있을 수 있다.
+  await user.type(await screen.findByLabelText('아이디'), 'user1');
   await user.type(screen.getByLabelText('비밀번호'), 'password1');
   await user.click(screen.getByRole('button', { name: '로그인' }));
 }
@@ -132,8 +133,10 @@ describe('내 예매 화면', () => {
     );
     const { router, user } = renderApp('/reservations');
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('로그인이 필요합니다.');
+    // 내 예매 화면도 받은 오류의 문구를 잠시 보여 줄 수 있으므로, 로그인 화면이 그려진 뒤에 문구를 확인한다.
+    expect(await screen.findByLabelText('아이디')).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/login');
+    expect(screen.getByRole('alert')).toHaveTextContent('로그인이 필요합니다.');
     expect(getAccessToken()).toBeNull();
 
     await login(user, 'new-token');

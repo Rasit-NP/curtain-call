@@ -48,6 +48,8 @@ describe('로그인 화면', () => {
     await vi.waitFor(() => expect(router.state.location.pathname).toBe('/'));
     expect(received).toEqual({ username: 'user1', password: 'password1' });
     expect(getAccessToken()).toBe('token-1');
+    // 라우터는 화면 이동을 transition으로 그려, 위치가 바뀐 뒤에도 잠시 로그인 화면이 남아 있을 수 있다.
+    expect(await screen.findByRole('heading', { level: 1, name: '공연 목록' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '로그인' })).not.toBeInTheDocument();
   });
 
