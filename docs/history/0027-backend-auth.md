@@ -36,11 +36,18 @@
 
 ## 리뷰
 
-(PR 리뷰 뒤 갱신)
+`/code-review high`(인증 PR, [0023](../decisions/0023-review-depth-by-risk.md)). 리뷰 중 '`Accept: text/html`이면 진입점이 401 대신 빈 200을 낼 수 있다'는 가설은 직접 요청해 보니 Spring이 `application/problem+json`으로 돌려줘 기각했다. 중요한 결함은 없었고 사소한 지적 6건이 남았다(사람 확인 전이라 고치지 않음):
+
+- sub 검증 정규식이 19자리 숫자를 허용해 `Long` 범위를 넘는 sub가 검증을 지나면 `@CurrentUserId`에서 500(서명 키가 있어야 만들 수 있음).
+- '보안 방화벽' 테스트가 실제로는 Tomcat 거부를 검사해, Spring Security 방화벽 거부(`;` 경로 등) → `/error` 경로는 테스트가 없음.
+- 표에 없는 컨테이너 상태(501·503·505)가 500 INTERNAL_ERROR로 바뀜.
+- 공개 경로에서 `@CurrentUserId`를 쓰면 익명 요청이 500.
+- R6 표의 '공개 경로' 행 테스트 이름에 `R6:`가 없음.
+- Tomcat 밸브가 공통 처리기 밖에서 오류 본문을 만듦(`backend/CLAUDE.md` '한곳에 모은다'의 예외, 결정 0035에 근거).
 
 ## 결과
 
-(PR 뒤 갱신)
+PR [#32](https://github.com/Rasit-NP/curtain-call/pull/32). `./scripts/verify.sh` 전체 통과(백엔드 단위 30개, 통합 72개, 프론트엔드, 하네스; E2E는 아직 없어 SKIP). 병합 전.
 
 ## 배운 점
 
