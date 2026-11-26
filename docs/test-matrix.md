@@ -3,7 +3,7 @@
 R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 계층에서 검증할지 정한다.
 동작의 기준은 [`spec.md`](spec.md)이고, 괄호 안의 숫자는 그 문서의 절 번호다.
 
-현황(2026-11-26): 코드가 없어 모든 테스트가 미작성이다.
+현황(2026-11-26): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. R1~R6 테스트는 모두 미작성이다.
 
 ## 읽는 법
 
@@ -154,14 +154,33 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 결제(2.4) | 같은 선점을 서로 다른 키로 동시에 결제하면 하나만 201이고 예매는 하나다 | 백엔드 통합(동시성) | 미작성 |
 | 결제(2.4) | 같은 선점에 결제와 해제가 동시에 오면 하나씩 처리된다. 결제가 먼저 승인되면 해제는 404 NOT_FOUND, 결제가 먼저 거절되면 해제는 204다 | 백엔드 통합(동시성) | 미작성 |
 | 내 예매(6.8) | 내 예매만 최신순(같으면 id 내림차순)으로 돌려준다 | 백엔드 통합 | 미작성 |
-| 오류 형식(3.1) | 오류 응답은 ProblemDetail에 code가 있고, 500 응답에 스택 트레이스가 없다 | 백엔드 통합 | 미작성 |
-| 오류 형식(3.1) | 공개 API에 잘못된 토큰을 붙이면 401 AUTH_REQUIRED, 지원하지 않는 메서드는 400 INVALID_INPUT, 없는 경로는 404 NOT_FOUND다 | 백엔드 통합 | 미작성 |
+| 오류 형식(3.1) | 오류 응답은 ProblemDetail에 code가 있고, 500 응답에 스택 트레이스가 없다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
+| 오류 형식(3.1) | 잘못된 JSON, 형식이 틀린 경로·쿼리 값, 필수 쿼리 값 없음, 검증 실패(본문 필드, 쿼리 값, `@Validated` 빈), 지원하지 않는 메서드(405)·`Content-Type`(415)은 400 INVALID_INPUT이고, 없는 경로는 404 NOT_FOUND다(MVC 안의 오류 변환. 서블릿 필터를 끈 MockMvc) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
+| 오류 형식(3.1) | `ApiException`으로 알린 오류는 그 코드의 상태·code·설명으로 응답하고, 코드를 정하지 않은 상태 예외(`ResponseStatusException`)는 500 INTERNAL_ERROR다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
+| 오류 형식(3.1) | 오류 코드와 상태는 루트 `CLAUDE.md`의 오류 코드 표와 같다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorCodeTest.java`) |
+| 오류 형식(3.1) | 공개 API에 잘못된 토큰을 붙이면 401 AUTH_REQUIRED이고, 토큰 검사를 지난 공개 경로에서도 지원하지 않는 메서드는 400 INVALID_INPUT, 없는 경로는 404 NOT_FOUND다(인증 Issue에서 작성) | 백엔드 통합 | 미작성 |
 | E2E 지원(6.9) | reset 컨트롤러는 e2e 프로필에서만 등록된다 | 백엔드 통합 | 미작성 |
+| 상태 확인(6.10) | `GET /actuator/health`는 200 `{"status":"UP"}`이다(다른 속성 없음) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/HealthCheckTest.java`) |
 | 결제 화면(7.3) | 승인 전에(402 뒤 포함) 앱 안의 다른 화면으로 이동하면 해제 요청을 보내고, 승인된 뒤에는 보내지 않는다 | 프론트 | 미작성 |
 | 결제 화면(7.3) | 결제가 승인되면 예매 완료를 보여 주고, 402면 안내 문구와 함께 다시 결제할 수 있다 | 프론트 | 미작성 |
 | 화면 공통(7.5) | 데이터를 불러오는 화면마다 로딩·빈 목록·오류 상태를 보여 준다 | 프론트 | 미작성 |
 | 화면 공통(7.5) | API 요청이 10초 안에 응답하지 않으면 끊고 '서버에 연결할 수 없습니다' 문구를 보여 준다 | 프론트 | 미작성 |
 | 기본 흐름(1) | 로그인 → 공연 선택 → 좌석 2석 선점 → 결제 → 예매 완료 → 내 예매에서 확인(시나리오 1) | E2E | 미작성 |
+
+## 테스트 기반과 설정
+
+규칙·명세 동작이 아니라, 규칙 테스트가 기대는 기반(주입한 시계, 운영과 같은 종류의 DB, 테스트마다 데이터 정리)과 프로필 설정을 검증한다.
+
+| 대상 | 테스트 | 계층 | 상태 |
+|---|---|---|---|
+| 프로필 | 프로필을 주지 않으면 local로 뜨고, local·e2e는 환경변수 없이 compose DB와 시드를 쓴다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
+| 프로필 | test는 DB 주소를 정하지 않고 시드를 쓰지 않으며, prod는 DB 접속 정보를 기본값 없이 환경변수로만 받는다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
+| 프로필 | local·e2e는 시드가 적용된 DB에 나중에 추가된 마이그레이션도 적용하도록 Flyway out-of-order를 켜고, test·prod는 끈다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
+| 프로필 | 모든 프로필에서 open-in-view를 끄고 ddl-auto는 validate다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
+| 시계 | 운영 Clock 빈은 UTC 시스템 시계다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/common/infra/ClockConfigTest.java`) |
+| 시계 | 테스트 시계는 시각을 정하거나 옮길 수 있고 되돌리면 정해진 시각으로 돌아간다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/support/MutableClockTest.java`) |
+| 통합 기반 | 운영 코드에 주입되는 Clock은 테스트 시계이고, 테스트마다 정해진 시각으로 되돌린다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
+| 통합 기반 | 테스트마다 시작 전에 테이블을 비우고, Flyway 이력 테이블은 남긴다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
 
 ## E2E 시나리오 대응
 
