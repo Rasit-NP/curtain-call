@@ -43,6 +43,10 @@ tasks.named('test', Test) {
     useJUnitPlatform {
         excludeTags 'integration'
     }
+    // ErrorCodeTest가 루트 CLAUDE.md의 오류 코드 표를 읽는다. 표만 바뀌어도 UP-TO-DATE로 건너뛰지 않게 입력으로 둔다.
+    inputs.file('../CLAUDE.md')
+            .withPropertyName('errorCodeTable')
+            .withPathSensitivity(PathSensitivity.NONE)
 }
 
 // 통합 테스트: integration 태그만 실행한다. Docker가 필요하다.
