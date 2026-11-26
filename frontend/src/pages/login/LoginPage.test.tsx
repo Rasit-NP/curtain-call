@@ -3,6 +3,7 @@ import { http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
 import { REQUEST_TIMEOUT_MS } from '../../api/client';
 import { getAccessToken, saveAccessToken } from '../../auth/tokenStorage';
+import { performancesHandler } from '../../test/handlers';
 import { renderApp } from '../../test/renderApp';
 import { server } from '../../test/server';
 
@@ -38,6 +39,8 @@ describe('로그인 화면', () => {
       received = await request.json();
       return HttpResponse.json({ accessToken: 'token-1', expiresIn: 3600 });
     });
+    // 로그인 뒤 가는 공연 목록 화면이 부르는 API
+    server.use(performancesHandler([]));
     const { router, user } = renderApp('/login');
 
     await submitLogin(user, 'user1', 'password1');
@@ -45,6 +48,8 @@ describe('로그인 화면', () => {
     await vi.waitFor(() => expect(router.state.location.pathname).toBe('/'));
     expect(received).toEqual({ username: 'user1', password: 'password1' });
     expect(getAccessToken()).toBe('token-1');
+    // 라우터는 화면 이동을 transition으로 그려, 위치가 바뀐 뒤에도 잠시 로그인 화면이 남아 있을 수 있다.
+    expect(await screen.findByRole('heading', { level: 1, name: '공연 목록' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '로그인' })).not.toBeInTheDocument();
   });
 
@@ -105,6 +110,8 @@ describe('로그인 화면', () => {
         release = () => resolve(HttpResponse.json({ accessToken: 'token-1', expiresIn: 3600 }));
       });
     });
+    // 로그인 뒤 가는 공연 목록 화면이 부르는 API
+    server.use(performancesHandler([]));
     const { router, user } = renderApp('/login');
     await submitLogin(user);
     await screen.findByRole('alert');

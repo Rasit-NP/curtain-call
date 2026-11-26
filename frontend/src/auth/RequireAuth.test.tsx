@@ -1,6 +1,7 @@
 import { screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
+import { performancesHandler } from '../test/handlers';
 import { PROTECTED_TEST_PATH, renderApp } from '../test/renderApp';
 import { server } from '../test/server';
 import { getAccessToken, saveAccessToken } from './tokenStorage';
@@ -63,6 +64,8 @@ describe('인증 가드', () => {
 
   it('로그인 뒤 돌아갈 경로가 앱 안의 경로가 아니면 공연 목록(/)으로 간다', async () => {
     loginSucceeds();
+    // 로그인 뒤 가는 공연 목록 화면이 부르는 API
+    server.use(performancesHandler([]));
     const { router, user } = renderApp({ pathname: '/login', state: { from: '//evil.example/steal' } });
 
     await login(user);
