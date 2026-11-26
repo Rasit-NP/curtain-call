@@ -22,6 +22,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 class IntegrationTestSupportTest extends IntegrationTest {
 
     private static final String PROBE_TABLE = "integration_support_probe";
+    private static final int HISTORY_PROBE_RANK = -1;
 
     @Autowired
     private Clock injectedClock;
@@ -70,13 +71,21 @@ class IntegrationTestSupportTest extends IntegrationTest {
         jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS " + PROBE_TABLE + " (id BIGSERIAL PRIMARY KEY, name TEXT)");
         jdbcTemplate.update("INSERT INTO " + PROBE_TABLE + " (name) VALUES ('지울 데이터')");
         String history = databaseCleaner.flywayHistoryTable();
-        int historyRows = count(history);
+        // 마이그레이션이 아직 없어 이력이 비어 있으므로, 이력이 남는지 볼 표식 행을 넣고 끝나면 지운다.
+        jdbcTemplate.update("INSERT INTO " + history
+                + " (installed_rank, version, description, type, script, installed_by, execution_time, success)"
+                + " VALUES (?, NULL, 'cleaner probe', 'SQL', 'cleaner-probe', 'test', 0, TRUE)", HISTORY_PROBE_RANK);
+        try {
+            int historyRows = count(history);
 
-        databaseCleaner.truncateAllTables();
+            databaseCleaner.truncateAllTables();
 
-        assertThat(databaseCleaner.tablesToTruncate()).contains(PROBE_TABLE).doesNotContain(history);
-        assertThat(count(PROBE_TABLE)).isZero();
-        assertThat(count(history)).isEqualTo(historyRows);
+            assertThat(databaseCleaner.tablesToTruncate()).contains(PROBE_TABLE).doesNotContain(history);
+            assertThat(count(PROBE_TABLE)).isZero();
+            assertThat(count(history)).isEqualTo(historyRows).isPositive();
+        } finally {
+            jdbcTemplate.update("DELETE FROM " + history + " WHERE installed_rank = ?", HISTORY_PROBE_RANK);
+        }
     }
 
     private int count(String table) {

@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.validation.annotation.Validated;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.curtaincall.support.IntegrationTest;
 
@@ -140,6 +142,19 @@ class ErrorResponseTest extends IntegrationTest {
                 .andExpect(content().string(not(containsString(INTERNAL_MESSAGE))));
     }
 
+    @Test
+    @DisplayName("기능 코드가 ApiException으로 알린 오류는 그 코드의 상태와 code, 설명으로 응답한다")
+    void apiExceptionUsesItsCode() throws Exception {
+        expectProblem(mockMvc.perform(get(BASE + "/api-exception")), 409, "SEAT_ALREADY_HELD")
+                .andExpect(jsonPath("$.detail").value("A-1 좌석은 이미 선점되었습니다."));
+    }
+
+    @Test
+    @DisplayName("코드를 정하지 않은 상태 예외(ResponseStatusException 409)는 표에 없는 조합을 만들지 않고 500 INTERNAL_ERROR다")
+    void statusExceptionWithoutCodeIsInternalError() throws Exception {
+        expectProblem(mockMvc.perform(get(BASE + "/status-exception")), 500, "INTERNAL_ERROR");
+    }
+
     /** spec 3.1: ProblemDetail 형식에 code를 더한다. */
     private static ResultActions expectProblem(ResultActions result, int status, String code) throws Exception {
         return result
@@ -176,6 +191,16 @@ class ErrorResponseTest extends IntegrationTest {
         @GetMapping("/boom")
         String boom() {
             throw new IllegalStateException(INTERNAL_MESSAGE);
+        }
+
+        @GetMapping("/api-exception")
+        String apiException() {
+            throw new ApiException(ErrorCode.SEAT_ALREADY_HELD, "A-1 좌석은 이미 선점되었습니다.");
+        }
+
+        @GetMapping("/status-exception")
+        String statusException() {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, INTERNAL_MESSAGE);
         }
     }
 

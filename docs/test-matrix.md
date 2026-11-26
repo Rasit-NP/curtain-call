@@ -156,6 +156,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 내 예매(6.8) | 내 예매만 최신순(같으면 id 내림차순)으로 돌려준다 | 백엔드 통합 | 미작성 |
 | 오류 형식(3.1) | 오류 응답은 ProblemDetail에 code가 있고, 500 응답에 스택 트레이스가 없다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
 | 오류 형식(3.1) | 잘못된 JSON, 형식이 틀린 경로·쿼리 값, 필수 쿼리 값 없음, 검증 실패(본문 필드, 쿼리 값, `@Validated` 빈), 지원하지 않는 메서드(405)·`Content-Type`(415)은 400 INVALID_INPUT이고, 없는 경로는 404 NOT_FOUND다(MVC 안의 오류 변환. 서블릿 필터를 끈 MockMvc) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
+| 오류 형식(3.1) | `ApiException`으로 알린 오류는 그 코드의 상태·code·설명으로 응답하고, 코드를 정하지 않은 상태 예외(`ResponseStatusException`)는 500 INTERNAL_ERROR다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
 | 오류 형식(3.1) | 오류 코드와 상태는 루트 `CLAUDE.md`의 오류 코드 표와 같다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorCodeTest.java`) |
 | 오류 형식(3.1) | 공개 API에 잘못된 토큰을 붙이면 401 AUTH_REQUIRED이고, 토큰 검사를 지난 공개 경로에서도 지원하지 않는 메서드는 400 INVALID_INPUT, 없는 경로는 404 NOT_FOUND다 | 백엔드 통합 | 미작성(인증 Issue) |
 | E2E 지원(6.9) | reset 컨트롤러는 e2e 프로필에서만 등록된다 | 백엔드 통합 | 미작성 |
