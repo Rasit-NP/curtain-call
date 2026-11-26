@@ -1,7 +1,7 @@
 # #33 정책 결정은 구현 전에 묻고, 결정 상태 '제안'은 실제로 물었을 때만 쓴다
 
 - 기간: 2026-11-27
-- Issue: [#33](https://github.com/Rasit-NP/curtain-call/issues/33)
+- Issue: [#33](https://github.com/Rasit-NP/curtain-call/issues/33), PR: [#34](https://github.com/Rasit-NP/curtain-call/pull/34)
 - 관련 결정: [0044](../decisions/0044-ask-policy-before-implementing.md), [0045](../decisions/0045-decision-status-by-decider.md)
 
 ## 배경

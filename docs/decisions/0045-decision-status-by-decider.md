@@ -3,7 +3,7 @@
 - 상태: 채택
 - 날짜: 2026-11-27
 - 결정한 사람: 사람(2026-11-27 메인 세션 대화). 상태 이름 `에이전트 결정`과 애매한 기존 결정의 처리는 2026-11-27 Issue #33 세션에서 사람이 골랐다.
-- 관련: Issue [#33](https://github.com/Rasit-NP/curtain-call/issues/33), 결정 [0044](0044-ask-policy-before-implementing.md), 결정 [0024](0024-docs-two-tracks.md)
+- 관련: Issue [#33](https://github.com/Rasit-NP/curtain-call/issues/33), PR [#34](https://github.com/Rasit-NP/curtain-call/pull/34), 결정 [0044](0044-ask-policy-before-implementing.md), 결정 [0024](0024-docs-two-tracks.md)
 
 ## 결정
 

@@ -3,7 +3,7 @@
 - 상태: 채택
 - 날짜: 2026-11-27
 - 결정한 사람: 사람(2026-11-27 메인 세션 대화). 범위 문구는 2026-11-27 Issue #33 세션에서 사람이 초안을 보고 골랐다.
-- 관련: Issue [#33](https://github.com/Rasit-NP/curtain-call/issues/33), 결정 [0045](0045-decision-status-by-decider.md), 결정 [0031](0031-security-paths-and-error-dispatch.md)~[0043](0043-frontend-auth-required-sent-token.md)
+- 관련: Issue [#33](https://github.com/Rasit-NP/curtain-call/issues/33), PR [#34](https://github.com/Rasit-NP/curtain-call/pull/34), 결정 [0045](0045-decision-status-by-decider.md), 결정 [0031](0031-security-paths-and-error-dispatch.md)~[0043](0043-frontend-auth-required-sent-token.md)
 
 ## 결정
 
