@@ -158,7 +158,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 오류 형식(3.1) | 잘못된 JSON, 형식이 틀린 경로·쿼리 값, 필수 쿼리 값 없음, 검증 실패(본문 필드, 쿼리 값, `@Validated` 빈), 지원하지 않는 메서드(405)·`Content-Type`(415)은 400 INVALID_INPUT이고, 없는 경로는 404 NOT_FOUND다(MVC 안의 오류 변환. 서블릿 필터를 끈 MockMvc) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
 | 오류 형식(3.1) | `ApiException`으로 알린 오류는 그 코드의 상태·code·설명으로 응답하고, 코드를 정하지 않은 상태 예외(`ResponseStatusException`)는 500 INTERNAL_ERROR다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
 | 오류 형식(3.1) | 오류 코드와 상태는 루트 `CLAUDE.md`의 오류 코드 표와 같다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorCodeTest.java`) |
-| 오류 형식(3.1) | 공개 API에 잘못된 토큰을 붙이면 401 AUTH_REQUIRED이고, 토큰 검사를 지난 공개 경로에서도 지원하지 않는 메서드는 400 INVALID_INPUT, 없는 경로는 404 NOT_FOUND다 | 백엔드 통합 | 미작성(인증 Issue) |
+| 오류 형식(3.1) | 공개 API에 잘못된 토큰을 붙이면 401 AUTH_REQUIRED이고, 토큰 검사를 지난 공개 경로에서도 지원하지 않는 메서드는 400 INVALID_INPUT, 없는 경로는 404 NOT_FOUND다(인증 Issue에서 작성) | 백엔드 통합 | 미작성 |
 | E2E 지원(6.9) | reset 컨트롤러는 e2e 프로필에서만 등록된다 | 백엔드 통합 | 미작성 |
 | 상태 확인(6.10) | `GET /actuator/health`는 200 `{"status":"UP"}`이다(다른 속성 없음) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/HealthCheckTest.java`) |
 | 결제 화면(7.3) | 승인 전에(402 뒤 포함) 앱 안의 다른 화면으로 이동하면 해제 요청을 보내고, 승인된 뒤에는 보내지 않는다 | 프론트 | 미작성 |
@@ -175,6 +175,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 |---|---|---|---|
 | 프로필 | 프로필을 주지 않으면 local로 뜨고, local·e2e는 환경변수 없이 compose DB와 시드를 쓴다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
 | 프로필 | test는 DB 주소를 정하지 않고 시드를 쓰지 않으며, prod는 DB 접속 정보를 기본값 없이 환경변수로만 받는다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
+| 프로필 | local·e2e는 시드가 적용된 DB에 나중에 추가된 마이그레이션도 적용하도록 Flyway out-of-order를 켜고, test·prod는 끈다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
 | 프로필 | 모든 프로필에서 open-in-view를 끄고 ddl-auto는 validate다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
 | 시계 | 운영 Clock 빈은 UTC 시스템 시계다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/common/infra/ClockConfigTest.java`) |
 | 시계 | 테스트 시계는 시각을 정하거나 옮길 수 있고 되돌리면 정해진 시각으로 돌아간다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/support/MutableClockTest.java`) |
