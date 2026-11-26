@@ -1,6 +1,6 @@
 # 0040. 프론트: 401 AUTH_REQUIRED는 API 클라이언트가 토큰을 지우고 알리며, 최상위 레이아웃 한 곳이 로그인 화면으로 보낸다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 대체됨(→0043)
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#28](https://github.com/Rasit-NP/curtain-call/issues/28)

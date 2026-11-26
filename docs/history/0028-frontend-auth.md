@@ -1,8 +1,8 @@
 # #28 프론트엔드 인증(R6): 로그인 화면, 인증 가드, 401 AUTH_REQUIRED 처리
 
-- 기간: 2026-11-26 ~
+- 기간: 2026-11-26 ~ 2026-11-27
 - Issue: [#28](https://github.com/Rasit-NP/curtain-call/issues/28), PR: [#31](https://github.com/Rasit-NP/curtain-call/pull/31)
-- 관련 결정: [0040](../decisions/0040-frontend-auth-required-central.md), [0041](../decisions/0041-frontend-login-return-path.md), [0042](../decisions/0042-frontend-guard-test-route.md)
+- 관련 결정: [0040](../decisions/0040-frontend-auth-required-central.md)(→[0043](../decisions/0043-frontend-auth-required-sent-token.md)으로 대체), [0041](../decisions/0041-frontend-login-return-path.md), [0042](../decisions/0042-frontend-guard-test-route.md)
 
 ## 배경
 
@@ -31,7 +31,14 @@
 
 ## 리뷰와 반영
 
-(작성 중)
+PR #31을 만든 뒤 이 세션에서 `/code-review high`로 리뷰했다(서브에이전트 없이, 지적 검증 단계 없이). 코드를 쓴 세션이 직접 한 리뷰라 독립 리뷰는 아니다. 중요 1개, 사소함 4개가 나와 규칙대로 결과를 먼저 보고하고 멈췄고, 사람이 "당연히 수정해야죠. 수정을 진행하세요."라고 지시해 모두 고쳤다.
+
+- **[중요] 다시 로그인한 뒤 늦게 온 `AUTH_REQUIRED`가 새 토큰을 지움**: 만료 토큰으로 보낸 요청 두 개 중 느린 쪽이 다시 로그인한 뒤에 돌아오면, 새 토큰을 지우고 로그인 화면으로 다시 보냈다. 응답 전에 새 토큰을 저장하는 클라이언트 테스트 2개와 화면 테스트 1개로 먼저 재현(실패 확인)한 뒤, 그 요청에 보낸 토큰과 지금 토큰이 같을 때만 처리하게 고쳤다([0043](../decisions/0043-frontend-auth-required-sent-token.md)이 [0040](../decisions/0040-frontend-auth-required-central.md)을 대체). 비교를 빼면 3개가 실패한다.
+- **로그인 화면 판단이 `/login/`을 놓침**: `/login/`에서 `AUTH_REQUIRED`를 받는 테스트로 재현한 뒤 `matchPath`로 바꿨다.
+- **동시 401 테스트가 늦은 응답을 거치지 않고 통과할 수 있음**: 두 번째 요청이 핸들러에 닿을 때까지 기다린 뒤 풀게 했다. 위 토큰 비교가 들어간 뒤로는 이 테스트의 두 번째 알림이 토큰 비교에서 걸러진다. '로그인 화면이면 이동하지 않음'은 `/login/` 테스트가 지킨다(그 줄을 지우면 실패).
+- **R6 관련 테스트 두 개에 `R6:`이 빠짐**: 이름을 고치고 대응표에 행을 더했다.
+- **10초 시간 초과 화면 테스트가 약 11초까지 통과**: `findBy`가 기다리는 동안 가짜 시계가 흐르기 때문이었다. 9.5초에 문구가 없고 10초에 바로 보이는지 `act`로 확인하게 바꿨다. 실제 타이머를 0.5초 늦추거나 1초 앞당기면 실패하는 것을 확인했다.
+- **되돌림 확인 중 실수할 뻔함**: 타이머를 잠시 바꾼 뒤 `git checkout`으로 되돌리려 했는데, 커밋하지 않은 토큰 비교 수정까지 지워질 명령이었다. 자동 모드가 막았고, 백업 사본으로 되돌리는 방식으로 바꿨다. 실제로 지워진 것은 없다.
 
 ## 결과
 
