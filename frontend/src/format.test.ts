@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDateTime, formatPrice, formatSeats } from './format';
+import { formatDateTime, formatPrice, formatSeats, seatName } from './format';
 
 describe('일시 형식', () => {
   it('UTC 시각을 한국 시간으로 바꿔 "2026. 12. 20.(일) 19:00" 형식으로 보여 준다', () => {
@@ -30,13 +30,18 @@ describe('가격 형식', () => {
 });
 
 describe('좌석 형식', () => {
-  it('좌석을 받은 순서대로 "A-1, A-2"처럼 보여 준다', () => {
+  it('좌석 표시 이름은 줄과 번호를 붙여 쓴다(A3, B10)', () => {
+    expect(seatName({ row: 'A', number: 3 })).toBe('A3');
+    expect(seatName({ row: 'B', number: 10 })).toBe('B10');
+  });
+
+  it('좌석을 받은 순서대로 "A1, A2"처럼 보여 준다', () => {
     expect(
       formatSeats([
         { id: 1, row: 'A', number: 1 },
         { id: 2, row: 'A', number: 2 },
         { id: 3, row: 'B', number: 10 },
       ]),
-    ).toBe('A-1, A-2, B-10');
+    ).toBe('A1, A2, B10');
   });
 });
