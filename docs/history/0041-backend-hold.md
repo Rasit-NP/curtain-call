@@ -1,7 +1,7 @@
 # #41 백엔드 선점 생성(R1·R2·R3): 좌석 묶음 선점 API, 동시성, 4석 한도, 지연 만료
 
 - 기간: 2026-11-27
-- Issue: [#41](https://github.com/Rasit-NP/curtain-call/issues/41), PR: 작성 중
+- Issue: [#41](https://github.com/Rasit-NP/curtain-call/issues/41), PR: [#44](https://github.com/Rasit-NP/curtain-call/pull/44)
 - 관련 결정: [0070](../decisions/0070-hold-schema.md)~[0074](../decisions/0074-valid-hold-single-place.md)
 
 ## 배경
@@ -27,6 +27,9 @@
    좌석 `order by id for no key update` → 선점·좌석 목록 저장, 좌석 갱신.
 7. 동시성 테스트(`HoldConcurrencyTest`)를 5번 되풀이해 모두 통과했다(한 번에 약 6.7초).
 8. R1·R2·R3·R6 되돌림 확인(아래).
+9. `origin/main`에 #42(PR #43)가 먼저 병합돼 리베이스했다. 공유 문서(결정·진행 기록 목차, 결함 기록, 대응표의 현황·R1·R2)가 충돌해 양쪽 행을 모두 살렸다.
+   #43이 좌석 표시 이름을 `A3` 형식으로 바꿔(결정 0080) 이 Issue의 테스트 이름·주석·대응표도 맞췄다. 병합된 `V2__` 마이그레이션의 주석과 #35의 테스트 이름은 그대로 두었다.
+10. `./scripts/verify.sh` 전체 통과(백엔드 단위 64개, 통합 160개, 프론트엔드 157개, 하네스. E2E는 아직 없어 SKIP). PR [#44](https://github.com/Rasit-NP/curtain-call/pull/44)를 만들었다.
 
 ## 판단과 근거
 
