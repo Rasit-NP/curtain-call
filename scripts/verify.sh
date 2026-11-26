@@ -10,7 +10,9 @@
 #
 # - 단계별 전체 로그는 .verify-logs/<단계>.log 에 남는다.
 # - 실패하면 마지막에 실패한 단계의 로그 끝부분과 리포트 경로를 출력한다.
-# - 아직 만들지 않은 영역(폴더가 없는 경우)은 SKIP으로 표시하고 실패로 보지 않는다.
+# - 아직 만들지 않은 영역은 SKIP으로 표시하고 실패로 보지 않는다. 영역을 만들었는지는 폴더가 아니라
+#   표식 파일(backend/gradlew, frontend/package.json, e2e/package.json)로 판단한다.
+#   영역 폴더에는 코드보다 CLAUDE.md가 먼저 생기기 때문이다.
 # - macOS 기본 bash(3.2)에서도 돌아가도록 연관 배열 등은 쓰지 않는다.
 
 set -o pipefail
@@ -33,17 +35,22 @@ record() {
   fi
 }
 
+# area_ready <영역> <표식 파일(루트 기준)>
+# 표식 파일이 있으면 만든 영역으로 보고 0을 돌려준다. 없으면 SKIP을 기록하고 1을 돌려준다.
+area_ready() {
+  if [ -f "$ROOT/$2" ]; then
+    return 0
+  fi
+  echo "SKIP  $1 ($2 없음)"
+  record "$1" "SKIP" "-" "-"
+  return 1
+}
+
 # run_step <단계> <작업 폴더(루트 기준)> <리포트 경로> <명령...>
 run_step() {
   local name="$1" dir="$2" report="$3"
   shift 3
   local log="$LOG_DIR/$name.log"
-
-  if [ ! -d "$ROOT/$dir" ]; then
-    echo "SKIP  $name ($dir/ 폴더 없음)"
-    record "$name" "SKIP" "-" "-"
-    return 0
-  fi
 
   echo "RUN   $name: $*"
   if (cd "$ROOT/$dir" && "$@") >"$log" 2>&1; then
@@ -74,7 +81,13 @@ backend_unit() {
     ./gradlew test
 }
 
+backend_quick() {
+  area_ready backend backend/gradlew || return 0
+  backend_unit
+}
+
 backend_all() {
+  area_ready backend backend/gradlew || return 0
   backend_unit
   run_step backend-integration backend "backend/build/reports/tests/integrationTest/index.html" \
     ./gradlew integrationTest
@@ -83,11 +96,13 @@ backend_all() {
 }
 
 frontend_quick() {
+  area_ready frontend frontend/package.json || return 0
   run_step frontend-install frontend "-" ensure_node_modules || return 1
   run_step frontend-test frontend "-" npm run test
 }
 
 frontend_all() {
+  area_ready frontend frontend/package.json || return 0
   run_step frontend-install frontend "-" ensure_node_modules || return 1
   run_step frontend-typecheck frontend "-" npm run typecheck
   run_step frontend-lint frontend "-" npm run lint
@@ -96,11 +111,7 @@ frontend_all() {
 }
 
 e2e_all() {
-  if [ ! -d "$ROOT/e2e" ]; then
-    echo "SKIP  e2e (e2e/ 폴더 없음)"
-    record "e2e" "SKIP" "-" "-"
-    return 0
-  fi
+  area_ready e2e e2e/package.json || return 0
   if [ -f "$ROOT/compose.yaml" ]; then
     run_step e2e-db . "-" docker compose up -d --wait db || return 1
   fi
@@ -120,7 +131,7 @@ mkdir -p "$LOG_DIR"
 
 case "$MODE" in
   quick)
-    backend_unit
+    backend_quick
     frontend_quick
     ;;
   backend)
