@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 하네스 테스트: scripts/verify.sh와 Stop 훅(.claude/hooks/stop-verify.sh)이 문서대로 동작하는지 확인한다.
+# 하네스 테스트: scripts/verify.sh, Stop 훅(.claude/hooks/stop-verify.sh), .gitignore가 문서대로 동작하는지 확인한다.
 #
 # 사용법: bash scripts/harness.test.sh   (./scripts/verify.sh harness 와 전체 검증에서도 실행된다)
 #
@@ -204,6 +204,24 @@ test_hook_does_not_block_twice() {
   fi
 }
 
+# ---------- .gitignore ----------
+
+test_gitignore_rules() {
+  local path
+  for path in .idea/misc.xml .verify-logs/quick.log .env .env.local .claude/settings.local.json \
+    backend/build/x backend/.gradle/x frontend/node_modules/x frontend/dist/x frontend/coverage/x \
+    e2e/node_modules/x e2e/playwright-report/x e2e/test-results/x; do
+    git -C "$REPO" check-ignore -q "$path" || fail "제외돼야 하는데 제외되지 않음: $path" || return 1
+  done
+  for path in .env.example .claude/settings.json .claude/hooks/stop-verify.sh scripts/verify.sh \
+    backend/gradle/wrapper/gradle-wrapper.jar; do
+    if git -C "$REPO" check-ignore -q "$path"; then
+      fail "남아야 하는데 제외됨: $path"
+      return 1
+    fi
+  done
+}
+
 # ---------- 실행 ----------
 
 echo "하네스 테스트"
@@ -216,6 +234,7 @@ run_test "Stop 훅: settings.json에 등록돼 있고 훅 스크립트를 실행
 run_test "Stop 훅: verify.sh가 통과하면 아무것도 출력하지 않고 멈춤을 허용한다" test_hook_passes_silently
 run_test "Stop 훅: verify.sh가 실패하면 종료 코드 2로 멈춤을 막고 결과를 에이전트에게 준다" test_hook_blocks_on_failure
 run_test "Stop 훅: 이미 훅으로 이어 가는 중이면 다시 막지 않고 사용자에게 경고만 남긴다" test_hook_does_not_block_twice
+run_test ".gitignore: 생성 파일과 비밀값은 제외하고, 설정·스크립트·.env.example은 남긴다" test_gitignore_rules
 
 echo
 echo "결과: 통과 $PASSED, 실패 $FAILED"
