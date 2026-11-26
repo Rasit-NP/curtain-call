@@ -14,6 +14,8 @@
 - `backend/`, `frontend/`, `e2e/`에서 작업하기 전에는 그 폴더의 `CLAUDE.md`를 먼저 읽는다. 새 파일만 만드는 작업도 마찬가지다.
 - `scripts/verify.sh`: 모든 검증의 단일 진입점
 - `.claude/settings.json`, `.claude/hooks/stop-verify.sh`: 작업을 끝낼 때 `verify.sh quick`을 실행하는 Stop 훅
+- `.claude/settings.json`, `.claude/hooks/guard-main-checkout.sh`: `Edit`·`Write`·`NotebookEdit`로 메인 체크아웃의 파일을 고치려 하면 막는 PreToolUse 훅.
+  링크된 워크트리와 저장소 밖 파일은 막지 않는다. Bash로 쓰는 것은 막지 못한다. 아래 '작업 흐름'의 'Issue별 세션' 참고
 - `docs/spec.md`(명세), `docs/test-matrix.md`(규칙-테스트 대응표), `docs/agent-log.md`(결함 탐지·수정 기록)
 - `docs/decisions/`(작업용 결정 기록), `docs/history/`(포트폴리오용 진행 기록). 아래 '문서화' 참고
 
@@ -65,7 +67,7 @@
 
 - `./scripts/verify.sh quick`: 백엔드 단위 테스트 + 프론트엔드 테스트. 작업 중 수시로 실행
 - `./scripts/verify.sh backend` | `frontend` | `e2e`: 영역별 전체 검증
-- `./scripts/verify.sh harness`: 검증 스크립트와 Stop 훅 자체 테스트(`scripts/harness.test.sh`). 둘 중 하나를 고치면 실행
+- `./scripts/verify.sh harness`: 검증 스크립트와 훅 자체 테스트(`scripts/harness.test.sh`). 검증 스크립트나 훅을 고치면 실행
 - `./scripts/verify.sh`: 전체 검증(하네스 → 백엔드 → 프론트엔드 → E2E). PR을 만들기 전에 반드시 통과
 - 아직 만들지 않은 영역은 SKIP한다. 표식 파일(`backend/gradlew`, `frontend/package.json`, `e2e/package.json`)이 생기면 그 영역이 검증에 들어간다.
 - 테스트 하나만 빠르게 돌리는 명령은 각 폴더의 `CLAUDE.md`에 있다.
@@ -85,6 +87,25 @@
 - GitHub 작업(Issue, PR, 코멘트, 라벨)은 `gh` CLI로 한다.
 - Issue, PR, 커밋 메시지는 한국어로 쓴다.
 - 새 라이브러리를 추가하면 PR 본문에 이유를 적는다.
+
+### 지시 범위
+
+- 사람의 마지막 지시에 적힌 일만 한다.
+- '제시·설명·검토'를 지시받으면 제안·설명만 한다.
+- 세션 시작, Issue 생성, 파일 수정, PR 같은 행동은 사람이 그 행동을 지시한 뒤에 한다.
+- 범위가 모호할 때만 한 번 묻는다.
+
+### Issue 등록 범위
+
+- Issue를 만들어 달라는 요청에는 로드맵([#13](https://github.com/Rasit-NP/curtain-call/issues/13))에서 지금 진행할 단계의 Issue만 만든다.
+- 그보다 많이 만들어야 할 것 같으면 만들 목록을 먼저 보여 주고 묻는다.
+
+### Issue별 세션
+
+- Issue 작업은 Issue마다 별도 세션에서, 그 세션의 git 워크트리로 한다. 워크트리의 브랜치 이름도 위 2번을 따른다.
+- 메인 체크아웃(원래 저장소 폴더)의 파일은 고치지 않는다. `Edit`·`Write`·`NotebookEdit`는 훅(`.claude/hooks/guard-main-checkout.sh`)이 막는다.
+  훅이 막지 못하는 Bash로도 고치지 않는다.
+- 메인 세션은 Issue 등록, 세션 시작, 결과(PR, 검증 요약) 확인을 맡는다.
 
 ## 테스트 원칙
 
