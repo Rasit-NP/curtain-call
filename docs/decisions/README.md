@@ -78,3 +78,6 @@
 | [0063](0063-frontend-header-token-subscription.md) | 프론트: 헤더의 로그인 상태는 토큰 저장소의 변경 알림으로 다시 그리고, 로그아웃은 일반 이동(push)으로 보낸다 | 에이전트 결정 |
 | [0064](0064-frontend-date-format-intl.md) | 프론트: 일시는 Intl.DateTimeFormat(Asia/Seoul)의 부분을 받아 직접 이어 붙인다 | 에이전트 결정 |
 | [0065](0065-frontend-load-hook-and-screen-tests.md) | 프론트: 화면 데이터는 useLoad 훅으로 불러오고, 화면 테스트는 라우터 위치가 아니라 그려진 화면을 기다린다 | 에이전트 결정 |
+| [0080](0080-frontend-seat-selection-human.md) | 프론트: 좌석 선택 화면 — 범례 두 가지, 표시 이름 A3, 409는 선택을 비우고 다시 불러오기, 5번째 좌석은 눌러도 선택되지 않음 | 채택 |
+| [0081](0081-frontend-seat-selection-recommended.md) | 프론트: 좌석 선택 화면 — 공연 정보, 무대, 고른 좌석·합계, 빈 상태, 요청 중 막기, 문구 지우기, 409 뒤 다시 불러오기, 이동 방식 | 에이전트 결정 |
+| [0082](0082-frontend-seat-selection-impl.md) | 프론트: 좌석 선택 화면은 공연마다 새로 만들고, 409 뒤 다시 불러오기는 화면이 직접 하며 그동안도 막는다. 격자 위치는 인라인 스타일로 검증한다 | 에이전트 결정 |
