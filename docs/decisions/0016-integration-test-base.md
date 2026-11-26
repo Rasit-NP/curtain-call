@@ -1,6 +1,6 @@
 # 0016. 통합 테스트는 컨테이너 하나 공유, 테스트 시계, 테이블 비우기
 
-- 상태: 채택
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#5](https://github.com/Rasit-NP/curtain-call/issues/5), PR [#8](https://github.com/Rasit-NP/curtain-call/pull/8)

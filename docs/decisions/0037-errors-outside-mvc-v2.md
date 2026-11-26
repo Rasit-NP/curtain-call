@@ -1,6 +1,6 @@
 # 0037. MVC 밖 오류(개정): Tomcat이 거부한 요청은 별도 규칙으로 code를 정하고, 밸브는 공통 처리기와 같은 필드로 쓴다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 에이전트 결정
 - 날짜: 2026-11-27
 - 결정한 사람: 에이전트(PR #32 리뷰 지적을 고치라는 사람의 지시에 따라). `backend/CLAUDE.md`에 이 밸브를 예외로 적는 것은 사람이 정했다(2026-11-27, 메인 세션 대화).
 - 관련: Issue [#27](https://github.com/Rasit-NP/curtain-call/issues/27), PR [#32](https://github.com/Rasit-NP/curtain-call/pull/32), 대체하는 결정 [0035](0035-errors-outside-mvc.md), 결정 [0012](0012-backend-error-mapping.md)

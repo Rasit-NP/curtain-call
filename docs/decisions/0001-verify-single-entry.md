@@ -1,6 +1,6 @@
 # 0001. 검증은 verify.sh 하나로, 영역은 표식 파일로 판단
 
-- 상태: 채택
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트 제안, 사람 병합
 - 관련: Issue [#1](https://github.com/Rasit-NP/curtain-call/issues/1), PR [#2](https://github.com/Rasit-NP/curtain-call/pull/2)

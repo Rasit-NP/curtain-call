@@ -1,6 +1,6 @@
 # 0002. 작업을 끝낼 때 Stop 훅으로 quick 검증, 같은 턴에 한 번만 막기
 
-- 상태: 채택
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트 제안, 사람 병합
 - 관련: Issue [#1](https://github.com/Rasit-NP/curtain-call/issues/1), PR [#2](https://github.com/Rasit-NP/curtain-call/pull/2)

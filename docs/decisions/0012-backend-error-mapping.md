@@ -1,6 +1,6 @@
 # 0012. 백엔드 오류 응답: 입력 오류 상태만 INVALID_INPUT, 기능 오류는 ApiException, 나머지는 500
 
-- 상태: 채택
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트(독립 리뷰 반영)
 - 관련: Issue [#5](https://github.com/Rasit-NP/curtain-call/issues/5), PR [#8](https://github.com/Rasit-NP/curtain-call/pull/8)

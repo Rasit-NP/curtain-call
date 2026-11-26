@@ -1,6 +1,6 @@
 # 0042. 프론트 테스트: 가드는 실제 라우트 구성에 테스트용 보호 화면을 더해 검증하고, user-event와 가짜 타이머는 shouldAdvanceTime으로 함께 쓴다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#28](https://github.com/Rasit-NP/curtain-call/issues/28)

@@ -1,6 +1,6 @@
 # 0034. 로그인은 빈이 아닌 DaoAuthenticationProvider로 확인하고, 인증 오류 응답도 공통 처리기가 만든다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#27](https://github.com/Rasit-NP/curtain-call/issues/27), PR #8에서 넘겨받은 일(Security 예외가 500이 됨)

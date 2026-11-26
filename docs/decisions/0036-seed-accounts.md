@@ -1,6 +1,6 @@
 # 0036. 계정 시드: 시연용 demo, E2E용 e2e-user1·e2e-user2, 테스트에서는 시드 파일을 직접 실행해 검증
 
-- 상태: 제안(PR 병합 전)
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#27](https://github.com/Rasit-NP/curtain-call/issues/27), spec 2.5

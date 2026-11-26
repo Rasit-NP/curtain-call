@@ -1,6 +1,6 @@
 # 0027. Issue 작업은 Issue마다 별도 세션과 그 세션의 git 워크트리에서, 메인 체크아웃은 고치지 않는다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 채택
 - 날짜: 2026-11-26
 - 결정한 사람: 사람(대화에서 지시)
 - 관련: Issue [#29](https://github.com/Rasit-NP/curtain-call/issues/29)

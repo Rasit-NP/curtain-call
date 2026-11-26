@@ -1,6 +1,6 @@
 # 0020. 프론트 API 클라이언트의 auth는 기본값 없는 필수 옵션
 
-- 상태: 채택
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트
 - 관련: Issue [#6](https://github.com/Rasit-NP/curtain-call/issues/6), PR [#7](https://github.com/Rasit-NP/curtain-call/pull/7)

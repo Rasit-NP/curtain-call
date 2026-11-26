@@ -1,6 +1,6 @@
 # 0031. 보안 설정: 공개 경로는 메서드까지 정하고, 오류 전달(ERROR 디스패치)은 인증 없이 지나게 한다
 
-- 상태: 제안(PR 병합 전)
+- 상태: 에이전트 결정
 - 날짜: 2026-11-26
 - 결정한 사람: 에이전트(Issue #27의 완료 조건을 구현하며)
 - 관련: Issue [#27](https://github.com/Rasit-NP/curtain-call/issues/27), 결정 [0010](0010-security-in-auth-issue.md)
