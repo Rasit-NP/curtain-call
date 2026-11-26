@@ -41,9 +41,17 @@ Closes #
 
 -
 
+## 판단과 근거
+
+<!-- 이 PR에서 내린 판단과 근거. 추가한 docs/decisions 파일 번호와 갱신한 docs/history 파일 -->
+
+-
+
 ## 체크리스트
 
 - [ ] `./scripts/verify.sh` 전체 통과
 - [ ] Issue의 완료 조건마다 대응 테스트가 있음
 - [ ] `docs/test-matrix.md` 갱신
 - [ ] 결함을 찾아 고쳤다면 `docs/agent-log.md`에 기록
+- [ ] `docs/history/`의 Issue 파일 갱신
+- [ ] 결정이 있으면 `docs/decisions/`에 파일 추가(목차 포함)

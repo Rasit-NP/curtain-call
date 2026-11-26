@@ -15,6 +15,7 @@
 - `scripts/verify.sh`: 모든 검증의 단일 진입점
 - `.claude/settings.json`, `.claude/hooks/stop-verify.sh`: 작업을 끝낼 때 `verify.sh quick`을 실행하는 Stop 훅
 - `docs/spec.md`(명세), `docs/test-matrix.md`(규칙-테스트 대응표), `docs/agent-log.md`(결함 탐지·수정 기록)
+- `docs/decisions/`(작업용 결정 기록), `docs/history/`(포트폴리오용 진행 기록). 아래 '문서화' 참고
 
 ## 도메인 용어
 
@@ -106,6 +107,21 @@
    훅은 같은 턴에서 한 번 막은 뒤에는 다시 막지 않고 사용자에게 경고만 남긴다. 그때까지 고치지 못했으면 실패 사실과 남은 일을 직접 보고한다.
 6. 결함을 찾아 고친 사례는 `docs/agent-log.md`에 Issue·PR 링크와 함께 한 줄로 기록한다.
 
+## 문서화
+
+판단과 그 근거는 두 곳에 남긴다. 고르지 않고 모두 남긴다.
+
+- `docs/decisions/`: 작업용. 결정 하나에 파일 하나. 작업을 시작하기 전에 `docs/decisions/README.md`를 읽고 관련 결정을 확인한다.
+- `docs/history/`: 포트폴리오용. Issue 하나에 파일 하나(번호는 Issue 번호). 배경, 판단과 근거, 실패와 수정, 리뷰, 결과, 배운 점을 시간 순서로 쓴다.
+
+규칙:
+
+1. Issue 작업을 시작하면 `docs/history/`에 그 Issue 파일을 만들고, PR마다 그때그때 갱신한다. 끝난 뒤 몰아서 쓰지 않는다.
+2. 결정을 내리면 같은 PR에서 `docs/decisions/`에 파일을 추가한다. 에이전트가 정한 것, 사람이 정한 것, 대화에서 정한 것 모두 해당한다. 결정한 사람을 적는다.
+3. 결정이 바뀌면 원래 파일은 고치지 않고 새 파일을 만든 뒤 원래 파일의 상태를 `대체됨(→번호)`으로 바꾼다. PR이 병합되면 그 PR의 `제안` 결정을 `채택`으로 바꾼다.
+4. 두 폴더의 `README.md` 목차를 함께 고친다. 목차와 파일이 어긋나면 `verify.sh harness`가 실패한다.
+5. 결함을 고친 사례는 지금처럼 `docs/agent-log.md`에 한 줄로도 남긴다.
+
 ## 금지 사항
 
 - 테스트를 통과시키려고 테스트를 지우거나 비활성화(`@Disabled`, `.skip`, `.only` 포함)하거나 기대값을 바꾸지 않는다.
@@ -135,6 +151,7 @@
 - `./scripts/verify.sh` 전체 통과
 - Issue의 완료 조건마다 대응 테스트가 있음
 - `docs/test-matrix.md` 갱신
+- `docs/history/`의 Issue 파일 갱신, 결정이 있으면 `docs/decisions/` 파일 추가
 - PR 본문의 검증 결과, 실패와 수정 이력, 테스트가 잡는 결함을 채움
 
 ## 사람에게 넘기는 조건

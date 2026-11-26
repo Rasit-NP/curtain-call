@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# 하네스 테스트: scripts/verify.sh, Stop 훅(.claude/hooks/stop-verify.sh), .gitignore가 문서대로 동작하는지 확인한다.
+# 하네스 테스트: scripts/verify.sh, Stop 훅(.claude/hooks/stop-verify.sh), .gitignore, 문서 목차(scripts/check-docs-index.sh)가
+# 문서대로 동작하는지 확인한다.
 #
 # 사용법: bash scripts/harness.test.sh   (./scripts/verify.sh harness 와 전체 검증에서도 실행된다)
 #
@@ -222,6 +223,49 @@ test_gitignore_rules() {
   done
 }
 
+# check_index <폴더>: 목차 검사 스크립트를 실행하고 출력과 종료 코드를 돌려준다.
+check_index() {
+  bash "$REPO/scripts/check-docs-index.sh" "$1" 2>&1
+}
+
+# new_docs_dir <이름>: 목차와 항목 파일 둘을 둔 임시 문서 폴더를 만든다.
+new_docs_dir() {
+  local dir="$WORK/$1"
+  mkdir -p "$dir"
+  printf '# 1\n' > "$dir/0001-first.md"
+  printf '# 2\n' > "$dir/0002-second.md"
+  printf '| [0001](0001-first.md) | 첫째 |\n| [0002](0002-second.md) | 둘째 |\n' > "$dir/README.md"
+  echo "$dir"
+}
+
+test_docs_index_matches_repo() {
+  local dir out code
+  for dir in docs/decisions docs/history; do
+    [ -f "$REPO/$dir/README.md" ] || { fail "$dir/README.md 없음"; return 1; }
+    out="$(check_index "$REPO/$dir")"; code=$?
+    assert_exit "$code" 0 "$out" || return 1
+  done
+}
+
+test_docs_index_detects_mismatch() {
+  local dir out code
+  dir="$(new_docs_dir docs-ok)"
+  out="$(check_index "$dir")"; code=$?
+  assert_exit "$code" 0 "$out" || return 1
+
+  dir="$(new_docs_dir docs-missing)"
+  printf '# 3\n' > "$dir/0003-third.md"
+  out="$(check_index "$dir")"; code=$?
+  assert_exit "$code" 1 "$out" || return 1
+  assert_contains "$out" "0003-third.md" || return 1
+
+  dir="$(new_docs_dir docs-stale)"
+  rm "$dir/0002-second.md"
+  out="$(check_index "$dir")"; code=$?
+  assert_exit "$code" 1 "$out" || return 1
+  assert_contains "$out" "0002-second.md" || return 1
+}
+
 # ---------- 실행 ----------
 
 echo "하네스 테스트"
@@ -235,6 +279,8 @@ run_test "Stop 훅: verify.sh가 통과하면 아무것도 출력하지 않고 �
 run_test "Stop 훅: verify.sh가 실패하면 종료 코드 2로 멈춤을 막고 결과를 에이전트에게 준다" test_hook_blocks_on_failure
 run_test "Stop 훅: 이미 훅으로 이어 가는 중이면 다시 막지 않고 사용자에게 경고만 남긴다" test_hook_does_not_block_twice
 run_test ".gitignore: 생성 파일과 비밀값은 제외하고, 설정·스크립트·.env.example은 남긴다" test_gitignore_rules
+run_test "문서 목차: docs/decisions와 docs/history의 목차가 실제 파일과 맞다" test_docs_index_matches_repo
+run_test "문서 목차: 목차에 없는 파일과 파일이 없는 목차 항목을 찾아 실패한다" test_docs_index_detects_mismatch
 
 echo
 echo "결과: 통과 $PASSED, 실패 $FAILED"
