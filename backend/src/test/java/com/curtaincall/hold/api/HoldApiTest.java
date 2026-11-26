@@ -193,6 +193,26 @@ class HoldApiTest extends IntegrationTest {
         assertThat(holds.seatIdsOf(renewed)).containsExactly(a5, a6, a7, a8);
     }
 
+    /**
+     * 보유 좌석 수는 같은 사용자·같은 공연의 선점을 좌석 목록과 함께 읽어 센다. 2석 선점을 좌석 수만큼 두 번 세면(4석) 두 번째 요청이 409가 되고,
+     * 선점 한 건만 세면 마지막 요청이 201이 된다. 그래서 선점을 세 건으로 나눠 각 요청의 결과로 확인한다(PR #44 리뷰 지적 1).
+     */
+    @Test
+    @DisplayName("R2: 유효한 선점이 여러 건이면 그 좌석을 모두 더해 센다(2석, 1석, 1석을 차례로 선점하면 그다음 1석은 409 HOLD_LIMIT_EXCEEDED)")
+    void seatsOfSeveralValidHoldsAreSummed() throws Exception {
+        long first = createHold(alice, performance, a1, a2);
+        long second = createHold(alice, performance, a3);
+        long third = createHold(alice, performance, a4);
+
+        expectProblem(mockMvc.perform(hold(alice, performance, a5)), 409, "HOLD_LIMIT_EXCEEDED");
+
+        assertAvailable(a5);
+        assertThat(holds.countHolds()).isEqualTo(3);
+        assertThat(holds.seatIdsOf(first)).containsExactly(a1, a2);
+        assertThat(holds.seatIdsOf(second)).containsExactly(a3);
+        assertThat(holds.seatIdsOf(third)).containsExactly(a4);
+    }
+
     @Test
     @DisplayName("R2: 5석 묶음은 409 HOLD_LIMIT_EXCEEDED이고 아무 좌석도 선점되지 않는다")
     void fiveSeatBundleIsRejected() throws Exception {

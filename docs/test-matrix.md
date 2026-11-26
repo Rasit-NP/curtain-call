@@ -57,6 +57,7 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 경계 | R2: 보유 3석이면 1석은 허용하고 2석은 거부한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldLimitTest.java`) |
 | 경계 | R2: 만료·해제된 선점은 보유 좌석 수에 넣지 않는다(결제된 선점의 좌석은 예매로 센다) | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldLimitTest.java`) |
 | 경계 | R2: 다른 공연의 선점은 보유 좌석 수에 넣지 않는다(다른 공연에 4석이 있어도 4석을 선점할 수 있다) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 경계 | R2: 유효한 선점이 여러 건이면 그 좌석을 모두 더해 센다(2석, 1석, 1석을 차례로 선점하면 그다음 1석은 409 HOLD_LIMIT_EXCEEDED) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 경계 | R2: 예매 2석이 있으면 2석은 선점할 수 있고 3석은 409 HOLD_LIMIT_EXCEEDED다(5단계 결제 Issue에서 작성) | 백엔드 통합 | 미작성 |
 | 경계 | R2: 4석 선점이 만료된 순간 새로 4석을 선점할 수 있다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 경계 | R2: 선점을 해제하면 그 좌석은 보유 좌석 수에서 빠져 다시 4석을 선점할 수 있다(4단계 선점 해제 Issue에서 작성) | 백엔드 통합 | 미작성 |
