@@ -11,6 +11,12 @@ spring:
   flyway:
     # 스키마 마이그레이션만 쓴다. 시드는 local·e2e에서만 더한다.
     locations: classpath:db/migration
+management:
+  endpoint:
+    health:
+      # spec 6.10: 응답을 {"status":"UP"}로 둔다. Boot 4는 liveness·readiness 그룹을 기본으로 켜서 "groups"가 붙는다.
+      probes:
+        enabled: false
 
 ---
 # local: 로컬 개발, e2e: local과 같고 E2E 지원 엔드포인트가 켜진다.
