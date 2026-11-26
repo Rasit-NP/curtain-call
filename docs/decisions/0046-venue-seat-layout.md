@@ -20,4 +20,4 @@
 ## 적용과 남은 점
 
 - DB 구조는 [0048](0048-venue-performance-schema.md), 응답의 위치 필드는 [0047](0047-seat-grid-position.md)이다.
-- 배치 격자의 크기는 따로 주지 않는다. 화면은 좌석 위치의 최댓값으로 격자를 그린다.
+- 격자의 방향(1번째 줄이 무대 쪽)과 크기(좌석 위치의 최댓값)는 [0051](0051-seat-grid-orientation-and-size.md)이다.
