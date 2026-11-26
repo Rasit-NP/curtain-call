@@ -2,30 +2,47 @@
 
 - 기간: 2026-11-26 ~
 - Issue: [#27](https://github.com/Rasit-NP/curtain-call/issues/27), PR: (작성 중)
-- 관련 결정: (작성 중)
+- 관련 결정: [0031](../decisions/0031-security-paths-and-error-dispatch.md)~[0036](../decisions/0036-seed-accounts.md)
 
 ## 배경
 
 로드맵 [#13](https://github.com/Rasit-NP/curtain-call/issues/13)의 1단계 백엔드다. 백엔드 첫 설정(#5)은 Spring Security를 넣지 않았고([0010](../decisions/0010-security-in-auth-issue.md)), 보안 설정(공개 경로, E2E reset 경로의 예외)을 이 Issue에서 한 번에 넣는다. PR #8 리뷰가 남긴 일(Security 예외가 catch-all에 걸려 500이 되는 문제, MVC 밖 `/error`의 오류 형식)도 이 Issue 범위다.
 
-프론트엔드 인증(#28)과 고치는 폴더가 겹치지 않아, 메인 세션이 Issue마다 별도 세션·워크트리를 열어 동시에 진행했다.
+프론트엔드 인증(#28)과 고치는 폴더가 겹치지 않아, 메인 세션이 Issue마다 별도 세션·워크트리를 열어 동시에 진행했다. 결정 파일 번호가 겹치지 않게 이 Issue는 0031~0039를 쓰기로 메인 세션이 정했다.
+
+## 진행 순서
+
+1. 테스트를 먼저 썼다: 로그인 API, R6 보안, 현재 사용자 id, e2e 프로필과 시드, MVC 밖 오류(실제 서버), 프로필·서명 키 단위 테스트.
+2. 사용자 테이블·엔티티, JWT 키·인코더·디코더만 넣고(Boot 기본 보안 체인 그대로) 실행해 통합 테스트 72개 중 49개가 실패하는 것을 확인했다.
+3. 보안 체인, 인증 진입점, 로그인 API, `/error` 컨트롤러, 시드를 넣자 `ErrorPageTest` 3개만 남았다(아래 '실패와 수정').
+4. R6 되돌림 확인: 인증 요구(`authenticated()` → `permitAll()`), 서명 검증(항상 통과하는 검증기), 만료 판정(허용 오차 60초, 시스템 시계) 각각 해당 테스트가 실패하고, 복구하면 통과했다.
 
 ## 판단과 근거
 
-(작업하며 갱신)
+모두 에이전트가 정했다. 사람이 정한 것은 Issue 본문(공개 경로, 서명 키 정책, 시드 개수 등)과 결정 파일 번호 범위다.
+
+- **보안 설정**([0031](../decisions/0031-security-paths-and-error-dispatch.md)): 공개 경로를 메서드까지 정하고, reset 경로 예외는 `e2e` 프로필 조건으로 같은 체인에 둔다. 오류 전달(ERROR 디스패치)은 인증 없이 지나게 했다. 막으면 공개 경로의 필터 예외가 `/error`에서 401로 바뀌는 것을 되돌림으로 확인했다.
+- **토큰 검증**([0032](../decisions/0032-jwt-validation.md)): `JwtValidators.createDefault()`는 시스템 시계와 60초 허용 오차를 쓰므로 검증기를 직접 정했다. exp 없는 토큰과 숫자가 아닌 sub도 401로 막는다.
+- **현재 사용자 id**([0033](../decisions/0033-current-user-id.md)): `@CurrentUserId`(`@AuthenticationPrincipal` 메타 애너테이션). 테스트 도우미는 `AuthRequests.asUser(id)`.
+- **로그인과 인증 오류**([0034](../decisions/0034-login-and-auth-errors.md)): 타이밍 공격 방지와 '없는 아이디 = 틀린 비밀번호'를 Spring Security의 `DaoAuthenticationProvider`에 맡기고, `BadCredentialsException`만 401 INVALID_CREDENTIALS로 바꿨다(PR #8의 "Security 예외가 500" 문제). 인증 진입점은 본문을 직접 쓰지 않고 공통 처리기에 넘긴다.
+- **MVC 밖 오류**([0035](../decisions/0035-errors-outside-mvc.md)): `/error` 컨트롤러, Tomcat 파라미터 해석 예외 처리, Tomcat 오류 보고 밸브 교체.
+- **계정 시드**([0036](../decisions/0036-seed-accounts.md)): `demo`, `e2e-user1`, `e2e-user2`. 시드가 test 프로필 Flyway 위치에 없어, e2e 프로필 테스트가 시드 파일을 직접 실행해 로그인까지 확인한다.
 
 ## 실패와 수정
 
-(작업하며 갱신)
+- **공개 경로의 `?x=%zz`가 500**: Tomcat은 쿼리 값을 처음 읽을 때 해석하므로, MVC가 `@RequestParam`을 만들다 `InvalidParameterException`(IllegalStateException)이 나고 catch-all이 500 INTERNAL_ERROR로 바꿨다. 실제 서버에 소켓으로 요청을 보내는 테스트로 재현했다(`java.net.URI`는 `%zz`를 거부, MockMvc는 Tomcat 해석을 거치지 않음). 이 예외를 Tomcat이 정한 상태로 처리해 400 INVALID_INPUT이 됐다.
+- **경로의 `%zz`·`%2F`가 HTML 400**: Tomcat이 앱에 넘기기 전에 거부해 `/error`에도 가지 않고 Host의 `ErrorReportValve`가 HTML을 썼다. JSON을 쓰는 밸브로 바꿨는데 여전히 HTML(이번엔 835바이트)이 나왔다. Boot가 넣은 기본 밸브는 뺐지만, Host가 시작할 때 `errorReportValveClass`와 클래스 이름이 같은 밸브가 없다고 보고 기본 밸브를 다시 넣었기 때문이다(`StandardHost`를 `javap`로 확인). Host의 `errorReportValveClass`를 바꿔 해결했다.
+- 결함 기록: [`docs/agent-log.md`](../agent-log.md)
 
 ## 리뷰
 
-(작업하며 갱신)
+(PR 리뷰 뒤 갱신)
 
 ## 결과
 
-(작업하며 갱신)
+(PR 뒤 갱신)
 
 ## 배운 점
 
-(작업하며 갱신)
+- MockMvc는 서블릿 컨테이너의 해석과 `/error` 전달을 흉내 내지 않는다. "MVC 밖 오류"는 실제 서버로만 재현됐다.
+- 컨테이너가 거부하는 요청은 단계마다 처리하는 곳이 다르다(MVC 인자 해석 중, `/error` 전달, 앱에 닿기 전). 한 가지 수정으로 모두 막히지 않았고, 경우마다 테스트를 두어 각각 확인해야 했다.
