@@ -1,7 +1,7 @@
 # #35 백엔드 조회: 공연 목록·상세 API, 공연장별 좌석 배치, 공연·좌석 시드
 
 - 기간: 2026-11-27 ~
-- Issue: [#35](https://github.com/Rasit-NP/curtain-call/issues/35), PR: (작성 중)
+- Issue: [#35](https://github.com/Rasit-NP/curtain-call/issues/35), PR: [#37](https://github.com/Rasit-NP/curtain-call/pull/37)
 - 관련 결정: [0046](../decisions/0046-venue-seat-layout.md)~[0050](../decisions/0050-performance-detail-id-errors.md)
 
 ## 배경
@@ -53,7 +53,16 @@
 
 ## 리뷰
 
-(작성 중)
+`/code-review medium`(조회 API, [0023](../decisions/0023-review-depth-by-risk.md)). 머지 전에 고칠 결함은 없었고 사소한 지적 4건이 나왔다.
+
+| 지적 | 처리 |
+|---|---|
+| 1. 명세 2.1의 '격자 1번째 줄이 무대 쪽', '격자 크기는 좌석 위치의 최댓값'을 사람에게 묻지 않고 넣음(화면에 보이는 동작) | 사람에게 묻는 중 |
+| 2. 결정 0050(long 범위 밖 id는 400, 0·음수는 404)이 상태 코드 매핑인데 묻지 않음 | 사람에게 묻는 중 |
+| 3. 저장 상태 테스트가 holdId 없는 HELD 좌석을 만듦. 선점 Issue가 제약을 더하면 깨진다 | 아직 처리하지 않음 |
+| 4. 시드 파일을 파일 이름 문자열 순서로 실행(자릿수가 달라지면 Flyway와 순서가 다름) | 아직 처리하지 않음 |
+
+배운 점에 더함: 명세를 고치며 설명을 덧붙이다 보면 화면 방향 같은 정책을 모르는 사이에 정하게 된다. 정책 목록과 대조한 것은 리뷰 단계였다.
 
 ## 결과
 
