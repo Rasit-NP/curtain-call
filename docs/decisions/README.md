@@ -66,3 +66,8 @@
 | [0043](0043-frontend-auth-required-sent-token.md) | 프론트: 401 AUTH_REQUIRED 공통 처리는 그 요청에 보낸 토큰이 지금 토큰과 같을 때만 한다 | 에이전트 결정 |
 | [0044](0044-ask-policy-before-implementing.md) | 정책 결정(사용자가 겪는 동작, API 계약, 계정·인증·보안, Issue에서 정하기로 한 값, 규칙 모호·충돌)은 구현 전에 Issue 세션에서 사람에게 묻는다 | 채택 |
 | [0045](0045-decision-status-by-decider.md) | 결정 상태는 결정한 사람으로 정한다: '제안'은 물었을 때만, 확인받지 않은 에이전트 결정은 '에이전트 결정', 병합은 확인이 아니다 | 채택 |
+| [0046](0046-venue-seat-layout.md) | 좌석 배치는 공연장마다 다르고, 통로와 빈자리까지 표현한다 | 채택 |
+| [0047](0047-seat-grid-position.md) | 좌석 응답 Seat에 gridRow·gridColumn(1부터)을 더한다 | 채택 |
+| [0048](0048-venue-performance-schema.md) | 공연장·배치·공연·공연 좌석 테이블: 공연 좌석은 공연장 배치를 복사하고, 제약은 공연 좌석에 직접 건다 | 에이전트 결정 |
+| [0049](0049-performance-seed.md) | 공연 시드: 배치가 다른 공연장 2곳, 공연 3개, 모든 좌석 AVAILABLE. 시드 테스트는 값이 아닌 성질만 본다 | 에이전트 결정 |
+| [0050](0050-performance-detail-id-errors.md) | 공연 상세의 performanceId: long으로 해석할 수 없으면 400 INVALID_INPUT, 0·음수는 없는 공연(404) | 에이전트 결정 |
