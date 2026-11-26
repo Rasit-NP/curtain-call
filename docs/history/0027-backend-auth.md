@@ -1,7 +1,7 @@
 # #27 백엔드 인증(R6)
 
 - 기간: 2026-11-26 ~
-- Issue: [#27](https://github.com/Rasit-NP/curtain-call/issues/27), PR: (작성 중)
+- Issue: [#27](https://github.com/Rasit-NP/curtain-call/issues/27), PR: [#32](https://github.com/Rasit-NP/curtain-call/pull/32)
 - 관련 결정: [0031](../decisions/0031-security-paths-and-error-dispatch.md)~[0036](../decisions/0036-seed-accounts.md)
 
 ## 배경
