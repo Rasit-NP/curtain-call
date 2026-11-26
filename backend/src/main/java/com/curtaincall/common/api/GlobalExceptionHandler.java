@@ -1,7 +1,6 @@
 package com.curtaincall.common.api;
 
-import java.util.Set;
-
+import org.apache.tomcat.util.http.InvalidParameterException;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +24,14 @@ import jakarta.validation.ConstraintViolationException;
  *   <li>Spring MVC의 입력 오류(잘못된 JSON, 형식이 틀린 경로·쿼리 값, 검증 실패, 405, 406, 413, 415) → 400 INVALID_INPUT.
  *       405·415 등도 표에 있는 코드만 쓰기 위해 400으로 바꾼다.</li>
  *   <li>클래스에 @Validated를 붙인 빈의 메서드 검증 실패(ConstraintViolationException) → 400 INVALID_INPUT</li>
+ *   <li>Tomcat이 쿼리·폼 값을 해석하지 못함(InvalidParameterException, 예: ?x=%zz) → Tomcat이 정한 상태로(400 INVALID_INPUT)</li>
  *   <li>없는 경로(404) → 404 NOT_FOUND</li>
  *   <li>그 밖의 모든 예외(코드를 정하지 않은 ResponseStatusException 포함) → 500 INTERNAL_ERROR. 원인은 로그에만 남긴다.</li>
  * </ul>
+ *
+ * <p>MVC 밖의 오류도 여기서 형식을 만든다. 인증 실패는 AuthRequiredEntryPoint가, 서블릿 필터·컨테이너 단계의 오류는
+ * ProblemErrorController(/error)가 {@link ApiException}으로 넘긴다. 요청이 앱에 닿기 전에 Tomcat이 거부한 경우(잘못된 경로
+ * 인코딩 등)만 ProblemDetailErrorReportValve가 같은 형식으로 직접 쓴다.
  *
  * <p>응답은 모두 부모의 handleExceptionInternal을 거친다. 이미 커밋된 응답은 건드리지 않고, 500이면 요청에 예외를 남겨
  * 관측(메트릭의 exception 태그)에 잡히게 하는 Spring의 처리를 그대로 쓰기 위해서다.
@@ -36,14 +40,6 @@ import jakarta.validation.ConstraintViolationException;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
-    /** INVALID_INPUT으로 바꾸는 Spring MVC 예외의 상태. */
-    private static final Set<Integer> INPUT_ERROR_STATUSES = Set.of(
-            HttpStatus.BAD_REQUEST.value(),
-            HttpStatus.METHOD_NOT_ALLOWED.value(),
-            HttpStatus.NOT_ACCEPTABLE.value(),
-            HttpStatus.CONTENT_TOO_LARGE.value(),
-            HttpStatus.UNSUPPORTED_MEDIA_TYPE.value());
 
     @ExceptionHandler(ApiException.class)
     public @Nullable ResponseEntity<Object> handleApiException(ApiException ex, WebRequest request) {
@@ -55,6 +51,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return respond(ex, ErrorCode.INVALID_INPUT, null, new HttpHeaders(), request);
     }
 
+    /**
+     * Tomcat은 쿼리·폼 값을 처음 읽을 때 해석한다. 퍼센트 인코딩이 잘못됐거나 값이 너무 많으면 그때 이 예외를 던지므로
+     * 컨트롤러 인자를 만들다가 여기로 온다. Tomcat이 정한 상태(400, 413 등)로 code를 정한다(입력 오류 → 400 INVALID_INPUT).
+     */
+    @ExceptionHandler(InvalidParameterException.class)
+    public @Nullable ResponseEntity<Object> handleInvalidParameter(InvalidParameterException ex, WebRequest request) {
+        int status = ex.getErrorCode() > 0 ? ex.getErrorCode() : HttpStatus.BAD_REQUEST.value();
+        return respond(ex, ErrorCode.forFrameworkStatus(status), null, new HttpHeaders(), request);
+    }
+
     @ExceptionHandler(Exception.class)
     public @Nullable ResponseEntity<Object> handleUnexpected(Exception ex, WebRequest request) {
         return respond(ex, ErrorCode.INTERNAL_ERROR, null, new HttpHeaders(), request);
@@ -64,17 +70,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected @Nullable ResponseEntity<Object> handleExceptionInternal(
             Exception ex, @Nullable Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
-        return respond(ex, toErrorCode(statusCode), null, headers, request);
-    }
-
-    private static ErrorCode toErrorCode(HttpStatusCode statusCode) {
-        if (statusCode.value() == HttpStatus.NOT_FOUND.value()) {
-            return ErrorCode.NOT_FOUND;
-        }
-        if (INPUT_ERROR_STATUSES.contains(statusCode.value())) {
-            return ErrorCode.INVALID_INPUT;
-        }
-        return ErrorCode.INTERNAL_ERROR;
+        return respond(ex, ErrorCode.forFrameworkStatus(statusCode.value()), null, headers, request);
     }
 
     private @Nullable ResponseEntity<Object> respond(
