@@ -315,6 +315,63 @@ describe('apiRequest 401 AUTH_REQUIRED 공통 처리', () => {
     }
   });
 
+  it('R6: 요청을 보낸 뒤 다시 로그인해 토큰이 바뀌었으면, 늦게 온 AUTH_REQUIRED는 새 토큰을 지우지 않고 알리지도 않는다', async () => {
+    saveAccessToken('expired-token');
+    server.use(
+      http.get('/api/reservations', () => {
+        // 응답이 오기 전에 다른 곳(로그인 화면)에서 새 토큰을 저장한 상황
+        saveAccessToken('new-token');
+        return HttpResponse.json({ status: 401, code: 'AUTH_REQUIRED' }, { status: 401 });
+      }),
+    );
+    const listener = vi.fn();
+    const unsubscribe = onAuthRequired(listener);
+
+    try {
+      const error = await failureOf(apiRequest('/api/reservations', { auth: true }));
+
+      expect(error).toMatchObject({ status: 401, code: 'AUTH_REQUIRED' });
+      expect(getAccessToken()).toBe('new-token');
+      expect(listener).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('R6: 토큰 없이 보낸 요청이 끝나기 전에 로그인했으면, 늦게 온 AUTH_REQUIRED는 새 토큰을 지우지 않고 알리지도 않는다', async () => {
+    server.use(
+      http.get('/api/reservations', () => {
+        saveAccessToken('new-token');
+        return HttpResponse.json({ status: 401, code: 'AUTH_REQUIRED' }, { status: 401 });
+      }),
+    );
+    const listener = vi.fn();
+    const unsubscribe = onAuthRequired(listener);
+
+    try {
+      await failureOf(apiRequest('/api/reservations', { auth: true }));
+
+      expect(getAccessToken()).toBe('new-token');
+      expect(listener).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('R6: 토큰 없이 보낸 요청이 AUTH_REQUIRED를 받으면 로그인이 필요하다고 알린다', async () => {
+    respondWith401('AUTH_REQUIRED');
+    const listener = vi.fn();
+    const unsubscribe = onAuthRequired(listener);
+
+    try {
+      await failureOf(apiRequest('/api/reservations', { auth: true }));
+
+      expect(listener).toHaveBeenCalledTimes(1);
+    } finally {
+      unsubscribe();
+    }
+  });
+
   it('구독을 끊으면 더 알리지 않는다', async () => {
     respondWith401('AUTH_REQUIRED');
     const listener = vi.fn();

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { matchPath, useLocation, useNavigate } from 'react-router';
 import { onAuthRequired } from './authRequired';
 import { LOGIN_PATH, loginRedirectState } from './loginRedirect';
 
@@ -23,7 +23,8 @@ export function AuthRequiredRedirect() {
       onAuthRequired(() => {
         const current = locationRef.current;
         // 로그인 화면에서 끝난 요청이면 이미 로그인 화면이다. 다시 보내면 돌아갈 경로가 /login으로 바뀐다.
-        if (current.pathname === LOGIN_PATH) return;
+        // 라우터와 같은 규칙(끝의 /, 대소문자 무시)으로 판단해야 /login/ 같은 경로도 로그인 화면으로 본다.
+        if (matchPath(LOGIN_PATH, current.pathname) !== null) return;
         // 요청 여러 개가 함께 AUTH_REQUIRED를 받으면 같은 state로 여러 번 부를 수 있다. replace라 기록이 쌓이지 않는다.
         void navigate(LOGIN_PATH, { replace: true, state: loginRedirectState(current, 'AUTH_REQUIRED') });
       }),

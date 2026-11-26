@@ -37,11 +37,10 @@ export async function apiRequest<T>(path: ApiPath, options: ApiRequestOptions): 
   if (options.body !== undefined) {
     headers.set('Content-Type', 'application/json');
   }
-  if (options.auth) {
-    const token = getAccessToken();
-    if (token !== null) {
-      headers.set('Authorization', `Bearer ${token}`);
-    }
+  // 보낸 토큰을 기억해 두고, AUTH_REQUIRED를 받았을 때 그 사이 다시 로그인했는지 판단한다(handleAuthRequired).
+  const sentToken = options.auth ? getAccessToken() : null;
+  if (sentToken !== null) {
+    headers.set('Authorization', `Bearer ${sentToken}`);
   }
 
   // 본문 직렬화와 Request 생성은 try 밖에서 한다. 직렬화할 수 없는 본문이나 GET 요청의 본문 같은 호출 실수가
@@ -67,7 +66,7 @@ export async function apiRequest<T>(path: ApiPath, options: ApiRequestOptions): 
       const code = await errorCodeOf(response);
       // 토큰 삭제와 로그인 이동은 code로만 판단한다. 로그인 실패(INVALID_CREDENTIALS)도 401이기 때문이다(spec 3.3, 결정 0008).
       if (code === 'AUTH_REQUIRED') {
-        handleAuthRequired();
+        handleAuthRequired(sentToken);
       }
       throw new ApiError(code, response.status);
     }

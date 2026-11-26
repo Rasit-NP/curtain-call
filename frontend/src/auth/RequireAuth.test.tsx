@@ -19,7 +19,7 @@ function loginSucceeds() {
 }
 
 describe('인증 가드', () => {
-  it('토큰이 있으면 로그인이 필요한 화면을 그대로 보여 준다', () => {
+  it('R6: 토큰이 있으면 로그인이 필요한 화면을 그대로 보여 준다', () => {
     saveAccessToken('token-1');
 
     const { router } = renderApp(`${PROTECTED_TEST_PATH}?page=2`);

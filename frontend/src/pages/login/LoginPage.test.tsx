@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
 import { REQUEST_TIMEOUT_MS } from '../../api/client';
@@ -85,10 +85,13 @@ describe('로그인 화면', () => {
     const { user } = renderApp('/login', { advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
 
     await submitLogin(user);
+    // shouldAdvanceTime 때문에 실제로 흐른 몇 ms만큼 가짜 시계가 더 갈 수 있어, 직전 확인은 여유를 둔다.
+    await act(() => vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS - 500));
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS);
+    await act(() => vi.advanceTimersByTimeAsync(500));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.');
+    // findBy로 기다리면 기다리는 동안 가짜 시계가 더 흘러 10초보다 늦은 시간 제한도 통과하므로, 바로 확인한다.
+    expect(screen.getByRole('alert')).toHaveTextContent('서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.');
     expect(screen.getByRole('button', { name: '로그인' })).toBeEnabled();
   });
 

@@ -1,6 +1,7 @@
-import { screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, type MockInstance } from 'vitest';
+import { apiRequest } from '../api/client';
 import { PROTECTED_TEST_PATH, renderApp } from '../test/renderApp';
 import { server } from '../test/server';
 import { getAccessToken, saveAccessToken } from './tokenStorage';
@@ -9,6 +10,16 @@ import { getAccessToken, saveAccessToken } from './tokenStorage';
 
 function reservationsRespond(status: number, code: string) {
   server.use(http.get('/api/reservations', () => HttpResponse.json({ status, code }, { status })));
+}
+
+/**
+ * 지금까지 보낸 요청의 응답을 클라이언트가 모두 처리할 때까지 기다린다.
+ * 처리 결과가 '아무 일도 없음'인 경우(토큰을 지우지 않음, 이동하지 않음)를 검사하려면 처리가 끝났다는 것을 먼저 알아야 한다.
+ */
+async function responsesProcessed(fetchSpy: MockInstance<typeof fetch>) {
+  await Promise.allSettled(fetchSpy.mock.results.map((result) => result.value as Promise<Response>));
+  // 응답 본문을 읽고 오류를 처리하는 데 남은 비동기 단계를 마저 돌린다.
+  await new Promise((resolve) => setTimeout(resolve, 20));
 }
 
 async function login(user: ReturnType<typeof renderApp>['user']) {
@@ -59,12 +70,58 @@ describe('401 AUTH_REQUIRED 공통 처리', () => {
         });
       }),
     );
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
     const { router, user } = renderApp(`${PROTECTED_TEST_PATH}?page=2`);
     await user.click(screen.getByRole('button', { name: '내 예매 두 번 불러오기' }));
     await screen.findByRole('button', { name: '로그인' });
+    // 두 번째 요청이 핸들러에 닿기 전에 풀면 늦게 온 응답의 경우를 거치지 않고 통과하므로, 닿을 때까지 기다린다.
+    await vi.waitFor(() => expect(releaseSecond).toBeDefined());
 
     releaseSecond?.();
-    await vi.waitFor(() => expect(calls).toBe(2));
+    await responsesProcessed(fetchSpy);
+    await vi.waitFor(() => expect(router.state.navigation.state).toBe('idle'));
+    await login(user);
+
+    expect(await screen.findByText(`경로: ${PROTECTED_TEST_PATH}?page=2`)).toBeInTheDocument();
+  });
+
+  it('R6: 다시 로그인한 뒤에 끝난 이전 요청의 AUTH_REQUIRED는 새 토큰을 지우거나 로그인 화면으로 다시 보내지 않는다', async () => {
+    saveAccessToken('expired-token');
+    let releaseSecond: (() => void) | undefined;
+    let calls = 0;
+    server.use(
+      http.get('/api/reservations', () => {
+        calls += 1;
+        const response = HttpResponse.json({ status: 401, code: 'AUTH_REQUIRED' }, { status: 401 });
+        if (calls === 1) return response;
+        return new Promise<Response>((resolve) => {
+          releaseSecond = () => resolve(response);
+        });
+      }),
+    );
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    const { router, user } = renderApp(`${PROTECTED_TEST_PATH}?page=2`);
+    await user.click(screen.getByRole('button', { name: '내 예매 두 번 불러오기' }));
+    await screen.findByRole('button', { name: '로그인' });
+    await vi.waitFor(() => expect(releaseSecond).toBeDefined());
+    await login(user);
+    await screen.findByText(`경로: ${PROTECTED_TEST_PATH}?page=2`);
+
+    releaseSecond?.();
+    await responsesProcessed(fetchSpy);
+
+    expect(getAccessToken()).toBe('new-token');
+    expect(router.state.location.pathname).toBe(PROTECTED_TEST_PATH);
+    expect(screen.getByText(`경로: ${PROTECTED_TEST_PATH}?page=2`)).toBeInTheDocument();
+  });
+
+  it('R6: 로그인 화면 경로 끝에 /가 붙어 있어도(/login/) 늦게 온 AUTH_REQUIRED가 돌아갈 경로를 덮지 않는다', async () => {
+    reservationsRespond(401, 'AUTH_REQUIRED');
+    const { router, user } = renderApp({ pathname: '/login/', state: { from: `${PROTECTED_TEST_PATH}?page=2` } });
+
+    await act(async () => {
+      await apiRequest('/api/reservations', { auth: true }).catch(() => undefined);
+    });
     await vi.waitFor(() => expect(router.state.navigation.state).toBe('idle'));
     await login(user);
 
@@ -83,7 +140,7 @@ describe('401 AUTH_REQUIRED 공통 처리', () => {
     expect(getAccessToken()).toBe('token-1');
   });
 
-  it('다른 오류(500)에는 토큰을 지우거나 화면을 옮기지 않는다', async () => {
+  it('R6: 인증이 필요한 API의 다른 오류(500)에는 토큰을 지우거나 화면을 옮기지 않는다', async () => {
     saveAccessToken('token-1');
     reservationsRespond(500, 'INTERNAL_ERROR');
     const { router, user } = renderApp(PROTECTED_TEST_PATH);
