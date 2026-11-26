@@ -9,7 +9,8 @@
 #   all       backend → frontend → e2e (기본값, PR 전에 반드시 통과)
 #
 # - 단계별 전체 로그는 .verify-logs/<단계>.log 에 남는다.
-# - 실패하면 마지막에 실패한 단계의 로그 끝부분과 리포트 경로를 출력한다.
+# - 실패하면 마지막에 실패한 단계마다 첫 오류로 보이는 줄(줄 번호 포함), 로그 끝부분, 리포트 경로를 출력한다.
+#   로그 끝만 보면 원인이 잘리는 도구가 있기 때문이다(예: npm ci는 원인을 맨 앞에 쓰고 도움말을 길게 붙인다).
 # - 아직 만들지 않은 영역은 SKIP으로 표시하고 실패로 보지 않는다. 영역을 만들었는지는 폴더가 아니라
 #   표식 파일(backend/gradlew, frontend/package.json, e2e/package.json)로 판단한다.
 #   영역 폴더에는 코드보다 CLAUDE.md가 먼저 생기기 때문이다.
@@ -21,6 +22,10 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="$ROOT/.verify-logs"
 MODE="${1:-all}"
 TAIL_LINES=40
+FIRST_ERROR_LINES=10
+# 첫 오류로 보이는 줄의 패턴: Gradle·Vitest·Playwright의 실패 표시(FAIL, FAILED, ✘, ×),
+# javac·tsc·ESLint·npm의 error, 예외 이름. 대소문자를 구분해 일반 출력(errorMessages.ts 등)과 덜 겹치게 한다.
+ERROR_PATTERN='FAIL|(^|[[:space:]])error([[:space:]]|:)|Error:|Exception|✘|×'
 
 SUMMARY=""
 FAILED_STEPS=""
@@ -164,7 +169,10 @@ if [ "$FAILED" -ne 0 ]; then
   echo "===== 실패 상세 ====="
   printf '%s' "$FAILED_STEPS" | while IFS='|' read -r name log report; do
     [ -n "$name" ] || continue
-    echo "--- $name: 로그 마지막 ${TAIL_LINES}줄 (${log#"$ROOT"/}) ---"
+    echo "--- $name (로그: ${log#"$ROOT"/}) ---"
+    echo "[첫 오류로 보이는 줄: 최대 ${FIRST_ERROR_LINES}개, 앞의 숫자는 로그 줄 번호]"
+    grep -n -m "$FIRST_ERROR_LINES" -E "$ERROR_PATTERN" "$log" || echo "(찾지 못함)"
+    echo "[로그 마지막 ${TAIL_LINES}줄]"
     tail -n "$TAIL_LINES" "$log"
     if [ "$report" != "-" ]; then
       echo "리포트: $report"
