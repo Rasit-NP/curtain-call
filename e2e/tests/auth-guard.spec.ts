@@ -15,7 +15,7 @@ test('R6: 로그인하지 않고 좌석 선택 화면에 들어가면 로그인 
   await page.goto(`/performances/${performance.id}`);
 
   await expect(page).toHaveURL(/\/login$/);
-  await expect(page.getByRole('heading', { name: '로그인 화면', level: 1 }) ).toBeVisible();
+  await expect(page.getByRole('heading', { name: '로그인', level: 1 })).toBeVisible();
   await expect(page.getByRole('heading', { name: '좌석 선택' })).toHaveCount(0);
 
   // 로그인하면 원래 화면으로 돌아온다(spec 7.1).
