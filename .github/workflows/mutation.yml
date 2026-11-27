@@ -8,6 +8,8 @@ name: Mutation
 
 on:
   workflow_dispatch:
+  # 임시: PR에서 한 번 돌려 확인하고 되돌린다(Issue #69). 하네스가 이 트리거를 막는다.
+  pull_request:
 
 permissions:
   contents: read
