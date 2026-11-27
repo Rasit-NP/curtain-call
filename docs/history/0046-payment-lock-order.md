@@ -1,7 +1,7 @@
 # #46 결제 동시성 설계 정정(R2·R4): 결제도 사용자 행을 먼저 잠근다, 진행 기록 목차 상태 정정
 
 - 기간: 2026-11-27 ~
-- Issue: [#46](https://github.com/Rasit-NP/curtain-call/issues/46)
+- Issue: [#46](https://github.com/Rasit-NP/curtain-call/issues/46), PR: [#49](https://github.com/Rasit-NP/curtain-call/pull/49)
 - 관련 결정: [0100](../decisions/0100-hold-concurrency-v2.md)(대체한 결정 [0073](../decisions/0073-hold-concurrency.md))
 
 ## 배경
@@ -50,8 +50,13 @@ Issue의 '에이전트가 정하는 것'(결제의 잠금 순서, 교착 상태�
 
 ## 실패와 수정
 
+- 결정 0100 초안에 "다른 사용자의 선점이면 404로 끝나 아무것도 바꾸지 않는다"고 썼다. 명세 6.7.1은 404 결과도 멱등 기록에 저장하므로 틀린 문장이었다.
+  커밋 전에 다시 읽다가 찾아 "누구의 보유 좌석 수도 바꾸지 않는다(요청한 사용자의 멱등 기록만 저장한다)"로 고쳤다.
+
 ## 리뷰
 
 ## 결과
+
+- PR [#49](https://github.com/Rasit-NP/curtain-call/pull/49)를 만들었다. `./scripts/verify.sh` 전체 통과(2026-11-27, 하네스·백엔드·프론트엔드 PASS, E2E는 영역이 없어 SKIP). 문서만 고쳐 테스트 수는 바뀌지 않았다.
 
 ## 배운 점
