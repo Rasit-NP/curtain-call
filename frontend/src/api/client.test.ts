@@ -93,25 +93,50 @@ describe('apiRequest 오류 응답', () => {
   it('code가 없는 ProblemDetail 오류 응답은 INTERNAL_ERROR로 본다', async () => {
     server.use(
       http.get('/api/performances', () =>
-        HttpResponse.json({ title: 'Bad Gateway', status: 502 }, { status: 502 }),
+        HttpResponse.json({ title: 'Internal Server Error', status: 500 }, { status: 500 }),
       ),
     );
 
     const error = await failureOf(apiRequest('/api/performances', { auth: false }));
 
-    expect(error).toMatchObject({ status: 502, code: 'INTERNAL_ERROR' });
+    expect(error).toMatchObject({ status: 500, code: 'INTERNAL_ERROR' });
   });
 
   it('본문이 JSON이 아닌 오류 응답은 INTERNAL_ERROR로 본다', async () => {
     server.use(
       http.get('/api/performances', () =>
-        HttpResponse.html('<html><body>Bad Gateway</body></html>', { status: 502 }),
+        HttpResponse.html('<html><body>Internal Server Error</body></html>', { status: 500 }),
       ),
     );
 
     const error = await failureOf(apiRequest('/api/performances', { auth: false }));
 
-    expect(error).toMatchObject({ status: 502, code: 'INTERNAL_ERROR' });
+    expect(error).toMatchObject({ status: 500, code: 'INTERNAL_ERROR' });
+  });
+
+  // 중간 서버(개발 서버의 프록시 등)가 만든 응답이라 백엔드에 닿았는지 알 수 없다. 결제 화면은 같은 멱등 키를 다시 쓴다(결정 0133, R5).
+  it.each([
+    ['본문 없는 502', () => new HttpResponse(null, { status: 502 })],
+    ['HTML 본문의 502', () => HttpResponse.html('<html><body>Bad Gateway</body></html>', { status: 502 })],
+    ['code가 없는 ProblemDetail 503', () => HttpResponse.json({ title: 'Service Unavailable', status: 503 }, { status: 503 })],
+    ['본문 없는 504', () => new HttpResponse(null, { status: 504 })],
+    ['표에 없는 code의 502', () => HttpResponse.json({ status: 502, code: 'BAD_GATEWAY' }, { status: 502 })],
+  ])('%s는 응답 없음으로 넘긴다', async (_name, respond) => {
+    server.use(http.get('/api/performances', respond));
+
+    const error = await failureOf(apiRequest('/api/performances', { auth: false }));
+
+    expect(error.code).toBe(NO_RESPONSE);
+  });
+
+  it('502·503·504라도 본문에 오류 코드 표의 code가 있으면 그 code로 넘긴다', async () => {
+    server.use(
+      http.get('/api/performances', () => HttpResponse.json({ status: 503, code: 'INTERNAL_ERROR' }, { status: 503 })),
+    );
+
+    const error = await failureOf(apiRequest('/api/performances', { auth: false }));
+
+    expect(error).toMatchObject({ status: 503, code: 'INTERNAL_ERROR' });
   });
 
   it('오류 코드 표에 없는 code는 INTERNAL_ERROR로 본다', async () => {

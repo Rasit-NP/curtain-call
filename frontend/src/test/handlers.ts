@@ -6,6 +6,8 @@ import type { Hold, PerformanceDetail, PerformanceSummary, Reservation } from '.
 export const PERFORMANCES_PATH = '/api/performances';
 export const PERFORMANCE_DETAIL_PATH = '/api/performances/:performanceId';
 export const HOLDS_PATH = '/api/holds';
+export const HOLD_PATH = '/api/holds/:holdId';
+export const PAYMENTS_PATH = '/api/payments';
 export const RESERVATIONS_PATH = '/api/reservations';
 
 /** 오류 응답(spec 3.1의 ProblemDetail + code) */
@@ -48,4 +50,53 @@ export function reservationsHandler(reservations: Reservation[]) {
   return http.get(RESERVATIONS_PATH, ({ request }) =>
     request.headers.get('Authorization') === null ? problem(401, 'AUTH_REQUIRED') : HttpResponse.json(reservations),
   );
+}
+
+/** GET /api/holds/{holdId} 내 선점 조회(spec 6.5). 토큰이 없으면 서버처럼 401 AUTH_REQUIRED, 다른 선점 번호면 404 NOT_FOUND를 준다. */
+export function holdHandler(hold: Hold) {
+  return http.get(HOLD_PATH, ({ request, params }) => {
+    if (request.headers.get('Authorization') === null) return problem(401, 'AUTH_REQUIRED');
+    return params.holdId === String(hold.id) ? HttpResponse.json(hold) : problem(404, 'NOT_FOUND');
+  });
+}
+
+/**
+ * DELETE /api/holds/{holdId} 내 선점 해제(spec 6.6). 토큰이 없으면 서버처럼 401 AUTH_REQUIRED, 있으면 204를 준다.
+ * 해제한 선점 번호를 released에 쌓아 테스트가 확인할 수 있게 한다.
+ */
+export function holdReleaseHandler(released: string[] = []) {
+  return http.delete(HOLD_PATH, ({ request, params }) => {
+    if (request.headers.get('Authorization') === null) return problem(401, 'AUTH_REQUIRED');
+    released.push(String(params.holdId));
+    return new HttpResponse(null, { status: 204 });
+  });
+}
+
+/** POST /api/payments 결제 요청 본문(spec 6.7) */
+export interface PaymentRequestBody {
+  holdId: number;
+}
+
+/** 받은 결제 요청: Idempotency-Key 헤더와 본문 */
+export interface PaymentRequestRecord {
+  idempotencyKey: string | null;
+  body: PaymentRequestBody;
+}
+
+/**
+ * POST /api/payments 결제(spec 6.7). 토큰이 없으면 서버처럼 401 AUTH_REQUIRED를 준다.
+ * 받은 요청(멱등 키와 본문)을 requests에 쌓고, respond가 만든 응답을 돌려준다.
+ */
+export function paymentHandler(
+  respond: () => Response | Promise<Response>,
+  requests: PaymentRequestRecord[] = [],
+) {
+  return http.post(PAYMENTS_PATH, async ({ request }) => {
+    if (request.headers.get('Authorization') === null) return problem(401, 'AUTH_REQUIRED');
+    requests.push({
+      idempotencyKey: request.headers.get('Idempotency-Key'),
+      body: (await request.json()) as PaymentRequestBody,
+    });
+    return respond();
+  });
 }

@@ -291,7 +291,7 @@ describe('좌석 선택 화면: 불러오기', () => {
   it.each([
     ['500 INTERNAL_ERROR', () => problem(500, 'INTERNAL_ERROR'), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
     ['400 INVALID_INPUT', () => problem(400, 'INVALID_INPUT'), '입력한 내용을 확인해 주세요.'],
-    ['code 없는 오류 응답', () => new HttpResponse('Bad Gateway', { status: 502 }), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
+    ['code 없는 오류 응답', () => new HttpResponse('Internal Server Error', { status: 500 }), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
     ['응답 없음(네트워크 오류)', () => HttpResponse.error(), '서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.'],
   ])('%s면 code별 안내 문구만 보여 주고 좌석과 "공연 목록" 링크는 보여 주지 않는다', async (_name, respond, message) => {
     saveAccessToken('token-1');
@@ -496,7 +496,7 @@ describe('좌석 선택 화면: 좌석 선택 완료', () => {
   it.each([
     ['500 INTERNAL_ERROR', () => problem(500, 'INTERNAL_ERROR'), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
     ['400 INVALID_INPUT', () => problem(400, 'INVALID_INPUT'), '입력한 내용을 확인해 주세요.'],
-    ['code 없는 오류 응답', () => new HttpResponse('Bad Gateway', { status: 502 }), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
+    ['code 없는 오류 응답', () => new HttpResponse('Internal Server Error', { status: 500 }), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
     ['응답 없음(네트워크 오류)', () => HttpResponse.error(), '서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.'],
   ])('선점 요청이 %s면 code별 안내 문구를 보여 주고, 고른 좌석을 그대로 두며 자동으로 다시 보내지 않는다', async (_name, respond, message) => {
     const { user } = await openPage();

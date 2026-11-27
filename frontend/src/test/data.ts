@@ -1,4 +1,4 @@
-import type { Hold, PerformanceDetail, PerformanceSummary, Reservation, Seat, SeatRef } from '../api/types';
+import type { Hold, PaymentResult, PerformanceDetail, PerformanceSummary, Reservation, Seat, SeatRef } from '../api/types';
 
 // 테스트 데이터 생성 함수. 테스트마다 필요한 값만 덮어써서 만든다(spec 5 응답 객체).
 
@@ -46,4 +46,9 @@ export function aReservation(overrides: Partial<Reservation> = {}): Reservation 
     reservedAt: '2026-12-01T03:00:00Z',
     ...overrides,
   };
+}
+
+/** 결제 승인 응답(spec 6.7의 201) */
+export function aPaymentResult(overrides: Partial<PaymentResult> = {}): PaymentResult {
+  return { paymentId: 9, amount: 30000, reservation: aReservation({ id: 5 }), ...overrides };
 }

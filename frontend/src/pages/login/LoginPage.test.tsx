@@ -69,7 +69,8 @@ describe('로그인 화면', () => {
   it.each([
     ['400 INVALID_INPUT', () => problem(400, 'INVALID_INPUT'), '입력한 내용을 확인해 주세요.'],
     ['500 INTERNAL_ERROR', () => problem(500, 'INTERNAL_ERROR'), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
-    ['code가 없는 502', () => new HttpResponse(null, { status: 502 }), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
+    ['code가 없는 500', () => new HttpResponse(null, { status: 500 }), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
+    ['code가 없는 502(개발 서버 프록시, 결정 0133)', () => new HttpResponse(null, { status: 502 }), '서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.'],
     ['네트워크 오류(응답 없음)', () => HttpResponse.error(), '서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.'],
   ])('%s면 code별 안내 문구를 보여 주고 화면에 머문다', async (_, response, message) => {
     respondWith(response);
