@@ -1,9 +1,10 @@
 # #67 CI(GitHub Actions): PR과 main push마다 verify.sh 전체 실행, 캐시, 이전 실행 취소
 
 - 기간: 2026-11-28 ~
-- Issue: [#67](https://github.com/Rasit-NP/curtain-call/issues/67), PR: 아직 없음
-- 관련 결정: 기존 [0001](../decisions/0001-verify-single-entry.md), [0002](../decisions/0002-stop-hook-quick.md), [0161](../decisions/0161-e2e-environment.md),
-  [0162](../decisions/0162-e2e-setup-impl.md), [0183](../decisions/0183-github-actions.md), [0186](../decisions/0186-handoff-roadmap-issue-scope.md)을 따른다. 이 Issue의 결정은 0190부터 쓴다
+- Issue: [#67](https://github.com/Rasit-NP/curtain-call/issues/67), PR: [#68](https://github.com/Rasit-NP/curtain-call/pull/68)
+- 관련 결정: [0190](../decisions/0190-ci-scope-docs-only.md), [0191](../decisions/0191-ci-workflow-security.md), [0192](../decisions/0192-ci-in-workflow.md)(사람),
+  [0193](../decisions/0193-ci-workflow-impl.md)(에이전트, 0162의 'CI는 범위 밖' 대체). 기존 [0001](../decisions/0001-verify-single-entry.md), [0002](../decisions/0002-stop-hook-quick.md),
+  [0161](../decisions/0161-e2e-environment.md), [0162](../decisions/0162-e2e-setup-impl.md), [0183](../decisions/0183-github-actions.md), [0186](../decisions/0186-handoff-roadmap-issue-scope.md)을 따른다
 
 ## 배경
 
@@ -74,6 +75,13 @@
     요약 단계가 같은 내용을 단계 로그에도 남기게 했다(`tee -a`). 에이전트는 `gh run view --log`로 같은 요약을 본다.
 19. 캐시 없는 실행이 4분 안팎이라 시간 제한을 `verify.sh` 단계 25분→15분, 잡 30분→20분으로 줄였다.
 20. 실패를 잡는지 확인 2: 임시 커밋으로 E2E 시나리오 4(`auth-guard.spec.ts`)가 없는 제목('로그인 화면')을 기다리게 했다. 앞 단계는 모두 통과해야 E2E가 돈다.
+    실행 [46067334152](https://github.com/Rasit-NP/curtain-call/actions/runs/46067334152)(잡 2분 34초, `verify.sh` 2분 14초)이 의도대로 실패했다.
+    - 캐시 4개가 모두 적중했다. 모든 단계를 끝까지 돈 캐시 적중 실행이다: 백엔드 단위 25초, 통합 56초, 프론트엔드 테스트 10초, E2E 의존성 1초, E2E 테스트 22초.
+    - `e2e-test`만 FAIL. 요약 단계 로그(실행 화면 요약과 같은 내용)에 실패 상세가 남았다: `✘ … tests/auth-guard.spec.ts:12:1 › R6: …`, `Locator: getByRole('heading', { name: '로그인 화면', level: 1 })`, `Error: element(s) not found`.
+    - 산출물에 Playwright 리포트(`playwright-report/index.html`, 트레이스 보기 포함), 실패한 테스트의 스크린샷·`trace.zip`·`error-context.md`, `backend.log`, `.verify-logs/` 14개가 있었다.
+    - 17번의 고침을 CI에서 확인했다: `.verify-logs/` 14개 모두 색 코드 0줄(고치기 전 실행에서는 `frontend-test.log` 149줄).
+21. E2E 임시 커밋을 `git revert`로 되돌렸다. 되돌린 뒤 `backend/`·`frontend/`·`e2e/`는 main과 같다. 로컬 `./scripts/verify.sh` 전체를 다시 통과시켰다
+    (프론트엔드 220개·E2E 4개 실행, 백엔드는 입력이 같아 UP-TO-DATE, 로그 색 코드 0줄). 되돌린 뒤 마지막 실행의 링크와 결과는 PR 본문에 적는다.
 
 ## 리뷰
 
@@ -100,3 +108,17 @@ Issue의 '아직 정하지 않은 정책' 1~3번을 구현 전에 한 번에 물
    (2) CI가 로컬 전체를 대신(PR 전에는 quick만), (3) 지금 흐름 그대로(CI는 참고만).
    근거: 이 Mac에서 로컬 전체는 2분 안팎이라 먼저 잡으면 CI 시간을 아낀다. CI에서만 나는 실패는 환경 차이라 분석해 기록할 거리다.
    - 답: (1).
+
+## 결과
+
+- 워크플로 `CI`의 잡 `verify`가 PR과 main push마다 `verify.sh`를 실행한다. 같은 PR의 이전 실행 취소, 캐시 4개 적중, 실패하면 요약과 산출물이 남는 것을 이 PR의 실행 기록으로 확인했다.
+- 실행 시간: 캐시 없는 첫 실행(비공개, 2코어) 잡 4분 1초, 캐시가 맞은 실패 확인 실행(공개, 백엔드·프론트엔드 실패로 E2E 건너뜀) 잡 1분 55초. 모든 단계를 끝까지 돈 캐시 적중 실행(공개, E2E 하나만 실패시킨 실행) 잡 2분 34초. 러너 크기가 달라(2코어→4코어) 캐시 효과만 따로 떼어 말할 수는 없지만, 백엔드 단위 단계(의존성 내려받기 포함)는 61초→19~25초, E2E 의존성은 9초→1초였다.
+- Linux 러너에서만 드러난 결함 1개(로그의 색 코드)를 재현 테스트부터 써서 고쳤다. 시간대·로캘 차이로 깨지는 테스트는 없었다.
+- 남은 일(사람): main 브랜치 보호(필수 검사 `verify`), 허용할 액션 좁히기·SHA 고정 강제, 외부 기여자 포크 PR 승인 설정. 병합 뒤 main push 실행 결과는 메인 세션이 확인한다.
+
+## 배운 점
+
+- 러너와 로컬의 차이(시간대, 로캘)는 CI에 올리기 전에 로컬에서 환경 변수만 바꿔 먼저 돌려 보면 CI 실행을 아낄 수 있다. 다만 실제로 드러난 차이(색 코드)는 예상한 곳이 아니었다.
+- 도구가 '로그가 파일이면 색을 끈다'고 기대하면 안 된다. CI를 알아보는 라이브러리는 터미널이 아니어도 색을 켠다. 로그를 파일로 남기는 쪽이 끄는 것을 정해야 한다.
+- 검사를 망가뜨려 확인할 때는 변형이 의도한 줄을 바꿨는지 먼저 본다. 같은 문구가 주석에 있으면 엉뚱한 곳이 바뀌어 검사가 통과한다.
+- CI를 시험하는 실행은 순서를 미리 짜면 적게 든다: 두 번째 push로 이전 실행 취소를, 첫 통과 실행으로 캐시 저장을, 앞 단계 실패 실행으로 캐시 적중과 실패 산출물을, E2E만 실패하는 실행으로 E2E 산출물을 한꺼번에 확인했다.
