@@ -7,7 +7,7 @@ import com.curtaincall.reservation.application.ReservationDetail;
  * 검증(spec 6.7 오류 표 2번)을 통과한 결제 요청의 결과. 결제 서비스는 이 결과를 돌려주고 트랜잭션을 커밋한다. 그래서 거절(402)이어도 결제 FAILED가
  * 남는다. 예상하지 못한 오류(500)만 예외로 끝나 되돌려진다.
  *
- * <p>다음 Issue(#56)는 이 결과(201, 402, 404, 409)를 같은 트랜잭션에서 멱등 기록에 저장한다(spec 6.7.1).
+ * <p>이 결과(201, 402, 404, 409)는 응답으로 바뀌어 같은 트랜잭션에서 멱등 기록에 저장된다(R5, spec 6.7.1, {@link PaymentService#pay}).
  */
 public sealed interface PaymentOutcome {
 

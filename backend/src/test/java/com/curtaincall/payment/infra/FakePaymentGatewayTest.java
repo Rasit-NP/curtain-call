@@ -1,6 +1,7 @@
 package com.curtaincall.payment.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 import java.util.concurrent.ExecutorService;
@@ -16,7 +17,7 @@ import com.curtaincall.payment.domain.PaymentGateway.Request;
 import com.curtaincall.payment.domain.PaymentGateway.Result;
 
 /**
- * 모의 결제(spec 6.7.2). 테스트가 아닌 프로필에서는 아무것도 지정하지 않으므로 늘 승인하고, 테스트는 다음 호출 거절, 호출 횟수, 멈추기를 쓴다.
+ * 모의 결제(spec 6.7.2). 테스트가 아닌 프로필에서는 아무것도 지정하지 않으므로 늘 승인하고, 테스트는 다음 호출 거절, 다음 호출 실패, 호출 횟수, 멈추기를 쓴다.
  * 스프링 컨텍스트 없이 만든다.
  */
 class FakePaymentGatewayTest {
@@ -80,6 +81,44 @@ class FakePaymentGatewayTest {
             assertThat(paused.get(5, TimeUnit.SECONDS)).isEqualTo(Result.DECLINED);
             // 멈추기는 다음 한 번만이다.
             assertThat(gateway.pay(REQUEST)).isEqualTo(Result.APPROVED);
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    @DisplayName("다음 호출을 실패로 지정하면 그 한 번만 예외를 던지고(예상하지 못한 오류), 그 뒤로는 다시 승인한다. 초기화하면 실패 지정도 지워진다")
+    void failNextAppliesToOneCall() {
+        FakePaymentGateway gateway = new FakePaymentGateway();
+
+        gateway.failNext();
+
+        assertThatThrownBy(() -> gateway.pay(REQUEST)).isInstanceOf(IllegalStateException.class);
+        assertThat(gateway.callCount()).isEqualTo(1);
+        assertThat(gateway.pay(REQUEST)).isEqualTo(Result.APPROVED);
+
+        gateway.failNext();
+        gateway.reset();
+
+        assertThat(gateway.pay(REQUEST)).isEqualTo(Result.APPROVED);
+    }
+
+    @Test
+    @DisplayName("실패 지정과 멈추기를 함께 쓰면 그 호출은 멈췄다가 풀린 뒤에 예외를 던진다")
+    void failNextWithPauseThrowsAfterResume() throws Exception {
+        FakePaymentGateway gateway = new FakePaymentGateway();
+        gateway.failNext();
+        FakePaymentGateway.Pause pause = gateway.pauseNext();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            Future<Result> paused = executor.submit(() -> gateway.pay(REQUEST));
+            assertThat(pause.awaitEntered(Duration.ofSeconds(5))).isTrue();
+            Thread.sleep(50);
+            assertThat(paused.isDone()).as("풀기 전에는 끝나지 않음").isFalse();
+
+            pause.resume();
+
+            assertThatThrownBy(() -> paused.get(5, TimeUnit.SECONDS)).hasCauseInstanceOf(IllegalStateException.class);
         } finally {
             executor.shutdownNow();
         }

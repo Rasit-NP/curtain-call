@@ -67,6 +67,26 @@ public class TestPayments {
         return jdbcTemplate.queryForObject("SELECT expires_at FROM holds WHERE id = ?", Timestamp.class, holdId);
     }
 
+    /** 모든 멱등 기록의 수(spec 6.7.1). */
+    public int countIdempotencyRecords() {
+        return count("SELECT count(*) FROM idempotency_records");
+    }
+
+    /** 사용자·키의 멱등 기록(hold_id, response_status, response_body). 없으면 예외다. */
+    public Map<String, Object> idempotencyRecord(long userId, String idempotencyKey) {
+        return jdbcTemplate.queryForMap(
+                "SELECT hold_id, response_status, response_body FROM idempotency_records WHERE user_id = ? AND idempotency_key = ?",
+                userId, idempotencyKey);
+    }
+
+    /** 멱등 기록 행을 SQL로 직접 만든다(스키마 제약 테스트용). */
+    public void insertIdempotencyRecord(long userId, String idempotencyKey, long holdId, @Nullable Integer responseStatus,
+            @Nullable String responseBody, Instant createdAt) {
+        jdbcTemplate.update("""
+                INSERT INTO idempotency_records (user_id, idempotency_key, hold_id, response_status, response_body, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)""", userId, idempotencyKey, holdId, responseStatus, responseBody, Timestamp.from(createdAt));
+    }
+
     /** 예매 행을 SQL로 직접 만들고 id를 돌려준다(스키마 제약 테스트용). 좌석은 {@link #insertReservationSeat}로 따로 넣는다. */
     public long insertReservation(long userId, long performanceId, long holdId, long amount, Instant reservedAt) {
         return insert("""

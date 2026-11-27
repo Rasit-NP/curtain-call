@@ -18,7 +18,8 @@ import com.curtaincall.payment.domain.PaymentGateway;
  *
  * <ul>
  *   <li>아무것도 지정하지 않으면 늘 승인한다. 테스트가 아닌 프로필(local, e2e, prod)에서는 아래 조작을 부르는 코드가 없으므로 언제나 승인한다.</li>
- *   <li>테스트 조작: 다음 호출을 거절로 지정({@link #declineNext}), 호출 횟수 확인({@link #callCount}), 다음 호출을 멈췄다가 풀기({@link #pauseNext}).
+ *   <li>테스트 조작: 다음 호출을 거절로 지정({@link #declineNext}), 다음 호출에서 예외({@link #failNext}), 호출 횟수 확인({@link #callCount}),
+ *       다음 호출을 멈췄다가 풀기({@link #pauseNext}).
  *       "다음 호출"은 지정한 뒤 처음 들어오는 호출 하나다. 통합 테스트는 컨텍스트를 공유하므로 매 테스트 전에 {@link #reset}한다.</li>
  * </ul>
  *
@@ -32,6 +33,7 @@ public class FakePaymentGateway implements PaymentGateway {
 
     private final AtomicInteger calls = new AtomicInteger();
     private final AtomicBoolean declineNext = new AtomicBoolean();
+    private final AtomicBoolean failNext = new AtomicBoolean();
     private final AtomicReference<Pause> pauseNext = new AtomicReference<>();
     private final Set<Pause> issued = ConcurrentHashMap.newKeySet();
 
@@ -39,9 +41,13 @@ public class FakePaymentGateway implements PaymentGateway {
     public Result pay(Request request) {
         calls.incrementAndGet();
         boolean decline = declineNext.getAndSet(false);
+        boolean fail = failNext.getAndSet(false);
         Pause pause = pauseNext.getAndSet(null);
         if (pause != null) {
             pause.block();
+        }
+        if (fail) {
+            throw new IllegalStateException("모의 결제 실패(테스트가 지정한 예상하지 못한 오류)");
         }
         return decline ? Result.DECLINED : Result.APPROVED;
     }
@@ -49,6 +55,14 @@ public class FakePaymentGateway implements PaymentGateway {
     /** 테스트: 다음 호출 하나를 거절한다. */
     public void declineNext() {
         declineNext.set(true);
+    }
+
+    /**
+     * 테스트: 다음 호출 하나에서 예외를 던진다(예상하지 못한 오류, 결제는 500으로 끝나 트랜잭션이 되돌려진다). 멈추기와 함께 지정하면 풀린 뒤에 던진다.
+     * R5의 "500은 저장하지 않는다"(spec 6.7.1)를 이것으로 검증한다.
+     */
+    public void failNext() {
+        failNext.set(true);
     }
 
     /** 테스트: 다음 호출 하나를 돌려준 {@link Pause}가 풀릴 때까지 멈춘다. 멈춘 동안 결제는 잠금을 쥐고 있다. */
@@ -64,10 +78,14 @@ public class FakePaymentGateway implements PaymentGateway {
         return calls.get();
     }
 
-    /** 테스트: 호출 횟수와 거절·멈추기 지정을 지우고, 멈춘 호출이 있으면 푼다. */
+    /**
+     * 테스트: 호출 횟수와 거절·실패·멈추기 지정을 지우고, 멈춘 호출이 있으면 푼다. 이미 들어와 멈춘 호출은 들어올 때 가져간 거절·실패 지정대로 끝난다
+     * (실패 지정을 가져간 호출은 풀린 뒤 예외를 던진다).
+     */
     public void reset() {
         calls.set(0);
         declineNext.set(false);
+        failNext.set(false);
         pauseNext.set(null);
         issued.forEach(Pause::resume);
         issued.clear();

@@ -45,8 +45,8 @@ import com.curtaincall.support.TestPerformances;
 import com.curtaincall.support.TestTokens;
 
 /**
- * 결제 API(spec 6.7)와 R4·R5(헤더 검증)·R6. 동시에 오는 요청은 {@code PaymentConcurrencyTest}가 다룬다. 멱등 기록(같은 키의 결과 저장·재사용)은
- * #56에서 더한다. 여기서는 결제마다 새 키(UUID)를 쓴다.
+ * 결제 API(spec 6.7)와 R4·R5(헤더 검증)·R6. 동시에 오는 요청은 {@code PaymentConcurrencyTest}가, 멱등 기록(같은 키의 결과 저장·재사용)은
+ * {@code PaymentIdempotencyApiTest}가 다룬다. 여기서는 결제마다 새 키(UUID)를 쓴다.
  *
  * <p>선점은 API({@code POST /api/holds})로 만들고, 응답과 함께 DB 최종 상태(선점의 저장 상태, 좌석의 저장 상태와 holdId, 예매·결제 행)와
  * 모의 결제의 호출 횟수를 본다. 결제하지 않은 요청은 "예매·결제가 생기지 않고 선점과 좌석이 그대로"인지 확인한다.
@@ -399,7 +399,7 @@ class PaymentApiTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("결제 오류는 6.7 표의 순서로 처음 걸린 하나만 돌려준다(401 → 400 → 404 → 409 HOLD_EXPIRED → 402 PAYMENT_FAILED, 3번 멱등 키는 #56)")
+    @DisplayName("결제 오류는 6.7 표의 순서로 처음 걸린 하나만 돌려준다(401 → 400 → 404 → 409 HOLD_EXPIRED → 402 PAYMENT_FAILED. 3번 멱등 키의 자리는 PaymentIdempotencyApiTest)")
     void errorsFollowTheTableOrder() throws Exception {
         long alicesExpired = createHold(alice, a1);
         long bobsExpired = createHold(bob, a2);
