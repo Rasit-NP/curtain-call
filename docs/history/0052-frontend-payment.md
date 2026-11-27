@@ -1,7 +1,7 @@
 # #52 프론트엔드 결제·예매 확인 화면(R3·R4·R5·R6): 선점 불러오기, 남은 시간, 결제와 멱등 키, 떠날 때 선점 해제
 
 - 기간: 2026-11-27 ~
-- Issue: [#52](https://github.com/Rasit-NP/curtain-call/issues/52), PR: (작성 전)
+- Issue: [#52](https://github.com/Rasit-NP/curtain-call/issues/52), PR: [#54](https://github.com/Rasit-NP/curtain-call/pull/54)
 - 관련 결정: [0130](../decisions/0130-frontend-payment-human.md), [0131](../decisions/0131-frontend-payment-recommended.md), [0132](../decisions/0132-frontend-late-responses-and-auth-notice.md), [0133](../decisions/0133-frontend-error-fallback-v2.md)
 
 ## 배경
@@ -60,3 +60,8 @@
   - R6: 결제 화면을 가드 밖에 두면 1개(실제 경로), 선점 조회에 토큰을 붙이지 않으면 33개(MSW 핸들러가 토큰 없는 요청에 401을 줘 화면 테스트가 대부분 실패. 토큰 첨부를 직접 보는 것은 API·화면 각 1개), 해제에 붙이지 않으면 13개, 결제에 붙이지 않으면 20개가 실패했다.
   - 떠날 때의 해제(규칙 밖): `useBlocker`를 끄면 10개, 해제를 `useEffect` 정리 함수로 하면 27개(StrictMode 테스트와, 테스트 끝 정리 때 나간 해제 요청), 결제 중에도 떠나게 하면 1개, 해제를 기다리지 않으면 1개, 로그아웃 확인을 빼면 2개, 토큰이 없어도 해제를 보내면 2개가 실패했다.
   - 넘겨받은 정책: 좌석 선택 화면의 `mounted` 조건을 지우면 2개(Issue가 요구한 '지우면 실패하는 테스트'), 늦게 온 `201`의 해제를 빼면 1개, 로그인 화면의 `mounted` 조건을 지우면 1개, AUTH_REQUIRED 문구 감추기를 빼면 3개(결제·좌석 선택·내 예매), code 없는 502를 다시 `INTERNAL_ERROR`로 하면 7개가 실패했다.
+
+## 결과
+
+- `./scripts/verify.sh` 전체 통과(2026-11-28, 프론트엔드 테스트 220개, 이 Issue에서 62개 추가: 결제 화면 38, API 18, 좌석 선택 3, 로그인 2, 내 예매 1. E2E는 영역이 없어 SKIP).
+- PR [#54](https://github.com/Rasit-NP/curtain-call/pull/54)를 만들었다. 개발 서버 화면을 실제 백엔드·브라우저로 확인하는 것은 이 Issue의 범위가 아니어서 하지 않았다(E2E 6단계).
