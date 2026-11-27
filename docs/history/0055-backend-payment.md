@@ -1,7 +1,7 @@
 # #55 백엔드 결제·예매·내 예매(R2·R4·R6): 결제 API, 모의 결제, 예매 좌석을 보유 좌석 수에 반영, 내 예매 API
 
 - 기간: 2026-11-28
-- Issue: [#55](https://github.com/Rasit-NP/curtain-call/issues/55), PR: (만드는 중)
+- Issue: [#55](https://github.com/Rasit-NP/curtain-call/issues/55), PR: [#57](https://github.com/Rasit-NP/curtain-call/pull/57)
 - 관련 결정: [0140](../decisions/0140-reservation-payment-schema.md), [0141](../decisions/0141-idempotency-key-format.md), [0142](../decisions/0142-payment-impl.md),
   [0143](../decisions/0143-payment-concurrency-test-latch.md). 기존 [0005](../decisions/0005-payment-failed-402.md), [0006](../decisions/0006-idempotency-record.md),
   [0070](../decisions/0070-hold-schema.md), [0071](../decisions/0071-missing-token-user-not-handled.md), [0072](../decisions/0072-json-numbers-strict.md),
