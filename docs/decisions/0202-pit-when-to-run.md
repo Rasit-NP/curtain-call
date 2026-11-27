@@ -35,6 +35,6 @@
 
 - 구현: `scripts/verify.sh`(`mutation` 모드), `.github/workflows/mutation.yml`, 하네스 테스트 2개(모드, 워크플로).
   워크플로는 CI 워크플로와 같은 규칙(결정 0191: 공식 액션·SHA 고정, `contents: read`, 토큰을 남기지 않는 checkout)을 따르고, 하네스가 모든 워크플로 파일에 이 규칙을 검사한다.
-  러너·캐시·시간 제한은 결정 0193과 같게 두고, 리포트는 측정 기록이라 30일 보관한다(실패 산출물은 7일).
+  러너(ubuntu-24.04)·캐시(setup-java의 Gradle 캐시)는 결정 0193과 같다. 시간 제한은 PIT가 더 길어 단계 25분·잡 30분으로 두고, 리포트는 측정 기록이라 성공해도 30일 보관한다(CI 실패 산출물은 7일).
 - 루트 `CLAUDE.md`의 '명령'과 '완료 조건', `backend/CLAUDE.md`의 '명령'에 적었다.
 - 수동 실행 워크플로는 기본 브랜치(main)에 있어야 Actions 화면과 `gh workflow run`에 나타난다. 이 PR에서는 임시 트리거로 한 번 돌려 확인했다: 실행 [46076896926](https://github.com/Rasit-NP/curtain-call/actions/runs/46076896926) 성공, 점수 93%(로컬과 같음), PIT 6분 32초, 단계 7분 21초(캐시 없음). 처음 어림(5분 안팎)보다 길어 단계 시간 제한 25분은 그대로 둔다.
