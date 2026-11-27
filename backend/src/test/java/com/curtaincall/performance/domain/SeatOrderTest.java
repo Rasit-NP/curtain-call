@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 
 /**
  * 좌석 목록 순서의 row 비교(spec 5: row는 문자열 코드 포인트 순서). 공연 상세는 DB(seat_row COLLATE "C", UTF-8 바이트 순서 =
- * 코드 포인트 순서)가 정렬하고, 선점 응답은 잠근 좌석을 자바에서 정렬하므로 두 순서가 같아야 한다. row, number 전체 순서는 선점 API 통합
- * 테스트에서 확인한다.
+ * 코드 포인트 순서)가 정렬하고, 선점 응답은 잠근 좌석을 자바에서 정렬하므로 두 순서가 같아야 한다. 이 테스트는 자바 비교만 본다.
+ * 두 응답의 순서가 실제로 같은지(DB 정렬 포함)는 통합 테스트 SeatListOrderTest가, row, number 전체 순서는 선점 API 통합 테스트가 확인한다.
  */
 class SeatOrderTest {
 
