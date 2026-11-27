@@ -33,7 +33,8 @@ import com.curtaincall.performance.domain.SeatRepository;
  *   <li>좌석은 id 오름차순으로 한 번에 잠근다(R1). 다른 요청이 잡고 있던 좌석은 그 요청이 끝난 뒤의 값으로 판정한다.</li>
  * </ol>
  *
- * <p>현재 시각은 요청마다 한 번 읽어 보유 좌석 수, 좌석 판정, 만료 시각에 같은 값을 쓴다.
+ * <p>선점 생성은 현재 시각을 한 번 읽어 보유 좌석 수, 좌석 판정, 만료 시각에 같은 값을 쓴다. 조회는 응답의 status를 정할 때 읽고,
+ * 해제는 읽지 않는다.
  */
 @Service
 public class HoldService {
