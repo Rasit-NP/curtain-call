@@ -1,6 +1,6 @@
 # #52 프론트엔드 결제·예매 확인 화면(R3·R4·R5·R6): 선점 불러오기, 남은 시간, 결제와 멱등 키, 떠날 때 선점 해제
 
-- 기간: 2026-11-27 ~
+- 기간: 2026-11-27 ~ 2026-11-28
 - Issue: [#52](https://github.com/Rasit-NP/curtain-call/issues/52), PR: [#54](https://github.com/Rasit-NP/curtain-call/pull/54)
 - 관련 결정: [0130](../decisions/0130-frontend-payment-human.md), [0131](../decisions/0131-frontend-payment-recommended.md), [0132](../decisions/0132-frontend-late-responses-and-auth-notice.md), [0133](../decisions/0133-frontend-error-fallback-v2.md)
 
@@ -80,3 +80,4 @@ PR [#54](https://github.com/Rasit-NP/curtain-call/pull/54)를 만든 뒤 이 세
 
 - `./scripts/verify.sh` 전체 통과(2026-11-28, 프론트엔드 테스트 220개, 이 Issue에서 62개 추가: 결제 화면 38, API 18, 좌석 선택 3, 로그인 2, 내 예매 1. E2E는 영역이 없어 SKIP).
 - PR [#54](https://github.com/Rasit-NP/curtain-call/pull/54)를 만들었다. 개발 서버 화면을 실제 백엔드·브라우저로 확인하는 것은 이 Issue의 범위가 아니어서 하지 않았다(E2E 6단계).
+- **병합**: 사람이 PR #54를 main에 병합했다(병합 커밋 `dc9b62f`).

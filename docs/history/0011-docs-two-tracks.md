@@ -1,7 +1,7 @@
 # #11 문서화 이원화: 작업용 결정 기록과 포트폴리오용 진행 기록
 
 - 기간: 2026-11-26
-- Issue: [#11](https://github.com/Rasit-NP/curtain-call/issues/11)
+- Issue: [#11](https://github.com/Rasit-NP/curtain-call/issues/11), PR: [#12](https://github.com/Rasit-NP/curtain-call/pull/12)
 - 관련 결정: [0024](../decisions/0024-docs-two-tracks.md)
 
 ## 배경
@@ -25,7 +25,7 @@
 
 ## 결과
 
-지금까지의 결정 25개와 Issue 6건의 진행 기록을 채웠다. 루트 `CLAUDE.md`와 PR 템플릿에 갱신 규칙을 넣었다.
+지금까지의 결정 25개와 Issue 6건의 진행 기록을 채웠다. 루트 `CLAUDE.md`와 PR 템플릿에 갱신 규칙을 넣었다. 사람이 PR [#12](https://github.com/Rasit-NP/curtain-call/pull/12)를 main에 병합했다(병합 커밋 `e7c32d5`).
 
 ## 배운 점
 
