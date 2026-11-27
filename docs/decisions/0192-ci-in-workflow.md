@@ -26,6 +26,7 @@
 ## 적용과 남은 점
 
 - 루트 `CLAUDE.md`의 '작업 흐름' 4번, 'CI', '실패 처리', '완료 조건'과 `.github/pull_request_template.md`를 고쳤다.
-- main 브랜치 보호(CI를 통과해야 병합)는 사람이 설정한다(결정 0183). Free 요금제의 비공개 저장소에서는 브랜치 보호를 쓸 수 없어
-  (2026-11-28 `GET /repos/…/branches/main/protection`이 403 "Upgrade to GitHub Pro or make this repository public"), 저장소를 공개로 바꾼 뒤 설정할 수 있다.
-  그때까지는 이 규칙과 메인 세션의 결과 확인이 CI 통과를 지킨다.
+- main 브랜치 보호(CI를 통과해야 병합)는 사람이 설정한다(결정 0183). 물을 때는 Free 요금제의 비공개 저장소라 쓸 수 없었다
+  (2026-11-28 `GET /repos/…/branches/main/protection`이 403 "Upgrade to GitHub Pro or make this repository public").
+  사람이 같은 날 저장소를 공개로 바꿔 이제 설정할 수 있다. 필수 검사로 걸 이름은 `verify`다(문서만 바꾼 PR에서도 같은 이름으로 결과를 남긴다, 결정 0190).
+  설정하기 전까지는 이 규칙과 메인 세션의 결과 확인이 CI 통과를 지킨다.
