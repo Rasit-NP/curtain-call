@@ -28,7 +28,8 @@ public class PerformanceController {
 
     /**
      * spec 6.3. 오류 순서: 400 INVALID_INPUT(performanceId가 정수가 아님, long으로 해석할 수 없음) → 404 NOT_FOUND(공연 없음).
-     * 400은 경로 값 변환 실패를 공통 처리기가 바꾼다(spec 3.1, 결정 0012).
+     * 경로 값은 ASCII 10진 정수 표기만 long으로 해석한다(StrictLongBinding, 결정 0090·0091). 해석에 실패하면 공통 처리기가 400으로
+     * 바꾼다(spec 3.1, 결정 0012).
      */
     @GetMapping("/{performanceId}")
     public PerformanceDetailResponse detail(@PathVariable long performanceId) {

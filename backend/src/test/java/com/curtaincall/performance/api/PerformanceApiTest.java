@@ -9,10 +9,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.function.LongFunction;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.json.JsonCompareMode;
@@ -191,19 +195,75 @@ class PerformanceApiTest extends IntegrationTest {
                 .andExpect(jsonPath("$.seats", hasSize(0)));
     }
 
-    /** spec 3.1: 경로 값의 형식이 틀리면 400. long 범위를 넘는 값도 경로 값을 해석할 수 없으므로 같다. */
+    /** spec 3.1: 경로 값의 형식이 틀리면 400. long 범위를 넘는 값도 경로 값을 해석할 수 없으므로 같다(결정 0050). */
     @ParameterizedTest(name = "{0}")
-    @ValueSource(strings = {"abc", "1.5", "1e3", "99999999999999999999"})
-    @DisplayName("performanceId가 정수가 아니면 400 INVALID_INPUT이다")
+    @ValueSource(strings = {
+            "abc", "1.5", "1e3", "+", "--1",
+            "99999999999999999999", "9223372036854775808", "-9223372036854775809"})
+    @DisplayName("performanceId가 정수가 아니면 400 INVALID_INPUT이다(long 범위 밖 포함)")
     void nonIntegerIdIsInvalidInput(String performanceId) throws Exception {
         mockMvc.perform(get("/api/performances/{performanceId}", performanceId))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_INPUT"));
     }
 
+    /**
+     * 결정 0090: 경로 id는 ASCII 10진 정수 표기만 받는다. 있는 공연의 id를 공백·16진수·ASCII가 아닌 숫자로 바꿔 보낸다.
+     * Spring 기본 변환기(NumberUtils.parseNumber)는 공백을 모두 지우고 0x·#을 16진수로 읽으며, Long.parseLong은 ASCII가 아닌 숫자도
+     * 읽는다. 그래서 #45 전에는 이 값들이 그 공연(200)이 되거나, 공백을 지워 다른 id("{id} 0"은 id×10, 404)가 됐다.
+     * 이름의 표기는 Issue #45의 표({id} = 2이면 0x2, #2, " 2", "2 ", "0 2")와 같다.
+     */
     @ParameterizedTest(name = "{0}")
-    @ValueSource(strings = {"0", "-1", "999999"})
-    @DisplayName("없는 공연의 상세는 404 NOT_FOUND다")
+    @MethodSource("nonDecimalNotations")
+    @DisplayName("performanceId가 ASCII 10진 정수 표기가 아니면(공백, 16진수, ASCII가 아닌 숫자) 있는 공연을 가리키는 값이라도 400 INVALID_INPUT이다")
+    void nonDecimalNotationIsInvalidInput(String notation, LongFunction<String> write) throws Exception {
+        long venue = performances.createVenue("표기홀");
+        long performance = performances.createPerformance("표기 공연", venue, STARTS_AT, 30000);
+
+        mockMvc.perform(get("/api/performances/{performanceId}", write.apply(performance)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_INPUT"));
+    }
+
+    static Stream<Arguments> nonDecimalNotations() {
+        return Stream.of(
+                notation("16진수 0x{id}", id -> "0x" + Long.toHexString(id)),
+                notation("16진수 0X{id}", id -> "0X" + Long.toHexString(id)),
+                notation("16진수 #{id}", id -> "#" + Long.toHexString(id)),
+                notation("앞 공백 ' {id}'", id -> " " + id),
+                notation("뒤 공백 '{id} '", id -> id + " "),
+                notation("앞 탭", id -> "\t" + id),
+                notation("숫자 사이 공백 '0 {id}'", id -> "0 " + id),
+                notation("숫자 사이 공백 '{id} 0'", id -> id + " 0"),
+                notation("전각 숫자", id -> digits(id, '０')),
+                notation("아랍-인도 숫자", id -> digits(id, '٠')),
+                notation("데바나가리 숫자", id -> digits(id, '०')));
+    }
+
+    /** 사람이 정함(결정 0090): + 부호와 앞자리 0은 ASCII 10진 정수 표기이므로 받는다. */
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("signedOrZeroPaddedNotations")
+    @DisplayName("performanceId에 + 부호나 앞자리 0이 있어도 그 공연의 상세다(200)")
+    void plusSignOrLeadingZerosReadAsTheSameId(String notation, LongFunction<String> write) throws Exception {
+        long venue = performances.createVenue("부호홀");
+        long performance = performances.createPerformance("부호 공연", venue, STARTS_AT, 30000);
+
+        mockMvc.perform(get("/api/performances/{performanceId}", write.apply(performance)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(performance));
+    }
+
+    static Stream<Arguments> signedOrZeroPaddedNotations() {
+        return Stream.of(
+                notation("+{id}", id -> "+" + id),
+                notation("0{id}", id -> "0" + id),
+                notation("00{id}", id -> "00" + id),
+                notation("+0{id}", id -> "+0" + id));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = {"0", "-1", "999999", "-0", "+0", "00", "9223372036854775807", "-9223372036854775808"})
+    @DisplayName("없는 공연의 상세는 404 NOT_FOUND다(0·음수, long 범위 끝 포함)")
     void unknownPerformanceIsNotFound(String performanceId) throws Exception {
         long venue = performances.createVenue("있는홀");
         performances.createPerformance("있는 공연", venue, STARTS_AT, 30000);
@@ -216,5 +276,18 @@ class PerformanceApiTest extends IntegrationTest {
     /** JsonPath는 작은 정수를 Integer로 읽는다. 테스트 데이터의 id는 작으므로 int로 바꿔 비교한다. */
     private static int asInt(long id) {
         return Math.toIntExact(id);
+    }
+
+    private static Arguments notation(String name, LongFunction<String> write) {
+        return Arguments.of(name, write);
+    }
+
+    /** id의 10진 숫자를 zero에서 시작하는 다른 숫자 체계로 바꾼다(예: zero가 전각 '０'이면 12 → "１２"). */
+    private static String digits(long id, char zero) {
+        StringBuilder out = new StringBuilder();
+        for (char c : Long.toString(id).toCharArray()) {
+            out.append((char) (zero + (c - '0')));
+        }
+        return out.toString();
     }
 }
