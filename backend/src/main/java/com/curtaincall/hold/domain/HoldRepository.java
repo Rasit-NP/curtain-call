@@ -4,14 +4,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 
 import com.curtaincall.performance.domain.Seat;
+
+import jakarta.persistence.LockModeType;
 
 public interface HoldRepository extends JpaRepository<Hold, Long> {
 
@@ -21,6 +26,22 @@ public interface HoldRepository extends JpaRepository<Hold, Long> {
      */
     @EntityGraph(attributePaths = "seatIds")
     List<Hold> findByUserIdAndPerformanceIdAndStatus(long userId, long performanceId, HoldStatus status);
+
+    /** 선점과 그 좌석 목록(만든 때의 묶음)을 읽는다. 선점 조회(spec 6.5)에 쓰고, 잠그지 않는다. */
+    @EntityGraph(attributePaths = "seatIds")
+    @Query("select h from Hold h where h.id = :id")
+    Optional<Hold> findWithSeatIdsById(long id);
+
+    /**
+     * 선점 행을 트랜잭션이 끝날 때까지 잠그고 읽는다(해제, spec 2.4, 결정 0100). PostgreSQL에서는 {@code FOR NO KEY UPDATE}다.
+     * 같은 선점의 해제(5단계부터는 결제도)가 이 행에서 한 줄로 서고, 나중 요청은 앞 요청이 커밋한 값(RELEASED 등)을 읽는다.
+     *
+     * <p>이 트랜잭션에서 같은 선점을 먼저 일반 조회로 읽지 않는다. 영속성 컨텍스트에 남은 이전 값이 그대로 쓰일 수 있다. 좌석 목록은 잠그지
+     * 않는다(만든 뒤 바뀌지 않는다).
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select h from Hold h where h.id = :id")
+    Optional<Hold> lockById(long id);
 
     /** 좌석들을 지금 잡은 선점(좌석의 holdId, 결정 0009)을 id로 찾는다. HELD가 아닌 좌석은 holdId가 없어 건너뛴다. */
     default Map<Long, Hold> findHoldersOf(Collection<Seat> seats) {

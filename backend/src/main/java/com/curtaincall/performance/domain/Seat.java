@@ -68,6 +68,18 @@ public class Seat {
         this.holdId = holdId;
     }
 
+    /**
+     * 선점 해제(spec 2.3): 선점이 잡은 좌석을 AVAILABLE로 되돌리고 holdId를 비운다. 이 좌석을 잡은 선점이 해제하는 선점인지는
+     * 호출하는 쪽이 좌석을 잠근 뒤 holdId로 확인한다.
+     */
+    public void release() {
+        if (status != SeatStatus.HELD) {
+            throw new IllegalStateException("HELD 좌석만 해제한다: " + status);
+        }
+        this.status = SeatStatus.AVAILABLE;
+        this.holdId = null;
+    }
+
     public Long getId() {
         return id;
     }
