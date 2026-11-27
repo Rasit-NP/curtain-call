@@ -249,14 +249,18 @@ describe('결제 화면: 만료(R3·R4)', () => {
       toFake: ['Date', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'],
       shouldAdvanceTime: true,
     });
-    vi.setSystemTime(new Date('2026-12-01T10:04:59Z'));
+    // 기기 시계가 서버보다 빨라, 들어올 때 이미 기기 시계로는 만료 시각(10:05:00)이 지났다.
+    vi.setSystemTime(new Date('2026-12-01T10:05:30Z'));
     await openPage(PAGE_PATH, hold({ expiresAt: '2026-12-01T10:05:00Z' }));
 
+    expect(payButton()).toBeEnabled();
+
+    // 시간이 더 흘러도 화면이 스스로 막지 않는다.
     await act(() => vi.advanceTimersByTimeAsync(60_000));
 
-    expect(new Date().getTime()).toBeGreaterThan(Date.parse('2026-12-01T10:05:00Z'));
     expect(payButton()).toBeEnabled();
     expect(page().queryByRole('alert')).not.toBeInTheDocument();
+    expect(page().queryByText(/남은 시간/)).not.toBeInTheDocument();
   });
 
   it('R4: 결제 응답이 409 HOLD_EXPIRED면 만료 안내를 보여 주고, "결제하기"는 남기되 누를 수 없으며 "뒤로 가기"는 누를 수 있다', async () => {
