@@ -6,10 +6,13 @@ import static com.curtaincall.support.PaymentRequests.pay;
 import static com.curtaincall.support.PaymentRequests.reservationId;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,7 +38,7 @@ import com.curtaincall.support.TestPayments;
 import com.curtaincall.support.TestPerformances;
 
 /**
- * 결제와 동시에 오는 요청(R2, R4, spec 2.4, 결정 0100). 결제는 요청한 사용자 행 → 선점 행 → 좌석(id 오름차순)을 잠그고, 현재 시각은 모든 잠금 뒤에
+ * 결제와 동시에 오는 요청(R2, R4, R5, spec 2.4, 결정 0100). 결제는 요청한 사용자 행 → 같은 키의 멱등 기록 → 선점 행 → 좌석(id 오름차순)을 잠그고, 현재 시각은 모든 잠금 뒤에
  * 읽으며, 모의 결제가 늦게 끝나도 잠금을 쥔 채 결제를 마친다.
  *
  * <p>순서는 모의 결제의 멈추기(래치)로 만든다: 결제가 판정을 통과하고 모의 결제에서 멈춘 동안 다른 요청을 보내고, 그 요청이 DB 행 잠금을 기다리기
@@ -51,6 +54,7 @@ class PaymentConcurrencyTest extends IntegrationTest {
     private static final Duration WAIT = Duration.ofSeconds(10);
     private static final int ORDER_REPETITIONS = 5;
     private static final int DEADLOCK_REPETITIONS = 50;
+    private static final int SAME_KEY_REQUESTS = 5;
 
     @Autowired
     private TestPerformances performances;
@@ -71,7 +75,7 @@ class PaymentConcurrencyTest extends IntegrationTest {
 
     @BeforeEach
     void setUp() {
-        executor = Executors.newFixedThreadPool(4);
+        executor = Executors.newFixedThreadPool(SAME_KEY_REQUESTS + 1);
         venue = performances.createVenue("결제동시홀");
         alice = testUsers.create("alice", "alice-password");
         bob = testUsers.create("bob", "bob-password");
@@ -294,6 +298,79 @@ class PaymentConcurrencyTest extends IntegrationTest {
             }
             // 다음 반복의 선점은 지금 시각에 만든다.
         }
+    }
+
+    /**
+     * 같은 사용자의 같은 키 결제는 하나씩 처리한다(spec 2.4의 R5, 6.7.1). 다섯 요청을 함께 출발시키고, 먼저 모의 결제에 들어간 요청이 멈춘 동안
+     * 나머지 넷이 잠금을 기다리는 것을 확인한 뒤 푼다. 나머지는 먼저 요청이 커밋한 멱등 기록을 읽어 저장된 201을 그대로 받고, 모의 결제를 부르지 않는다.
+     * 다시 처리하면 선점이 이미 PAID라 404가 된다.
+     */
+    @Test
+    @DisplayName("R5: 같은 키로 결제 요청 5개가 동시에 오면 예매는 하나이고 모두 같은 201 응답이다(모의 결제는 한 번만 부른다, 5회 반복)")
+    void sameKeyRequestsAreProcessedOnce() throws Exception {
+        for (int round = 1; round <= ORDER_REPETITIONS; round++) {
+            long performance = newPerformance(round);
+            long[] seats = addSeats(performance, 2);
+            long hold = createHold(alice, performance, seats);
+            String key = "same-key-" + round;
+            paymentGateway.reset();
+
+            FakePaymentGateway.Pause pause = paymentGateway.pauseNext();
+            List<Future<MvcResult>> results = submitTogether(
+                    IntStream.range(0, SAME_KEY_REQUESTS).mapToObj(i -> pay(alice, hold, key)).toList());
+            assertThat(pause.awaitEntered(WAIT)).as("먼저 요청이 모의 결제에서 멈춤").isTrue();
+            Observed observed = locks.awaitLockWaitersOrDone(SAME_KEY_REQUESTS - 1, WAIT, results.toArray(new Future<?>[0]));
+            pause.resume();
+
+            String at = "반복 " + round + "(" + observed + ")";
+            List<Integer> statuses = new ArrayList<>();
+            Set<String> bodies = new HashSet<>();
+            for (Future<MvcResult> result : results) {
+                MvcResult response = result.get(WAIT.toSeconds(), TimeUnit.SECONDS);
+                statuses.add(response.getResponse().getStatus());
+                bodies.add(response.getResponse().getContentAsString(StandardCharsets.UTF_8));
+            }
+            assertThat(statuses).as(at).containsExactly(201, 201, 201, 201, 201);
+            assertThat(bodies).as(at + " 응답 본문").hasSize(1);
+            assertThat(payments.countReservationsOf(hold)).as(at).isEqualTo(1);
+            assertThat(payments.paymentStatusesOf(hold)).as(at).containsExactly("SUCCEEDED");
+            assertThat(paymentGateway.callCount()).as(at).isEqualTo(1);
+            assertThat(payments.idempotencyRecord(alice, key)).as(at).containsEntry("hold_id", hold).containsEntry("response_status", 201);
+            assertThat(payments.countIdempotencyRecords()).as(at).isEqualTo(round);
+            assertThat(observed).as(at + " 나머지 요청은 먼저 요청을 기다린다").isEqualTo(Observed.WAITING_FOR_LOCK);
+        }
+    }
+
+    /**
+     * 같은 키의 먼저 요청이 모의 결제에서 멈춘 동안 나중 요청이 기다리고, 먼저 요청은 예상하지 못한 오류(500)로 끝나 트랜잭션이 되돌려진다.
+     * 저장된 것이 없으므로 나중 요청은 처음 온 요청처럼 처리돼 승인된다(spec 6.7.1).
+     */
+    @Test
+    @DisplayName("R5: 같은 키의 먼저 요청이 500으로 끝나면 기다리던 나중 요청은 처음 온 요청처럼 처리돼 201이다(500은 저장하지 않는다)")
+    void waitingSameKeyRequestIsProcessedWhenTheFirstFails() throws Exception {
+        long performance = newPerformance(0);
+        long[] seats = addSeats(performance, 2);
+        long hold = createHold(alice, performance, seats);
+        String key = "first-fails";
+
+        paymentGateway.failNext();
+        FakePaymentGateway.Pause pause = paymentGateway.pauseNext();
+        Future<MvcResult> first = submit(pay(alice, hold, key));
+        assertThat(pause.awaitEntered(WAIT)).as("먼저 요청이 모의 결제에서 멈춤").isTrue();
+        Future<MvcResult> second = submit(pay(alice, hold, key));
+        Observed observed = locks.awaitLockWaitersOrDone(1, WAIT, second);
+        pause.resume();
+
+        assertThat(status(first)).as("먼저 요청").isEqualTo(500);
+        assertThat(code(first)).isEqualTo("INTERNAL_ERROR");
+        assertThat(status(second)).as("나중 요청(" + observed + ")").isEqualTo(201);
+        assertThat(observed).as("나중 요청은 먼저 요청을 기다린다").isEqualTo(Observed.WAITING_FOR_LOCK);
+        assertThat(paymentGateway.callCount()).isEqualTo(2);
+        assertThat(payments.countReservationsOf(hold)).isEqualTo(1);
+        assertThat(payments.paymentStatusesOf(hold)).containsExactly("SUCCEEDED");
+        assertThat(payments.countIdempotencyRecords()).isEqualTo(1);
+        assertThat(payments.idempotencyRecord(alice, key)).containsEntry("hold_id", hold).containsEntry("response_status", 201);
+        assertThat(holds.holdStatus(hold)).isEqualTo("PAID");
     }
 
     private long createHold(long userId, long performanceId, long... seatIds) throws Exception {

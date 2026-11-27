@@ -82,7 +82,7 @@ class IntegrationTestSupportTest extends IntegrationTest {
     }
 
     @RepeatedTest(2)
-    @DisplayName("테스트마다 시작 전에 모의 결제의 설정(다음 호출 거절, 멈추기)과 호출 횟수를 초기화한다")
+    @DisplayName("테스트마다 시작 전에 모의 결제의 설정(다음 호출 거절·실패, 멈추기)과 호출 횟수를 초기화한다")
     void paymentGatewayIsResetBeforeEachTest() throws Exception {
         assertThat(paymentGateway.callCount()).isZero();
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -96,6 +96,7 @@ class IntegrationTestSupportTest extends IntegrationTest {
 
         // 다음 반복에 남길 설정
         paymentGateway.declineNext();
+        paymentGateway.failNext();
         paymentGateway.pauseNext();
     }
 

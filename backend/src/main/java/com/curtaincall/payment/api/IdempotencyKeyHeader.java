@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
  *       ASCII 밖 문자를 받으면 '100자'가 클라이언트의 인코딩에 따라 달라지기 때문이다.</li>
  * </ul>
  *
- * <p>키를 저장·재사용하는 것(같은 키의 결과)은 #56에서 한다. 여기서는 검증만 한다.
+ * <p>여기서는 검증만 한다. 키로 결과를 저장·재사용하는 것은 결제 서비스의 멱등 기록이다(PaymentService#pay, R5).
  *
  * <p>Spring Security 방화벽(StrictHttpFirewall)은 헤더 값을 읽는 순간 제어 문자 등이 든 값을 거부한다(RequestRejectedException). 실제 서버는
  * 헤더 바이트를 ISO-8859-1로 읽으므로 한글 키(UTF-8)가 C1 제어 문자가 든 문자열이 되어 여기에 걸린다. 그 거부도 위 규칙에 걸리는 값이므로
