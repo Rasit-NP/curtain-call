@@ -209,6 +209,50 @@ EOF
   assert_contains "$(cat "$dir/.verify-logs/frontend-test.log")" "NO_COLOR=1 FORCE_COLOR=없음"
 }
 
+test_mutation_runs_pit_only() {
+  local dir out code
+  dir="$(new_repo mutation)"
+  # gradlew: 받은 인자를 기록하고 FAKE_GRADLE_EXIT(기본 0)로 끝난다.
+  cat > "$dir/backend/gradlew" <<'EOF'
+#!/usr/bin/env bash
+echo "$*" >> "$(dirname "$0")/gradlew.calls"
+echo "fake gradle $*"
+exit "${FAKE_GRADLE_EXIT:-0}"
+EOF
+  # docker: PIT가 통합 테스트를 쓰므로 Docker를 먼저 확인한다. info 말고는 불리면 안 된다.
+  cat > "$dir/bin/docker" <<'EOF'
+#!/usr/bin/env bash
+[ "$1" = info ] && { echo "fake docker info"; exit 0; }
+echo "unexpected call: docker $*" >&2
+exit 99
+EOF
+  chmod +x "$dir/backend/gradlew" "$dir/bin/docker"
+  echo '{}' > "$dir/frontend/package.json"
+  out="$(run_verify "$dir" mutation)"; code=$?
+  assert_exit "$code" 0 "$out" &&
+    assert_contains "$out" "PASS  mutation-docker" &&
+    assert_contains "$out" "PASS  backend-mutation" || return 1
+  [ "$(cat "$dir/backend/gradlew.calls")" = "pitest" ] ||
+    fail "mutation 모드의 gradlew 호출이 pitest 하나가 아님: $(cat "$dir/backend/gradlew.calls")" || return 1
+  case "$out" in
+    *frontend*) fail "mutation 모드가 프론트엔드를 실행함: $out"; return 1 ;;
+  esac
+
+  out="$(cd "$dir" && FAKE_GRADLE_EXIT=1 PATH="$dir/bin:$PATH" bash scripts/verify.sh mutation 2>&1)"; code=$?
+  assert_exit "$code" 1 "$out" &&
+    assert_contains "$out" "FAIL  backend-mutation" &&
+    assert_contains "$out" "리포트: backend/build/reports/pitest/index.html" || return 1
+
+  # 전체(all)와 quick에는 PIT를 넣지 않는다(결정 0202).
+  rm -f "$dir/backend/gradlew.calls"
+  run_verify "$dir" all >/dev/null
+  run_verify "$dir" quick >/dev/null
+  if grep -q pitest "$dir/backend/gradlew.calls" 2>/dev/null; then
+    fail "all 또는 quick이 pitest를 부름: $(cat "$dir/backend/gradlew.calls")"
+    return 1
+  fi
+}
+
 test_all_runs_harness_tests() {
   local dir out code
   dir="$(new_repo harness)"
@@ -532,6 +576,25 @@ test_ci_workflow_summary_marker() {
   grep -q 'echo "===== 검증 요약' "$REPO/scripts/verify.sh" || fail "verify.sh가 '===== 검증 요약' 줄을 출력하지 않음"
 }
 
+MUTATION_WORKFLOW="$REPO/.github/workflows/mutation.yml"
+
+test_mutation_workflow_manual_only() {
+  local direct
+  [ -f "$MUTATION_WORKFLOW" ] || fail ".github/workflows/mutation.yml이 없음" || return 1
+  # 뮤테이션 테스트는 수동 실행(workflow_dispatch)으로만 돌린다. PR·push마다 돌리지 않는다(결정 0202).
+  code_lines "$MUTATION_WORKFLOW" | grep -qE '^[[:space:]]*workflow_dispatch:' || fail "workflow_dispatch 트리거가 없음" || return 1
+  if code_lines "$MUTATION_WORKFLOW" | grep -qE '^[[:space:]]*(pull_request|push|schedule|merge_group|workflow_call):'; then
+    fail "workflow_dispatch 말고 다른 트리거가 있음"
+    return 1
+  fi
+  # 검증 명령은 verify.sh에만 둔다(결정 0001).
+  code_lines "$MUTATION_WORKFLOW" | grep -q '\./scripts/verify\.sh mutation' || fail "./scripts/verify.sh mutation을 부르지 않음" || return 1
+  direct="$(code_lines "$MUTATION_WORKFLOW" | grep -E '\./gradlew|(^|[^[:alnum:]_./-])gradle[[:space:]]+[[:alnum:]-]')"
+  [ -z "$direct" ] || fail "워크플로가 verify.sh를 거치지 않고 Gradle을 부름: $direct" || return 1
+  # 측정 결과(PIT 리포트)는 성공해도 산출물로 남긴다.
+  code_lines "$MUTATION_WORKFLOW" | grep -q 'backend/build/reports/pitest' || fail "PIT 리포트를 산출물로 올리지 않음"
+}
+
 # new_scope_repo <이름>: docs/a.md, backend/A.java, 루트 CLAUDE.md를 커밋한 git 저장소를 만든다.
 new_scope_repo() {
   local dir="$WORK/$1"
@@ -599,6 +662,7 @@ run_test "verify.sh: 표식 파일이 있는 영역은 실행하고, 실패하�
 run_test "verify.sh: 실패 상세에 로그 앞쪽의 첫 오류 줄을 줄 번호와 함께 보여 준다" test_failure_shows_first_error_line
 run_test "verify.sh: E2E는 개발 DB를 띄우지 않고 Docker 확인·프론트엔드 의존성·타입 검사 뒤 Playwright를 돌리며, 실패하면 리포트 경로를 보여 준다" test_e2e_runs_playwright_without_dev_db
 run_test "verify.sh: 전체 검증은 하네스 테스트를 실행하고, 실패하면 전체를 실패로 본다" test_all_runs_harness_tests
+run_test "verify.sh: mutation은 Docker 확인 뒤 백엔드 PIT만 돌리고 실패하면 리포트 경로를 보여 주며, all·quick에는 PIT가 없다" test_mutation_runs_pit_only
 run_test "verify.sh: 색을 켜는 환경(CI, FORCE_COLOR)에서도 단계 명령에 NO_COLOR=1만 넘겨(FORCE_COLOR는 지움) 로그에 색 코드를 남기지 않는다" test_steps_run_without_color
 run_test "Stop 훅: settings.json에 등록돼 있고 훅 스크립트를 실행할 수 있다" test_hook_registered
 run_test "Stop 훅: verify.sh가 통과하면 아무것도 출력하지 않고 멈춤을 허용한다" test_hook_passes_silently
@@ -617,6 +681,7 @@ run_test "CI 워크플로: ./scripts/verify.sh를 부르고 검증 명령을 직
 run_test "CI 워크플로: GitHub 공식 actions/*만 커밋 SHA와 버전 주석으로 고정해 쓴다" test_ci_workflows_pin_official_actions
 run_test "CI 워크플로: 토큰은 contents: read만, 위험한 트리거 없음, checkout은 토큰을 남기지 않는다" test_ci_workflows_least_privilege
 run_test "CI 워크플로: verify.sh의 '검증 요약' 줄로 실행 화면 요약을 만든다" test_ci_workflow_summary_marker
+run_test "뮤테이션 워크플로: 수동 실행만 받고 ./scripts/verify.sh mutation을 부르며, PIT 리포트를 산출물로 남긴다" test_mutation_workflow_manual_only
 run_test "CI 범위: PR이 바꾼 파일이 모두 docs/ 아래면 하네스만 실행한다" test_ci_scope_docs_only_runs_harness
 run_test "CI 범위: docs/ 밖 파일(루트 CLAUDE.md, docs/로 옮긴 코드 포함)이 바뀌었거나 알 수 없으면 전체를 실행한다" test_ci_scope_runs_all_otherwise
 
