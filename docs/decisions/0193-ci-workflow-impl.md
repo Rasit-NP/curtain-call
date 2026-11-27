@@ -18,7 +18,7 @@
   이름 바꾸기는 지운 파일과 새 파일로 보고(`--no-renames`), 한글 파일 이름을 그대로 비교한다(`core.quotePath=false`).
   바뀐 파일을 알 수 없거나 바뀐 파일이 없으면 전체다.
 - **캐시**: Gradle은 `setup-java`(키: `backend`의 Gradle 파일), npm은 `setup-node`(키: `frontend`·`e2e`의 lockfile 둘), Playwright 브라우저는 `actions/cache`(`~/.cache/ms-playwright`, 키: `e2e` lockfile).
-- **시간 제한**: `verify.sh` 단계 25분, 잡 30분. 단계가 먼저 끊겨야 요약과 산출물 단계가 돈다.
+- **시간 제한**: `verify.sh` 단계 15분, 잡 20분. 캐시 없는 첫 실행이 잡 4분 1초(`verify.sh` 3분 36초)여서 약 4배를 두었다. 단계가 먼저 끊겨야 요약과 산출물 단계가 돈다.
 - **실패했을 때 남길 것**:
   - 실행 화면(Job Summary): `verify.sh` 출력의 `===== 검증 요약` 줄부터 끝까지(실패 상세 포함). 그 줄이 없으면(시간 제한, 취소) 출력 마지막 60줄.
   - 산출물 `verify-failure-<시도 번호>`, 7일 보관: `.verify-logs/`, `backend/build/reports/`, `backend/build/test-results/`, `frontend/coverage/`,

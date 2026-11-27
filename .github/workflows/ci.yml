@@ -32,7 +32,7 @@ jobs:
   verify:
     name: verify
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - name: 체크아웃
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -85,8 +85,8 @@ jobs:
 
       - name: verify.sh
         id: verify
-        # 멈춘 실행이 실행 시간을 다 쓰지 않게 끊는다. 잡의 시간 제한보다 짧게 두어 요약과 산출물 단계가 돈다.
-        timeout-minutes: 25
+        # 멈춘 실행을 끊는다(캐시 없는 실행이 4분 안팎, 약 4배 여유). 잡의 시간 제한보다 짧게 두어 요약과 산출물 단계가 돈다.
+        timeout-minutes: 15
         env:
           MODE: ${{ steps.scope.outputs.mode }}
         run: ./scripts/verify.sh "$MODE" 2>&1 | tee "$RUNNER_TEMP/verify.out"
