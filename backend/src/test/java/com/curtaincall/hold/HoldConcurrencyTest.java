@@ -219,6 +219,10 @@ class HoldConcurrencyTest extends IntegrationTest {
      *   <li>좌석을 서로 다른 순서로 잠그면 교착 상태가 되어 PostgreSQL이 하나를 끊고 500이 된다. 둘 다 id 오름차순으로 잠가 생기지 않는다.</li>
      * </ul>
      * 교착 상태가 생길 수 있게 덮어쓰는 좌석을 4석으로 하고, 한 번에 걸리지 않을 수 있어 반복한다.
+     *
+     * <p>둘을 같은 순간에 보내면 좌석을 잠그기 전 단계가 짧은 해제가 거의 언제나 먼저 좌석을 잡는다(처음 쓴 테스트에서 holdId로 거르는 조건을 빼도
+     * 50회 모두 통과했다). 그래서 반복마다 해제를 0~10ms 늦게 보내, 선점이 먼저 좌석을 잡거나 커밋한 뒤에 해제가 오는 순서도 생기게 한다.
+     * 기다리는 시간은 순서를 섞을 뿐이고, 검증은 어느 순서에서도 같다.
      */
     @Test
     @DisplayName("만료된 선점의 해제와 다른 사용자의 같은 좌석 선점이 동시에 와도 둘 다 성공하고, 새 선점의 좌석은 풀리지 않으며 500이 나지 않는다(50회 반복)")
@@ -235,11 +239,13 @@ class HoldConcurrencyTest extends IntegrationTest {
             clock.advance(VALIDITY);
             long[] reversed = {seats[3], seats[2], seats[1], seats[0]};
 
+            long releaseDelayMillis = (round % 6) * 2L;
+
             List<MvcResult> results = concurrently(List.of(
                     HoldRequests.release(owner, expired),
-                    hold(other, performance, reversed)));
+                    hold(other, performance, reversed)), new long[] {releaseDelayMillis, 0});
 
-            String at = "반복 " + round;
+            String at = "반복 " + round + "(해제 " + releaseDelayMillis + "ms 늦게)";
             assertThat(statuses(results)).as(at).containsExactly(204, 201);
             long renewed = holdId(results.get(1));
             assertThat(holds.holdStatus(expired)).as(at).isEqualTo("RELEASED");
@@ -273,16 +279,26 @@ class HoldConcurrencyTest extends IntegrationTest {
      * 요청 수는 DB 연결 풀 크기(기본 10) 이하로 둔다.
      */
     private List<MvcResult> concurrently(List<? extends RequestBuilder> requests) throws Exception {
+        return concurrently(requests, new long[requests.size()]);
+    }
+
+    /** {@link #concurrently(List)}와 같고, 요청마다 출발 신호 뒤 delaysMillis만큼 기다렸다가 보낸다(요청이 겹치는 순서를 바꿀 때). */
+    private List<MvcResult> concurrently(List<? extends RequestBuilder> requests, long[] delaysMillis) throws Exception {
         int count = requests.size();
         ExecutorService executor = Executors.newFixedThreadPool(count);
         CountDownLatch ready = new CountDownLatch(count);
         CountDownLatch start = new CountDownLatch(1);
         try {
             List<Future<MvcResult>> futures = new ArrayList<>();
-            for (RequestBuilder request : requests) {
+            for (int i = 0; i < count; i++) {
+                RequestBuilder request = requests.get(i);
+                long delayMillis = delaysMillis[i];
                 futures.add(executor.submit(() -> {
                     ready.countDown();
                     start.await();
+                    if (delayMillis > 0) {
+                        Thread.sleep(delayMillis);
+                    }
                     return mockMvc.perform(request).andReturn();
                 }));
             }
