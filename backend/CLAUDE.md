@@ -5,7 +5,8 @@
 - Java 21, Spring Boot(start.spring.io에서 선택 가능한 최신 안정 버전), Gradle 래퍼(`./gradlew`)
 - Spring Web, Spring Data JPA, Spring Security, OAuth2 Resource Server(JWT), Validation, Flyway, Actuator, PostgreSQL 17
 - 테스트: JUnit, AssertJ, Spring Boot Test, Testcontainers(PostgreSQL), JaCoCo
-- 로컬과 E2E용 DB는 루트 `compose.yaml`의 `db` 서비스로 띄운다. 통합 테스트와 E2E에는 Docker가 필요하다.
+- 로컬 개발 DB는 루트 `compose.yaml`의 `db` 서비스로 띄운다. E2E DB는 실행마다 Testcontainers로 새로 띄운다(`bootE2eRun`, 결정 0161·0162).
+  통합 테스트와 E2E에는 Docker가 필요하다.
 
 ## 명령 (`backend/`에서 실행)
 
@@ -14,6 +15,8 @@
 - 클래스 하나: `./gradlew test --tests '*HoldServiceTest'` / 메서드 하나: `--tests '*HoldServiceTest.methodName'`
 - 빌드와 커버리지: `./gradlew assemble jacocoTestReport`
 - 로컬 실행: 루트에서 `docker compose up -d db` 후 `./gradlew bootRun`
+- E2E용 실행: `./gradlew bootE2eRun --args='--server.address=127.0.0.1 --server.port=<포트>'`(e2e 프로필, 실행마다 새 PostgreSQL 컨테이너).
+  보통은 E2E(`e2e/playwright.config.ts`)가 띄운다.
 - 리포트: `build/reports/tests/test/`, `build/reports/tests/integrationTest/`, `build/reports/jacoco/test/html/`
 
 ## 빌드 설정 (첫 설정 Issue에서 만든다)
@@ -49,7 +52,8 @@
 ## 프로필
 
 - `local`: 로컬 개발. `compose.yaml`의 DB와 시드 데이터를 쓴다.
-- `e2e`: `local`과 같고, E2E 지원 엔드포인트가 켜진다.
+- `e2e`: 시드를 넣고 E2E 지원 엔드포인트가 켜진다. DB 주소를 정하지 않는다(초기화가 개발 DB를 지우지 않게).
+  E2E 실행기(`src/e2eRun`, `bootE2eRun`)가 실행마다 새 PostgreSQL 컨테이너를 붙여 띄운다(결정 0161, 0162).
 - `test`: 통합 테스트. Testcontainers DB를 쓰고 시드 데이터를 넣지 않는다.
 - `prod`: 배포용. DB 접속 정보와 `JWT_SECRET`은 환경변수로만 받는다.
 
@@ -73,7 +77,10 @@
 
 - `e2e` 프로필에서만 `POST /api/test-support/reset` 컨트롤러를 등록한다(`@Profile("e2e")`).
   데이터를 비우고 시드를 다시 넣으며, 인증 없이 호출할 수 있다.
+  Flyway 이력을 뺀 모든 테이블을 한 트랜잭션에서 비우고 `db/seed`를 버전 순서로 다시 실행한다(결정 0160).
 - 이 컨트롤러가 `e2e`가 아닌 프로필에서는 등록되지 않는 것을 테스트로 확인한다.
+- E2E 실행기는 테스트 소스와 따로 `src/e2eRun`에 둔다. 테스트 클래스(`@TestConfiguration`, 시험용 컨트롤러)가 클래스패스에 있으면
+  컴포넌트 스캔에 걸려 E2E 서버에 들어간다. 그래서 `bootTestRun`(테스트 클래스패스로 띄우기)은 쓰지 않는다.
 
 ## 마이그레이션과 데이터
 
