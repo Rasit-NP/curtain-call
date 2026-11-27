@@ -10,7 +10,8 @@
 - `backend/`: Java, Spring Boot API. 영역 규칙은 `backend/CLAUDE.md`
 - `frontend/`: React + TypeScript (Vite). 영역 규칙은 `frontend/CLAUDE.md`
 - `e2e/`: Playwright. 영역 규칙은 `e2e/CLAUDE.md`
-- `compose.yaml`: 로컬·E2E용 PostgreSQL 17(`db` 서비스). 루트에서 `docker compose up -d db`로 띄운다. 통합 테스트와 E2E에는 Docker가 필요하다.
+- `compose.yaml`: 로컬 개발용 PostgreSQL 17(`db` 서비스, 프로젝트 이름 `curtain-call`). 루트에서 `docker compose up -d db`로 띄운다.
+  E2E는 이 DB를 쓰지 않고 실행마다 임시 DB를 띄운다(결정 0161). 통합 테스트와 E2E에는 Docker가 필요하다.
 - `backend/`, `frontend/`, `e2e/`에서 작업하기 전에는 그 폴더의 `CLAUDE.md`를 먼저 읽는다. 새 파일만 만드는 작업도 마찬가지다.
 - `scripts/verify.sh`: 모든 검증의 단일 진입점
 - `.claude/settings.json`, `.claude/hooks/stop-verify.sh`: 작업을 끝낼 때 `verify.sh quick`을 실행하는 Stop 훅

@@ -39,15 +39,26 @@ class ApplicationProfilesTest {
         assertThat(flywayLocations(env)).isEqualTo(MIGRATION_AND_SEED);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"local", "e2e"})
-    @DisplayName("local과 e2e는 환경변수 없이 compose DB에 붙고 마이그레이션과 시드를 쓴다")
-    void localAndE2eUseComposeDbAndSeed(String profile) {
-        StandardEnvironment env = load(Map.of(), profile);
+    @Test
+    @DisplayName("local은 환경변수 없이 compose DB에 붙고 마이그레이션과 시드를 쓴다")
+    void localUsesComposeDbAndSeed() {
+        StandardEnvironment env = load(Map.of(), "local");
 
         assertThat(env.getProperty("spring.datasource.url")).isEqualTo(COMPOSE_DB_URL);
         assertThat(env.getProperty("spring.datasource.username")).isNotBlank();
         assertThat(env.getProperty("spring.datasource.password")).isNotBlank();
+        assertThat(flywayLocations(env)).isEqualTo(MIGRATION_AND_SEED);
+    }
+
+    @Test
+    @DisplayName("e2e는 마이그레이션과 시드를 쓰지만 DB 주소를 정하지 않는다(E2E 실행기가 실행마다 새 DB를 붙인다. 초기화가 개발 DB를 지우지 않게)")
+    void e2eUsesSeedWithoutDbAddress() {
+        // 결정 0161: e2e 프로필에서 개발 DB 주소 기본값을 뺀다. E2E 백엔드는 bootE2eRun이 띄운 임시 DB에 붙는다(결정 0162).
+        StandardEnvironment env = load(Map.of(), "e2e");
+
+        assertThat(env.getProperty("spring.datasource.url")).isNull();
+        assertThat(env.getProperty("spring.datasource.username")).isNull();
+        assertThat(env.getProperty("spring.datasource.password")).isNull();
         assertThat(flywayLocations(env)).isEqualTo(MIGRATION_AND_SEED);
     }
 

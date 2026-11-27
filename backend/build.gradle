@@ -19,6 +19,20 @@ repositories {
     mavenCentral()
 }
 
+// E2E용 백엔드 실행기(src/e2eRun, 결정 0162): 운영 애플리케이션에 실행마다 새 PostgreSQL 컨테이너를 붙여 e2e 프로필로 띄운다.
+// 테스트 소스와 나눈다. 테스트 클래스(@TestConfiguration, 시험용 컨트롤러)가 클래스패스에 있으면 컴포넌트 스캔에 걸려 E2E 서버에 들어간다.
+sourceSets {
+    e2eRun {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    e2eRunImplementation.extendsFrom implementation
+    e2eRunRuntimeOnly.extendsFrom runtimeOnly
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -39,6 +53,23 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    e2eRunImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    e2eRunImplementation 'org.testcontainers:testcontainers-postgresql'
+}
+
+// E2E용 백엔드를 띄운다(e2e/playwright.config.ts가 부른다). 포트 등은 --args로 받는다.
+// 예: ./gradlew bootE2eRun --args='--server.address=127.0.0.1 --server.port=18080'
+tasks.register('bootE2eRun', org.springframework.boot.gradle.tasks.run.BootRun) {
+    description = 'E2E용 백엔드를 e2e 프로필로 띄운다. DB는 실행마다 새로 만드는 PostgreSQL 컨테이너다(Testcontainers).'
+    group = 'application'
+    classpath = sourceSets.e2eRun.runtimeClasspath
+    mainClass = 'com.curtaincall.e2e.E2eApplication'
+}
+
+// 단위 테스트를 컴파일할 때 E2E 실행기도 컴파일한다. 운영 코드가 바뀌어 실행기가 깨지면 quick 검증에서 바로 드러난다.
+tasks.named('testClasses') {
+    dependsOn tasks.named('e2eRunClasses')
 }
 
 // 단위 테스트: integration 태그를 뺀다.

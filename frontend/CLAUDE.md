@@ -30,6 +30,7 @@
 ## API 연동
 
 - 개발 서버는 `/api` 요청을 백엔드(`http://localhost:8080`)로 프록시한다. 코드에서는 `/api`로 시작하는 상대 경로만 쓴다.
+  환경변수 `CURTAINCALL_API_TARGET`이 있으면 그곳으로 넘긴다. E2E가 자기가 띄운 백엔드로 바꿀 때 쓴다(결정 0161·0162).
 - 오류는 응답 본문(`ProblemDetail`)의 `code`로 구분한다. 사용자에게 보여 줄 문구는 code별로 한 파일에 모은다.
 - `401 AUTH_REQUIRED`를 받으면 저장된 토큰을 지우고 로그인 화면으로 보낸다.
   로그인 실패(`401 INVALID_CREDENTIALS`)에는 적용하지 않고, 로그인 화면에 안내 문구만 보여 준다(`docs/spec.md`).

@@ -3,7 +3,7 @@
 R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 계층에서 검증할지 정한다.
 동작의 기준은 [`spec.md`](spec.md)이고, 괄호 안의 숫자는 그 문서의 절 번호다.
 
-현황(2026-11-28): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 조회 단계에서 백엔드(#35)는 공연 목록·상세 API(공개 경로 R6 포함), 공연장별 좌석 배치, 공연·좌석 시드 테스트를, 프론트엔드(#36)는 공연 목록·내 예매 화면, 공통 헤더와 로그아웃, 내 예매 화면의 실제 경로로 R6 가드 테스트를 썼다. 선점 단계에서 프론트엔드(#42)는 공연 상세·선점 API 함수, 좌석 선택 화면(격자 배치, 4석 선택, 선점 요청의 응답별 처리), 좌석 선택 화면의 실제 경로로 R1·R2·R6 프론트 테스트를 썼다. 백엔드(#41)는 선점 생성 API(R1·R2·R3·R6), 같은 좌석·같은 사용자 동시 요청, 선점 스키마, 공연 상세의 만료 반영 테스트를 썼다. 3단계 뒤 점검 수정에서 백엔드(#45)는 경로 long 값의 엄격한 해석(공연 상세, 모든 경로)과 공연 상세·선점 응답의 좌석 row 정렬 통합 테스트를 썼다. 선점 조회·해제 단계에서 백엔드(#51)는 선점 조회·해제 API(R2·R3·R6), 같은 선점의 동시 해제, 만료된 선점의 해제와 다른 사용자의 선점이 겹치는 경우, 선점·좌석의 해제 상태 전이 테스트를 썼다. 결제 화면 단계에서 프론트엔드(#52)는 선점 조회·해제·결제 API 함수, 결제·예매 확인 화면(표시, 결제 응답별 처리, 멱등 키, 떠날 때의 해제), 결제 화면의 실제 경로로 R3·R4·R5·R6 프론트 테스트를 썼고, 로드맵에서 넘겨받은 정책(떠난 뒤 온 선점·로그인 성공, code 없는 502·503·504, AUTH_REQUIRED 문구)을 테스트로 고정했다. 결제 단계에서 백엔드(#55)는 결제 API(R4, R5의 Idempotency-Key 헤더 검증, R6), 모의 결제, 내 예매 API, 예매 좌석을 함께 세는 4석 한도(R2), 결제와 선점·해제가 겹치는 동시성, 결제된 선점의 조회·해제, 예매·결제 스키마 테스트를 썼다. 멱등 키 단계에서 백엔드(#56)는 R5의 멱등 기록(같은 키의 결과 저장·재사용, 같은 키 동시 요청, 500 미저장), 오류 표 3번의 자리, 멱등 기록 스키마, 모의 결제의 '다음 호출 실패' 테스트를 썼다. 마무리 단계의 정리(#61)에서 헤더의 AUTH_REQUIRED 테스트 2개에 `R6:`을 붙여 R6 행으로 옮겼다.
+현황(2026-11-28): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 조회 단계에서 백엔드(#35)는 공연 목록·상세 API(공개 경로 R6 포함), 공연장별 좌석 배치, 공연·좌석 시드 테스트를, 프론트엔드(#36)는 공연 목록·내 예매 화면, 공통 헤더와 로그아웃, 내 예매 화면의 실제 경로로 R6 가드 테스트를 썼다. 선점 단계에서 프론트엔드(#42)는 공연 상세·선점 API 함수, 좌석 선택 화면(격자 배치, 4석 선택, 선점 요청의 응답별 처리), 좌석 선택 화면의 실제 경로로 R1·R2·R6 프론트 테스트를 썼다. 백엔드(#41)는 선점 생성 API(R1·R2·R3·R6), 같은 좌석·같은 사용자 동시 요청, 선점 스키마, 공연 상세의 만료 반영 테스트를 썼다. 3단계 뒤 점검 수정에서 백엔드(#45)는 경로 long 값의 엄격한 해석(공연 상세, 모든 경로)과 공연 상세·선점 응답의 좌석 row 정렬 통합 테스트를 썼다. 선점 조회·해제 단계에서 백엔드(#51)는 선점 조회·해제 API(R2·R3·R6), 같은 선점의 동시 해제, 만료된 선점의 해제와 다른 사용자의 선점이 겹치는 경우, 선점·좌석의 해제 상태 전이 테스트를 썼다. 결제 화면 단계에서 프론트엔드(#52)는 선점 조회·해제·결제 API 함수, 결제·예매 확인 화면(표시, 결제 응답별 처리, 멱등 키, 떠날 때의 해제), 결제 화면의 실제 경로로 R3·R4·R5·R6 프론트 테스트를 썼고, 로드맵에서 넘겨받은 정책(떠난 뒤 온 선점·로그인 성공, code 없는 502·503·504, AUTH_REQUIRED 문구)을 테스트로 고정했다. 결제 단계에서 백엔드(#55)는 결제 API(R4, R5의 Idempotency-Key 헤더 검증, R6), 모의 결제, 내 예매 API, 예매 좌석을 함께 세는 4석 한도(R2), 결제와 선점·해제가 겹치는 동시성, 결제된 선점의 조회·해제, 예매·결제 스키마 테스트를 썼다. 멱등 키 단계에서 백엔드(#56)는 R5의 멱등 기록(같은 키의 결과 저장·재사용, 같은 키 동시 요청, 500 미저장), 오류 표 3번의 자리, 멱등 기록 스키마, 모의 결제의 '다음 호출 실패' 테스트를 썼다. 마무리 단계의 정리(#61)에서 헤더의 AUTH_REQUIRED 테스트 2개에 `R6:`을 붙여 R6 행으로 옮겼다. 마무리 단계에서 E2E 첫 설정(#59)은 e2e 프로필의 데이터 초기화 API(등록 조건, 비우고 시드를 다시 넣음, 두 번 연달아, 빈 DB, 초기화 뒤 로그인·시드 조건), e2e 프로필의 DB 주소 없음, E2E 시나리오 1~4(기본 흐름, R1, R2, R6)를 썼다.
 
 ## 읽는 법
 
@@ -12,7 +12,7 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 백엔드 단위 | JUnit, AssertJ, `Clock.fixed`. 스프링 컨텍스트 없음 | `./gradlew test` |
 | 백엔드 통합 | `@Tag("integration")`, `@SpringBootTest` + MockMvc, Testcontainers PostgreSQL, 시각을 옮길 수 있는 `Clock` 빈 | `./gradlew integrationTest` |
 | 프론트 | Vitest, React Testing Library, user-event, MSW | `npm run test` |
-| E2E | Playwright, `e2e/CLAUDE.md`의 시나리오 1~4 | `npx playwright test` |
+| E2E | Playwright(Chromium), `e2e/CLAUDE.md`의 시나리오 1~4. 실행마다 전용 백엔드(e2e 프로필, 임시 DB)·프론트엔드를 빈 포트에 띄운다(결정 0161·0162) | `npx playwright test` |
 
 - 구분: 정상(규칙대로 허용), 실패(규칙대로 거부), 경계(만료 시각, 4석 같은 경계값).
 - `(동시성)`: `CountDownLatch`로 여러 스레드를 동시에 출발시키고, 성공 개수와 DB 최종 상태를 모두 검증한다.
@@ -38,7 +38,7 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 실패 | R1: 선점 요청이 409 SEAT_ALREADY_HELD면 안내 문구를 보여 주고, 고른 좌석을 비운 뒤 좌석 상태를 다시 불러와 그 좌석을 '선택 불가'로 보여 준다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 실패 | R1: 409 SEAT_ALREADY_HELD 뒤 다시 불러오는 동안 격자와 안내 문구를 그대로 두고 로딩 문구 없이 좌석을 막으며, 다시 불러오기가 실패하면 실패 문구를 함께 보여 준다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 경계 | R1: 모든 좌석이 팔렸으면 빈 상태가 아니라 '선택 불가' 좌석으로 격자를 보여 준다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
-| 실패 | R1: 다른 사용자가 먼저 선점한 좌석을 고르면 안내 문구가 보이고 선점되지 않는다(시나리오 2) | E2E | 미작성 |
+| 실패 | R1: 다른 사용자가 먼저 선점한 좌석을 고르면 안내 문구가 보이고, 결제 화면으로 넘어가지 않으며, 그 좌석이 '선택 불가'로 바뀐다(함께 고른 좌석도 선점되지 않음, 시나리오 2) | E2E | 작성(`e2e/tests/seat-conflict.spec.ts`) |
 
 - 만료된 선점의 좌석을 다시 선점하는 경우는 R3에서 다룬다.
 - 교착 상태 테스트는 좌석을 `id` 순으로 잠그는 부분(spec 2.4)을 되돌렸을 때 실패해야 한다. 겹치는 좌석이 하나뿐인 묶음으로는
@@ -69,7 +69,7 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 경계 | R2: 5번째 좌석을 눌러 뜬 안내 문구는 좌석을 취소하면 지우고, 5번째 좌석을 다시 누르면 다시 보인다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 경계 | R2: 선점 요청이 409 HOLD_LIMIT_EXCEEDED로 끝나 뜬 안내 문구는 좌석을 하나 더 고르면 지운다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 실패 | R2: 선점 요청이 409 HOLD_LIMIT_EXCEEDED면 안내 문구를 보여 주고 고른 좌석은 그대로 두며 좌석 상태를 다시 불러오지 않는다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
-| 실패 | R2: 4석을 고른 뒤에는 5번째 좌석을 고를 수 없다(시나리오 3) | E2E | 미작성 |
+| 실패 | R2: 4석을 고른 뒤 5번째 좌석은 선택되지 않고 안내 문구가 보인다(시나리오 3) | E2E | 작성(`e2e/tests/seat-limit.spec.ts`) |
 
 - 결제와 선점이 부딪히는 행(5단계)은 결제가 만료 1초 전에 판정을 통과한 뒤 모의 결제를 래치로 멈추고, 시각을 만료 시각으로 옮긴 뒤 같은 사용자가 선점한다.
   선점 요청이 결제를 기다리는 것을 확인한 뒤 래치를 푼다. 결제의 사용자 행 잠금(spec 2.4)을 빼면 선점이 201이 되어 예매 2석 + 선점 4석 = 6석이 되므로,
@@ -188,7 +188,7 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 정상 | R6: 공개 API 요청에는 저장된 토큰이 있어도 붙이지 않는다 | 프론트 | 작성(`frontend/src/api/client.test.ts`) |
 | 정상 | R6: 인증이 필요한 요청에는 저장된 토큰을 Bearer로 붙인다 | 프론트 | 작성(`frontend/src/api/client.test.ts`) |
 | 경계 | R6: 인증이 필요한 요청이라도 저장된 토큰이 없으면 헤더 없이 보낸다 | 프론트 | 작성(`frontend/src/api/client.test.ts`) |
-| 실패 | R6: 로그인하지 않고 좌석 선택 화면에 들어가면 로그인 화면으로 이동한다(시나리오 4) | E2E | 미작성 |
+| 실패 | R6: 로그인하지 않고 좌석 선택 화면에 들어가면 로그인 화면으로 이동하고, 로그인하면 그 화면으로 돌아온다(시나리오 4) | E2E | 작성(`e2e/tests/auth-guard.spec.ts`) |
 
 토큰 검증(서명, 형식, 만료) 테스트는 실제로 서명한 토큰으로 요청한다. `spring-security-test`의 `jwt()`는 토큰 해석을 건너뛰어
 이 경우를 검증하지 못한다. `backend/CLAUDE.md`가 말하는 '로그인부터 토큰 사용까지의 실제 흐름' 통합 테스트에 해당한다.
@@ -265,8 +265,13 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 오류 형식(3.1) | MVC 밖 오류도 ProblemDetail과 code다: 공개 경로의 잘못된 쿼리·경로 퍼센트 인코딩, Tomcat이 거부한 인코딩된 슬래시, Spring Security 방화벽이 거부한 경로(세미콜론, 인코딩된 %, 이중 슬래시), 폼 본문은 400 INVALID_INPUT(401이나 500이 아님), 서블릿 필터의 예외는 500 INTERNAL_ERROR(예외 내용 없음). 비공개 경로는 토큰 검사(401)가 먼저이고, /error를 직접 부르면 토큰 없이 401이다(실제 서버) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorPageTest.java`) |
 | 오류 형식(3.1) | Tomcat이 거부한 잘못된 요청(지원하지 않는 HTTP 버전 505, Transfer-Encoding 501, Expect 417)은 500이 아니라 400 INVALID_INPUT이고, Tomcat이 거부한 요청의 본문은 공통 처리기의 본문과 필드가 같다(실제 서버) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorPageTest.java`) |
 | 오류 형식(3.1) | 코드 없이 상태만 정해진 오류의 code: 앱 안(MVC 예외, /error)은 입력 오류 상태만 INVALID_INPUT, Tomcat이 앱에 넘기기 전에 거부한 요청은 4xx와 501·505가 INVALID_INPUT, 404는 NOT_FOUND, 그 밖은 INTERNAL_ERROR | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorCodeStatusMappingTest.java`) |
-| E2E 지원(6.9) | reset 컨트롤러는 e2e 프로필에서만 등록된다. E2E 첫 설정 Issue에서 작성한다 | 백엔드 통합 | 미작성 |
-| E2E 지원(6.9) | e2e 프로필에서는 POST /api/test-support/reset을 토큰 없이 부를 수 있다(인증 검사를 지나 컨트롤러가 없으면 404) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/E2eProfileAuthTest.java`) |
+| E2E 지원(6.9) | reset 컨트롤러와 서비스는 e2e 프로필에서만 등록된다(통합 테스트의 test 프로필 컨텍스트에 없음) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/testsupport/TestDataResetRegistrationTest.java`) |
+| E2E 지원(6.9) | e2e가 아닌 프로필(local, test, prod)과 프로필이 없을 때는 reset 컨트롤러와 서비스를 등록하지 않는다(DB 없이 등록 조건만) | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/testsupport/TestDataResetProfileTest.java`) |
+| E2E 지원(6.9) | e2e 프로필에서는 POST /api/test-support/reset을 토큰 없이 부를 수 있다(인증 검사를 지나 초기화 컨트롤러가 204) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/E2eProfileAuthTest.java`) |
+| E2E 지원(6.9) | e2e 프로필에서 POST /api/test-support/reset은 토큰 없이 204이고 본문이 없다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/testsupport/TestDataResetApiTest.java`) |
+| E2E 지원(6.9) | 초기화는 선점·예매·결제·멱등 기록을 비우고(시드가 넣지 않는 모든 테이블), 좌석 상태와 계정·공연 시드(바꾼 값, 더한 행 포함)를 처음 상태로 되돌린다(id가 아닌 이름으로 비교) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/testsupport/TestDataResetApiTest.java`) |
+| E2E 지원(6.9) | 초기화를 두 번 연달아 불러도 같은 상태이고, 시드가 없는 빈 DB에서 불러도 시드를 넣는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/testsupport/TestDataResetApiTest.java`) |
+| E2E 지원(6.9) | 초기화 뒤에도 시드 계정(demo, e2e-user1, e2e-user2)으로 로그인할 수 있고(초기화 전에 비밀번호를 바꿔 둠), 시드 조건(2.5)을 만족한다(초기화 전에 빈 좌석을 모두 없앰) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/testsupport/TestDataResetApiTest.java`) |
 | E2E 지원(6.9) | e2e가 아닌 프로필에서 POST /api/test-support/reset은 토큰 없이 401 AUTH_REQUIRED, 유효한 토큰이면 404 NOT_FOUND다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 시드(2.5) | 시드 계정(시연용 demo, E2E용 e2e-user1·e2e-user2)으로 로그인할 수 있다(시드 파일을 실제 스키마에서 실행) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/E2eProfileAuthTest.java`) |
 | 시드(2.5) | 공연장·공연 시드를 실제 스키마에서 실행하면 공연이 2개 이상이고 공연 상세마다 빈 좌석이 5석 이상이며, 공연 좌석은 그 공연장 배치와 같고, 배치가 다른 공연장과 통로·빈자리가 있는 배치가 있다(값이 아닌 성질만 확인) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/PerformanceSeedTest.java`) |
@@ -330,7 +335,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 안내 문구(7.6) | 루트 `CLAUDE.md` 오류 코드 표의 모든 code와 응답 없음에 명세와 같은 문구가 있다 | 프론트 | 작성(`frontend/src/api/errorMessages.test.ts`) |
 | 토큰 저장(3.2) | 액세스 토큰을 `localStorage`에 저장하고 읽고 지운다 | 프론트 | 작성(`frontend/src/auth/tokenStorage.test.ts`) |
 | 토큰 저장(3.2) | 토큰을 저장하거나 지우면 구독한 함수에 알리고, 구독을 끊으면 알리지 않는다(헤더가 바로 바뀌는 데 쓴다) | 프론트 | 작성(`frontend/src/auth/tokenStorage.test.ts`) |
-| 기본 흐름(1) | 로그인 → 공연 선택 → 좌석 2석 선점 → 결제 → 예매 완료 → 내 예매에서 확인(시나리오 1) | E2E | 미작성 |
+| 기본 흐름(1) | 로그인 → 공연 선택 → 좌석 2석 선점 → 결제 → 예매 완료 → 내 예매에 같은 좌석(시나리오 1) | E2E | 작성(`e2e/tests/booking.spec.ts`) |
 
 ## 테스트 기반과 설정
 
@@ -338,7 +343,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 
 | 대상 | 테스트 | 계층 | 상태 |
 |---|---|---|---|
-| 프로필 | 프로필을 주지 않으면 local로 뜨고, local·e2e는 환경변수 없이 compose DB와 시드를 쓴다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
+| 프로필 | 프로필을 주지 않으면 local로 뜨고, local은 환경변수 없이 compose DB와 시드를 쓴다. e2e는 시드를 쓰지만 DB 주소를 정하지 않는다(E2E 실행기가 실행마다 임시 DB를 붙인다, 결정 0161) | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
 | 프로필 | test는 DB 주소를 정하지 않고 시드를 쓰지 않으며, prod는 DB 접속 정보를 기본값 없이 환경변수로만 받는다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
 | 프로필 | local·e2e는 시드가 적용된 DB에 나중에 추가된 마이그레이션도 적용하도록 Flyway out-of-order를 켜고, test·prod는 끈다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
 | 프로필 | 모든 프로필에서 open-in-view를 끄고 ddl-auto는 validate다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
@@ -352,7 +357,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 통합 기반 | 테스트마다 시작 전에 테이블을 비우고, Flyway 이력 테이블은 남긴다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
 | 통합 기반 | 운영 코드에 주입되는 PaymentGateway는 모의 결제이고, 테스트마다 시작 전에 모의 결제의 설정(다음 호출 거절·실패, 멈추기)과 호출 횟수를 초기화한다(spec 6.7.2) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
 | 모의 결제(6.7.2) | 아무것도 지정하지 않으면 늘 승인하고(테스트가 아닌 프로필의 동작), 다음 호출 거절·다음 호출 실패(예외, 멈추기와 함께 쓰면 풀린 뒤)·호출 횟수·멈추기(풀 때까지 결과를 돌려주지 않음)·초기화(멈춘 호출을 풂)를 할 수 있다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/payment/infra/FakePaymentGatewayTest.java`) |
-| 시드 실행 | 시드 테스트는 시드 파일을 파일 이름 문자열이 아니라 버전 번호 순서로 실행하고(V10000은 V1001 뒤), 버전 번호를 읽을 수 없는 이름은 거부한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/support/SeedFilesTest.java`) |
+| 시드 실행 | 시드 테스트와 E2E 초기화는 시드 파일을 파일 이름 문자열이 아니라 버전 번호 순서로 실행하고(V10000은 V1001 뒤), 버전 번호를 읽을 수 없는 이름은 거부한다(둘이 함께 쓰는 운영 코드 `SeedScripts`, 결정 0160) | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/support/SeedFilesTest.java`) |
 | 프론트 MSW | 핸들러가 없는 요청은 실제 네트워크로 나가지 않고 실패한다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |
 | 프론트 MSW | 테스트가 끝날 때 핸들러가 없는 요청이 있었으면(아직 처리 중이던 요청 포함) 테스트를 실패로 만든다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |
 | 프론트 MSW | 테스트가 끝날 때 처리 중인 요청은 그 테스트의 핸들러로 처리한다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |
@@ -365,9 +370,12 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 
 | 시나리오 | 규칙 | 진행 | 상태 |
 |---|---|---|---|
-| 1 | 기본 흐름 | 로그인 → 공연 목록에서 공연 선택 → 좌석 2석 선택 → '좌석 선택 완료'(묶음 선점) → '결제하기' → 예매 완료 → 내 예매에 같은 좌석이 보임 | 미작성 |
-| 2 | R1 | 좌석 화면을 연 뒤 다른 사용자가 `request` 픽스처로 좌석 하나를 선점 → 그 좌석을 고르고 '좌석 선택 완료' → 안내 문구가 보이고, 결제 화면으로 넘어가지 않으며, 그 좌석이 '선택 불가'로 바뀜 | 미작성 |
-| 3 | R2 | 4석을 고른 뒤 5번째 좌석을 누름 → 선택되지 않고 안내 문구가 보임 | 미작성 |
-| 4 | R6 | 로그인하지 않고 `/performances/:performanceId`에 들어감 → `/login`으로 이동 | 미작성 |
+| 1 | 기본 흐름 | 로그인 → 공연 목록에서 공연 선택 → 좌석 2석 선택 → '좌석 선택 완료'(묶음 선점) → '결제하기' → 예매 완료 → 내 예매에 같은 좌석이 보임 | 작성(`e2e/tests/booking.spec.ts`) |
+| 2 | R1 | 좌석 화면을 연 뒤 다른 사용자가 `request` 픽스처로 좌석 하나를 선점 → 그 좌석과 빈 좌석 하나를 고르고 '좌석 선택 완료' → 안내 문구가 보이고, 결제 화면으로 넘어가지 않으며, 그 좌석이 '선택 불가'로 바뀜(함께 고른 좌석은 '선택 가능'이고 API에서도 AVAILABLE) | 작성(`e2e/tests/seat-conflict.spec.ts`) |
+| 3 | R2 | 4석을 고른 뒤 5번째 좌석을 누름 → 선택되지 않고 안내 문구가 보임(고른 좌석은 4석 그대로) | 작성(`e2e/tests/seat-limit.spec.ts`) |
+| 4 | R6 | 로그인하지 않고 `/performances/:performanceId`에 들어감 → `/login`으로 이동 → 로그인하면 그 좌석 선택 화면으로 돌아옴(spec 7.1) | 작성(`e2e/tests/auth-guard.spec.ts`) |
 
 시나리오 2에서 다른 사용자의 선점은 좌석 화면을 연 뒤에 만든다. 먼저 선점된 좌석은 처음부터 '선택 불가'로 비활성이라 고를 수 없기 때문이다.
+
+모든 테스트는 `beforeEach`에서 초기화 API(6.9)를 부르고, 공연·좌석은 id나 시드 값을 가정하지 않고 공연 목록·상세 API로 찾는다(결정 0163).
+R1·R2·R6 시나리오는 구현의 해당 부분을 잠시 되돌려 실패하는 것을 확인했다(`docs/history/0059-e2e-setup.md` '규칙 시나리오 되돌림 확인').

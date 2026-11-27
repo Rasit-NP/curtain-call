@@ -26,16 +26,24 @@ management:
         enabled: false
 
 ---
-# local: 로컬 개발, e2e: local과 같고 E2E 지원 엔드포인트가 켜진다.
-# 루트 compose.yaml의 db 서비스에 붙는다. 접속 정보는 개발 전용 값이다(실제 비밀번호가 아님).
+# local: 로컬 개발. 루트 compose.yaml의 db 서비스(개발 DB)에 붙는다. 접속 정보는 개발 전용 값이다(실제 비밀번호가 아님).
 spring:
   config:
     activate:
-      on-profile: local | e2e
+      on-profile: local
   datasource:
     url: jdbc:postgresql://localhost:5432/curtaincall
     username: curtaincall
     password: curtaincall-dev
+
+---
+# local·e2e: 시드를 넣는다. e2e는 여기에 E2E 지원 엔드포인트(초기화)가 켜진다.
+# e2e는 DB 주소를 정하지 않는다. E2E 백엔드는 ./gradlew bootE2eRun이 실행마다 새로 띄운 임시 DB에 붙는다(결정 0161, 0162).
+# 개발 DB 주소를 두면 e2e로 띄운 서버의 초기화가 개발 데이터를 지울 수 있다.
+spring:
+  config:
+    activate:
+      on-profile: local | e2e
   flyway:
     locations: classpath:db/migration, classpath:db/seed
     # 시드(V1000__~)와 스키마 마이그레이션이 같은 이력을 쓰고, compose 볼륨이 이력을 유지한다.

@@ -49,11 +49,10 @@ class E2eProfileAuthTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("e2e 프로필에서는 POST /api/test-support/reset을 토큰 없이 부를 수 있다(인증 검사를 지나 컨트롤러가 없으면 404)")
+    @DisplayName("e2e 프로필에서는 POST /api/test-support/reset을 토큰 없이 부를 수 있다(인증 검사를 지나 초기화 컨트롤러가 204)")
     void resetPathIsOpenInE2eProfile() throws Exception {
         mockMvc.perform(post("/api/test-support/reset"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+                .andExpect(status().isNoContent());
     }
 
     @ParameterizedTest(name = "{0}")
