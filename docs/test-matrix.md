@@ -3,7 +3,7 @@
 R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 계층에서 검증할지 정한다.
 동작의 기준은 [`spec.md`](spec.md)이고, 괄호 안의 숫자는 그 문서의 절 번호다.
 
-현황(2026-11-28): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 조회 단계에서 백엔드(#35)는 공연 목록·상세 API(공개 경로 R6 포함), 공연장별 좌석 배치, 공연·좌석 시드 테스트를, 프론트엔드(#36)는 공연 목록·내 예매 화면, 공통 헤더와 로그아웃, 내 예매 화면의 실제 경로로 R6 가드 테스트를 썼다. 선점 단계에서 프론트엔드(#42)는 공연 상세·선점 API 함수, 좌석 선택 화면(격자 배치, 4석 선택, 선점 요청의 응답별 처리), 좌석 선택 화면의 실제 경로로 R1·R2·R6 프론트 테스트를 썼다. 백엔드(#41)는 선점 생성 API(R1·R2·R3·R6), 같은 좌석·같은 사용자 동시 요청, 선점 스키마, 공연 상세의 만료 반영 테스트를 썼다. 3단계 뒤 점검 수정에서 백엔드(#45)는 경로 long 값의 엄격한 해석(공연 상세, 모든 경로)과 공연 상세·선점 응답의 좌석 row 정렬 통합 테스트를 썼다. 선점 조회·해제 단계에서 백엔드(#51)는 선점 조회·해제 API(R2·R3·R6), 같은 선점의 동시 해제, 만료된 선점의 해제와 다른 사용자의 선점이 겹치는 경우, 선점·좌석의 해제 상태 전이 테스트를 썼다. 결제 화면 단계에서 프론트엔드(#52)는 선점 조회·해제·결제 API 함수, 결제·예매 확인 화면(표시, 결제 응답별 처리, 멱등 키, 떠날 때의 해제), 결제 화면의 실제 경로로 R3·R4·R5·R6 프론트 테스트를 썼고, 로드맵에서 넘겨받은 정책(떠난 뒤 온 선점·로그인 성공, code 없는 502·503·504, AUTH_REQUIRED 문구)을 테스트로 고정했다. 결제 단계에서 백엔드(#55)는 결제 API(R4, R5의 Idempotency-Key 헤더 검증, R6), 모의 결제, 내 예매 API, 예매 좌석을 함께 세는 4석 한도(R2), 결제와 선점·해제가 겹치는 동시성, 결제된 선점의 조회·해제, 예매·결제 스키마 테스트를 썼다. 멱등 키 단계에서 백엔드(#56)는 R5의 멱등 기록(같은 키의 결과 저장·재사용, 같은 키 동시 요청, 500 미저장), 오류 표 3번의 자리, 멱등 기록 스키마, 모의 결제의 '다음 호출 실패' 테스트를 썼다. 마무리 단계의 정리(#61)에서 헤더의 AUTH_REQUIRED 테스트 2개에 `R6:`을 붙여 R6 행으로 옮겼다. 마무리 단계에서 E2E 첫 설정(#59)은 e2e 프로필의 데이터 초기화 API(등록 조건, 비우고 시드를 다시 넣음, 두 번 연달아, 빈 DB, 초기화 뒤 로그인·시드 조건), e2e 프로필의 DB 주소 없음, E2E 시나리오 1~4(기본 흐름, R1, R2, R6)를 썼다.
+현황(2026-11-28): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 조회 단계에서 백엔드(#35)는 공연 목록·상세 API(공개 경로 R6 포함), 공연장별 좌석 배치, 공연·좌석 시드 테스트를, 프론트엔드(#36)는 공연 목록·내 예매 화면, 공통 헤더와 로그아웃, 내 예매 화면의 실제 경로로 R6 가드 테스트를 썼다. 선점 단계에서 프론트엔드(#42)는 공연 상세·선점 API 함수, 좌석 선택 화면(격자 배치, 4석 선택, 선점 요청의 응답별 처리), 좌석 선택 화면의 실제 경로로 R1·R2·R6 프론트 테스트를 썼다. 백엔드(#41)는 선점 생성 API(R1·R2·R3·R6), 같은 좌석·같은 사용자 동시 요청, 선점 스키마, 공연 상세의 만료 반영 테스트를 썼다. 3단계 뒤 점검 수정에서 백엔드(#45)는 경로 long 값의 엄격한 해석(공연 상세, 모든 경로)과 공연 상세·선점 응답의 좌석 row 정렬 통합 테스트를 썼다. 선점 조회·해제 단계에서 백엔드(#51)는 선점 조회·해제 API(R2·R3·R6), 같은 선점의 동시 해제, 만료된 선점의 해제와 다른 사용자의 선점이 겹치는 경우, 선점·좌석의 해제 상태 전이 테스트를 썼다. 결제 화면 단계에서 프론트엔드(#52)는 선점 조회·해제·결제 API 함수, 결제·예매 확인 화면(표시, 결제 응답별 처리, 멱등 키, 떠날 때의 해제), 결제 화면의 실제 경로로 R3·R4·R5·R6 프론트 테스트를 썼고, 로드맵에서 넘겨받은 정책(떠난 뒤 온 선점·로그인 성공, code 없는 502·503·504, AUTH_REQUIRED 문구)을 테스트로 고정했다. 결제 단계에서 백엔드(#55)는 결제 API(R4, R5의 Idempotency-Key 헤더 검증, R6), 모의 결제, 내 예매 API, 예매 좌석을 함께 세는 4석 한도(R2), 결제와 선점·해제가 겹치는 동시성, 결제된 선점의 조회·해제, 예매·결제 스키마 테스트를 썼다. 멱등 키 단계에서 백엔드(#56)는 R5의 멱등 기록(같은 키의 결과 저장·재사용, 같은 키 동시 요청, 500 미저장), 오류 표 3번의 자리, 멱등 기록 스키마, 모의 결제의 '다음 호출 실패' 테스트를 썼다. 마무리 단계의 정리(#61)에서 헤더의 AUTH_REQUIRED 테스트 2개에 `R6:`을 붙여 R6 행으로 옮겼다. 마무리 단계에서 E2E 첫 설정(#59)은 e2e 프로필의 데이터 초기화 API(등록 조건, 비우고 시드를 다시 넣음, 두 번 연달아, 빈 DB, 초기화 뒤 로그인·시드 조건), e2e 프로필의 DB 주소 없음, E2E 시나리오 1~4(기본 흐름, R1, R2, R6)를 썼다. 로드맵 2의 1단계에서 뮤테이션 테스트 기준선(#69)은 PIT로 살아남은 변이를 분류해, R6 토큰 검증(sub 값, 주입한 시계, exp 없음, 인코더·디코더) 단위 테스트, R6 `WWW-Authenticate` 통합 테스트, R1 선점 없는 HELD 좌석 판정, R5 저장 응답의 상태·code 일치와 응답 한 번만 채우기, 선점의 null 좌석 id, 공백뿐인 서명 키 테스트를 더했다.
 
 ## 읽는 법
 
@@ -19,6 +19,7 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 - 테스트 이름(또는 표시 이름)은 표의 이름으로 쓴다. 구현하며 다듬어도 규칙 번호로 시작하게 한다.
 - 상태는 `미작성`, `작성`(파일 경로), `해당 없음` 중 하나다. 테스트를 추가하거나 바꾸는 PR에서 이 표를 같이 고친다.
 - 규칙 테스트는 구현의 해당 부분을 잠시 되돌렸을 때 실패하는지 확인하고, PR 본문의 '규칙 테스트 되돌림 확인'에 적는다.
+- 규칙 코드의 테스트가 결과를 검증하는지는 뮤테이션 테스트(PIT)로도 잰다. 점수, 살아남은 변이의 분류, PIT가 바꾸지 못하는 보장을 지키는 테스트는 [`mutation-testing.md`](mutation-testing.md)에 있다.
 
 ## R1. 같은 좌석을 동시에 선점하면 한 명만 성공
 
@@ -27,6 +28,7 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 구분 | 테스트 | 계층 | 상태 |
 |---|---|---|---|
 | 정상 | R1: 유효한 선점이 없고 판매되지 않은 좌석만 선점할 수 있다고 판정한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/SeatAvailabilityTest.java`) |
+| 실패 | R1: HELD 좌석을 좌석을 잡은 선점 없이 판정하면 선점할 수 있다고 보지 않고 IllegalArgumentException을 던진다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/SeatAvailabilityTest.java`) |
 | 정상 | R1: 선택 가능한 좌석 묶음을 선점하면 201을 받고 묶음의 모든 좌석이 HELD로 보인다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 실패 | R1: 같은 좌석에 선점 요청 10개가 동시에 오면 하나만 201이고 나머지는 409 SEAT_ALREADY_HELD다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
 | 실패 | R1: 겹치는 묶음(A1·A2와 A2·A3)을 동시에 선점하면 하나만 성공하고, 실패한 쪽 좌석은 하나도 잡히지 않는다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
@@ -133,6 +135,8 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 경계 | R5: 404나 409로 끝난 요청도 저장해, 같은 키로 다시 보내면 같은 응답이고 다른 선점에는 쓸 수 없다(400). 404는 없던 선점이 그 id로 생겨도 같은 404다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
 | 경계 | R5: 검증 실패(400)로 끝난 요청은 저장하지 않아 같은 키를 다시 쓸 수 있다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
 | 실패 | R5: 예상하지 못한 오류(500)로 끝난 요청은 저장하지 않아(되돌려짐) 같은 키로 다시 보내면 처음 온 요청처럼 처리한다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
+| 경계 | R5: 저장한 응답의 상태 코드와 code가 맞지 않으면 다른 응답을 만들지 않고 IllegalStateException을 던진다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/payment/api/StoredPaymentResponsesTest.java`) |
+| 경계 | R5: 멱등 기록의 응답은 한 번만 채운다. 다시 채우려 하면 IllegalStateException이고 처음 응답이 남는다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/payment/domain/IdempotencyRecordTest.java`) |
 | 정상 | R5: 응답을 받은 뒤(402, 500, 400)에는 새 키로, 응답을 받지 못한 뒤(네트워크 오류, code 없는 502, 10초 시간 초과)에는 같은 키로 다시 결제한다. 키는 UUID다 | 프론트 | 작성(`frontend/src/pages/payment/PaymentPage.test.tsx`) |
 | 정상 | R5: 결제 요청 중에는 '결제하기'와 '뒤로 가기'를 누를 수 없고, 두 번 눌러도 요청은 한 번만 간다 | 프론트 | 작성(`frontend/src/pages/payment/PaymentPage.test.tsx`) |
 | - | 같은 키 재요청은 화면 조작으로 만들 수 없어 백엔드 통합 테스트가 맡는다 | E2E | 해당 없음 |
@@ -152,6 +156,12 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 실패 | R6: 토큰 없이 선점·선점 조회·해제·결제·내 예매를 부르면 401 AUTH_REQUIRED다(기능 경로가 없어도 보안 설정으로) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 실패 | R6: 서명이 다르거나 형식이 잘못된 토큰은 401 AUTH_REQUIRED다(다른 키, 서명·내용 변조, alg none, JWT 아님, exp 없음, sub 없음·숫자 아님·long 범위 밖) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 경계 | R6: sub가 long 최댓값인 토큰은 인증을 통과하고, 1 더 크면 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
+| 정상 | R6: sub가 1 이상의 long을 부호·앞자리 0 없이 쓴 값이면 사용자 id로 받는다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/auth/infra/JwtConfigTest.java`) |
+| 실패 | R6: sub가 없거나 0·음수·부호·앞자리 0·공백·소수·문자·long 범위 밖이면 사용자 id로 받지 않는다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/auth/infra/JwtConfigTest.java`) |
+| 경계 | R6: 토큰 검증기는 주입한 시계로 만료를 판정한다(exp와 같은 시각은 허용, 1초 지나면 거부) | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/auth/infra/JwtConfigTest.java`) |
+| 실패 | R6: 토큰 검증기는 exp가 없는 토큰과 sub가 사용자 id가 아닌 토큰을 거부한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/auth/infra/JwtConfigTest.java`) |
+| 실패 | R6: 같은 키로 만든 인코더·디코더에서 정상 토큰은 통과하고, 서명이 맞아도 검증 규칙(sub, 만료)에 걸리면 거부한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/auth/infra/JwtConfigTest.java`) |
+| 실패 | R6: 401의 WWW-Authenticate는 토큰이 없으면 Bearer이고, 토큰이 잘못됐으면 Bearer error="invalid_token"이다(결정 0034) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 실패 | R6: 공개 경로에서 @CurrentUserId를 쓰면 토큰 없는 요청은 500이 아니라 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/api/CurrentUserIdTest.java`) |
 | 실패 | R6: Bearer 뒤가 비었거나 Bearer가 아닌 인증 헤더는 토큰이 없는 것과 같이 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 경계 | R6: exp 1초 전과 exp와 같은 시각의 토큰은 허용하고, exp 1초 뒤 토큰은 401 AUTH_REQUIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
@@ -216,6 +226,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 좌석(5) | 공연 상세(DB 정렬)와 선점 응답(자바 정렬)의 좌석은 row 코드 포인트 순서이고 서로 같다(대소문자가 섞인 row `a`·`B`, U+FFFD와 보충 문자). V2의 `COLLATE "C"`를 빼면 실패한다(#45에서 확인) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/SeatListOrderTest.java`) |
 | 선점(2.1) | 선점 저장 상태는 ACTIVE·RELEASED·PAID만이다(만료는 저장하지 않는다, DB 제약) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldSchemaTest.java`) |
 | 선점(2.1, 2.2) | 선점은 서로 다른 좌석 1~4석의 묶음으로만 만들고, 해제·결제된 선점은 만료 시각 전이라도 유효하지 않다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
+| 선점(2.1) | 좌석 id에 null이 있으면 선점을 만들지 않는다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
 | 선점(2.3) | 선점을 해제하면 저장 상태가 RELEASED가 되어 만료 시각 전이라도 유효하지 않고, ACTIVE가 아닌 선점(해제·결제됨)은 해제할 수 없다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
 | 좌석(2.3) | 선점이 잡은 좌석을 해제하면 AVAILABLE이 되고 holdId를 비우며, HELD가 아닌 좌석은 해제할 수 없다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/performance/domain/SeatTest.java`) |
 | 좌석(2.3) | 결제가 승인되면 선점이 잡은 좌석은 SOLD가 되고 holdId를 비우며, 결제하는 선점이 잡지 않은 좌석(다른 선점의 좌석, AVAILABLE, 이미 SOLD)은 팔 수 없다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/performance/domain/SeatTest.java`) |
@@ -349,6 +360,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 프로필 | 모든 프로필에서 open-in-view를 끄고 ddl-auto는 validate다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
 | 프로필 | local·e2e·test는 저장소에 둔 개발 전용 JWT 서명 키(이름에 dev, 32바이트 이상)를 쓰고, prod는 JWT_SECRET으로만 받으며 없으면 값을 정할 수 없다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/ApplicationProfilesTest.java`) |
 | 보안 설정 | JWT 서명 키가 없거나 32바이트보다 짧으면 키를 만들지 않아 애플리케이션이 시작되지 않는다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/auth/infra/JwtConfigTest.java`) |
+| 보안 설정 | 공백뿐인 JWT 서명 키는 32바이트 이상이어도 키를 만들지 않는다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/auth/infra/JwtConfigTest.java`) |
 | 보안 설정 | 인증된 요청에도 세션과 쿠키를 만들지 않는다(STATELESS) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 인증 도우미 | 컨트롤러의 @CurrentUserId는 로그인 토큰의 사용자 id이고, 테스트 도우미 AuthRequests.asUser(id)로 만든 요청이면 그 id다(공개 경로에서도) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/api/CurrentUserIdTest.java`) |
 | 시계 | 운영 Clock 빈은 UTC 시스템 시계다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/common/infra/ClockConfigTest.java`) |

@@ -14,16 +14,18 @@
 - 통합 테스트: `./gradlew integrationTest` (`@Tag("integration")` 테스트만)
 - 클래스 하나: `./gradlew test --tests '*HoldServiceTest'` / 메서드 하나: `--tests '*HoldServiceTest.methodName'`
 - 빌드와 커버리지: `./gradlew assemble jacocoTestReport`
+- 뮤테이션 테스트: `./gradlew pitest`(보통은 루트에서 `./scripts/verify.sh mutation`). 규칙 코드 15개 클래스에 단위·통합 테스트를 모두 돌린다. Docker가 필요하고 3분 남짓 걸린다.
 - 로컬 실행: 루트에서 `docker compose up -d db` 후 `./gradlew bootRun`
 - E2E용 실행: `./gradlew bootE2eRun --args='--server.address=127.0.0.1 --server.port=<포트>'`(e2e 프로필, 실행마다 새 PostgreSQL 컨테이너).
   보통은 E2E(`e2e/playwright.config.ts`)가 띄운다.
-- 리포트: `build/reports/tests/test/`, `build/reports/tests/integrationTest/`, `build/reports/jacoco/test/html/`
+- 리포트: `build/reports/tests/test/`, `build/reports/tests/integrationTest/`, `build/reports/jacoco/test/html/`, `build/reports/pitest/`(`index.html`, `mutations.xml`)
 
 ## 빌드 설정 (첫 설정 Issue에서 만든다)
 
 - `test` 작업은 `integration` 태그를 제외하고, `integrationTest` 작업을 따로 등록해 그 태그만 실행한다. `check`는 둘 다 실행한다.
 - `jacocoTestReport`는 단위·통합 테스트 결과를 합쳐서 만든다.
 - `spring.jpa.open-in-view=false`, `spring.jpa.hibernate.ddl-auto=validate`
+- `pitest` 블록: 측정 대상 클래스를 `targetClasses`에 하나씩 적고, 점수 기준은 `mutationThreshold`다(결정 0200, 0201, 0203). 대상이나 설정을 바꾸면 기준선을 다시 잰다.
 
 ## 패키지 구조
 
@@ -99,3 +101,4 @@
   대신 각 테스트 전에 테이블을 비운다(Flyway 이력 테이블 제외).
 - 동시성 테스트(R1, R2)는 `CountDownLatch`로 여러 스레드를 동시에 출발시키고, 성공 개수와 DB 최종 상태를 모두 검증한다.
 - Docker가 꺼져 있어 통합 테스트를 실행할 수 없으면 코드를 고치지 말고 사람에게 알린다.
+- 스프링이 시작할 때만 도는 코드(빈 생성, 보안 설정)는 PIT가 통합 테스트로 재지 못한다. 빈 생성 메서드를 스프링 없이 부를 수 있으면 단위 테스트로도 확인한다(결정 0204).
