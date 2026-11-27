@@ -1,6 +1,6 @@
 # #42 프론트엔드 좌석 선택 화면(R1·R2·R6): 좌석 격자, 4석 선택, 선점 요청
 
-- 기간: 2026-11-27 ~
+- 기간: 2026-11-27
 - Issue: [#42](https://github.com/Rasit-NP/curtain-call/issues/42), PR: [#43](https://github.com/Rasit-NP/curtain-call/pull/43)
 - 관련 결정: [0080](../decisions/0080-frontend-seat-selection-human.md), [0081](../decisions/0081-frontend-seat-selection-recommended.md), [0082](../decisions/0082-frontend-seat-selection-impl.md)
 
@@ -78,6 +78,7 @@ PR [#43](https://github.com/Rasit-NP/curtain-call/pull/43)을 만든 뒤 이 세
 ## 결과
 
 - `./scripts/verify.sh` 전체 통과(2026-11-27, 프론트엔드 테스트 157개, 이 Issue에서 38개 추가: 좌석 선택 화면 31, API 6, 표시 이름 1. E2E는 영역이 없어 SKIP).
+- **병합**: 사람이 PR [#43](https://github.com/Rasit-NP/curtain-call/pull/43)을 main에 병합했다(병합 커밋 `a28127c`).
 
 남은 일(4단계 결제 화면 Issue로):
 
