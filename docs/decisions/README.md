@@ -96,3 +96,4 @@
 | [0131](0131-frontend-payment-recommended.md) | 프론트: 결제 화면 — 제목·정보, 예매 완료 표시, 결제 중 이동 막기, 해제를 기다린 뒤 이동, AUTH_REQUIRED는 해제하지 않음, 404 뒤 버튼, 문구 지우기 | 에이전트 결정 |
 | [0132](0132-frontend-late-responses-and-auth-notice.md) | 프론트: 떠난 뒤 온 선점 성공은 해제하고, 떠난 뒤 온 로그인 성공은 토큰만 저장한다. AUTH_REQUIRED 문구는 로그인 화면에만 보인다 | 에이전트 결정 |
 | [0133](0133-frontend-error-fallback-v2.md) | 프론트(개정): code가 없는 오류 응답은 INTERNAL_ERROR, 단 code가 없는 502·503·504는 응답 없음(NO_RESPONSE) | 에이전트 결정 |
+| [0134](0134-frontend-payment-impl.md) | 프론트: 결제 화면은 라우터 이동을 useBlocker로, 로그아웃을 확인 장치로 막고 해제 판단을 한 함수에 모은다. '뒤로 가기'는 좌석 선택 화면이 남긴 기록 표시로 되돌릴지 정한다 | 에이전트 결정 |
