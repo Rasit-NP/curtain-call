@@ -192,6 +192,23 @@ EOF
     assert_contains "$out" "리포트: e2e/playwright-report/index.html"
 }
 
+test_steps_run_without_color() {
+  local dir out code
+  dir="$(new_repo no-color)"
+  echo '{}' > "$dir/frontend/package.json"
+  # 색을 켜는 환경(FORCE_COLOR, CI)에서도 단계 명령은 NO_COLOR=1을 받고 FORCE_COLOR는 받지 않아야 한다.
+  cat > "$dir/bin/npm" <<'EOF'
+#!/usr/bin/env bash
+case "$1" in
+  ci) mkdir -p node_modules ;;
+  run) echo "fake npm run $2 NO_COLOR=${NO_COLOR-없음} FORCE_COLOR=${FORCE_COLOR-없음}" ;;
+esac
+EOF
+  out="$(cd "$dir" && FORCE_COLOR=1 CI=true PATH="$dir/bin:$PATH" bash scripts/verify.sh quick 2>&1)"; code=$?
+  assert_exit "$code" 0 "$out" || return 1
+  assert_contains "$(cat "$dir/.verify-logs/frontend-test.log")" "NO_COLOR=1 FORCE_COLOR=없음"
+}
+
 test_all_runs_harness_tests() {
   local dir out code
   dir="$(new_repo harness)"
@@ -439,6 +456,140 @@ test_docs_index_detects_mismatch() {
   assert_contains "$out" "0002-second.md" || return 1
 }
 
+# ---------- CI 워크플로 ----------
+
+WORKFLOW="$REPO/.github/workflows/ci.yml"
+
+# code_lines <파일>: 주석 줄과 빈 줄을 뺀 줄
+code_lines() {
+  grep -vE '^[[:space:]]*(#|$)' "$1"
+}
+
+# workflow_files: .github/workflows의 워크플로 파일. 하나도 없으면 1을 돌려준다.
+workflow_files() {
+  local f found=1
+  for f in "$REPO"/.github/workflows/*.yml "$REPO"/.github/workflows/*.yaml; do
+    [ -f "$f" ] || continue
+    echo "$f"
+    found=0
+  done
+  return "$found"
+}
+
+test_ci_workflow_calls_verify_only() {
+  local direct
+  [ -f "$WORKFLOW" ] || fail ".github/workflows/ci.yml이 없음" || return 1
+  code_lines "$WORKFLOW" | grep -q '\./scripts/verify\.sh' || fail "워크플로가 ./scripts/verify.sh를 부르지 않음" || return 1
+  # 검증 명령을 워크플로에 따로 늘어놓지 않는다(결정 0001). 도구 설치·캐시는 액션으로 한다.
+  # 'cache: gradle', 'cache: npm'처럼 도구 이름만 쓴 설정은 명령이 아니다.
+  direct="$(code_lines "$WORKFLOW" | grep -E '\./gradlew|(^|[^[:alnum:]_./-])gradle[[:space:]]+[[:alnum:]-]|(^|[^[:alnum:]_-])(npx|vitest)([[:space:]]|$)|npm[[:space:]]+(ci|i|install|run|test|exec)([[:space:]]|$)|playwright[[:space:]]+(test|install)')"
+  [ -z "$direct" ] || fail "워크플로가 verify.sh를 거치지 않고 검증 명령을 부름: $direct"
+}
+
+test_ci_workflows_pin_official_actions() {
+  local files f bad
+  files="$(workflow_files)" || fail ".github/workflows에 워크플로가 없음" || return 1
+  while IFS= read -r f; do
+    # GitHub 공식 actions/*만, 40자 커밋 SHA로 고정하고 버전을 주석에 적는다(결정 0191).
+    bad="$(grep -E '^[[:space:]]*(-[[:space:]]+)?uses:' "$f" |
+      grep -vE '^[[:space:]]*(-[[:space:]]+)?uses:[[:space:]]*actions/[A-Za-z0-9._-]+@[0-9a-f]{40}[[:space:]]+#[[:space:]]*v[0-9]')"
+    [ -z "$bad" ] || fail "${f#"$REPO"/}: 공식 actions/*를 커밋 SHA와 버전 주석으로 고정하지 않음: $bad" || return 1
+  done <<EOF
+$files
+EOF
+}
+
+test_ci_workflows_least_privilege() {
+  local files f checkouts kept
+  files="$(workflow_files)" || fail ".github/workflows에 워크플로가 없음" || return 1
+  while IFS= read -r f; do
+    # 워크플로 맨 위에서 토큰 권한을 저장소 읽기로 둔다(결정 0191).
+    grep -A1 -E '^permissions:[[:space:]]*$' "$f" | grep -qE '^[[:space:]]+contents:[[:space:]]*read[[:space:]]*$' ||
+      fail "${f#"$REPO"/}: 맨 위 permissions 바로 아래가 contents: read가 아님" || return 1
+    if code_lines "$f" | grep -qE 'write-all|:[[:space:]]*write[[:space:]]*(#|$)'; then
+      fail "${f#"$REPO"/}: 쓰기 권한이 있음"
+      return 1
+    fi
+    # 외부 PR의 코드가 쓰기 토큰·비밀값과 함께 돌 수 있는 트리거는 쓰지 않는다(저장소를 공개로 바꾼 뒤에도 안전하게).
+    if code_lines "$f" | grep -qE '(^|[^[:alnum:]_])(pull_request_target|workflow_run)([^[:alnum:]_]|$)'; then
+      fail "${f#"$REPO"/}: pull_request_target 또는 workflow_run 트리거가 있음"
+      return 1
+    fi
+    # checkout은 토큰을 디스크(git 설정)에 남기지 않는다. 검증 중 도는 의존성 설치 스크립트가 읽지 못하게 한다.
+    checkouts="$(grep -cE 'uses:[[:space:]]*actions/checkout@' "$f")"
+    kept="$(grep -cE '^[[:space:]]+persist-credentials:[[:space:]]*false[[:space:]]*$' "$f")"
+    [ "$checkouts" -eq "$kept" ] ||
+      fail "${f#"$REPO"/}: checkout ${checkouts}개 중 persist-credentials: false가 ${kept}개" || return 1
+  done <<EOF
+$files
+EOF
+}
+
+test_ci_workflow_summary_marker() {
+  [ -f "$WORKFLOW" ] || fail ".github/workflows/ci.yml이 없음" || return 1
+  # 워크플로는 verify.sh 출력의 이 줄부터 끝까지를 실행 화면(Job Summary)에 옮긴다.
+  grep -q '===== 검증 요약' "$WORKFLOW" || fail "워크플로가 '===== 검증 요약' 줄로 요약을 찾지 않음" || return 1
+  grep -q 'echo "===== 검증 요약' "$REPO/scripts/verify.sh" || fail "verify.sh가 '===== 검증 요약' 줄을 출력하지 않음"
+}
+
+# new_scope_repo <이름>: docs/a.md, backend/A.java, 루트 CLAUDE.md를 커밋한 git 저장소를 만든다.
+new_scope_repo() {
+  local dir="$WORK/$1"
+  mkdir -p "$dir/docs" "$dir/backend"
+  echo a > "$dir/docs/a.md"
+  echo A > "$dir/backend/A.java"
+  echo c > "$dir/CLAUDE.md"
+  { git -C "$dir" init -q && scope_commit "$dir" init; } >/dev/null 2>&1 ||
+    { echo "임시 git 저장소를 만들지 못함: $dir" >&2; return 1; }
+  echo "$dir"
+}
+
+# scope_commit <저장소> <메시지>: 지금 변경을 모두 커밋한다.
+scope_commit() {
+  git -C "$1" add -A &&
+    git -C "$1" -c user.name=harness -c user.email=harness@example.invalid -c commit.gpgsign=false \
+      commit -q --no-verify -m "$2"
+}
+
+# expect_scope <기대 출력> <저장소> <기준> <대상> <설명>: scripts/ci-scope.sh의 출력(stdout)과 종료 코드 0을 확인한다.
+expect_scope() {
+  local out code
+  out="$(cd "$2" && bash "$REPO/scripts/ci-scope.sh" "$3" "$4" 2>/dev/null)"; code=$?
+  [ "$code" -eq 0 ] && [ "$out" = "$1" ] && return 0
+  echo "$5: 기대 '$1'(종료 코드 0), 실제 '$out'(종료 코드 $code)"
+  return 1
+}
+
+test_ci_scope_docs_only_runs_harness() {
+  local dir
+  dir="$(new_scope_repo scope-docs)" || return 1
+  echo b > "$dir/docs/b.md"
+  echo a2 > "$dir/docs/a.md"
+  mkdir -p "$dir/docs/history" && echo h > "$dir/docs/history/한글 이름.md"
+  scope_commit "$dir" docs >/dev/null 2>&1 || return 1
+  expect_scope harness "$dir" HEAD^ HEAD "docs/만 바뀜(한글·공백 파일 이름 포함)"
+}
+
+test_ci_scope_runs_all_otherwise() {
+  local dir
+  dir="$(new_scope_repo scope-all)" || return 1
+  echo b > "$dir/docs/b.md"
+  echo A2 > "$dir/backend/A.java"
+  scope_commit "$dir" mixed >/dev/null 2>&1 || return 1
+  expect_scope all "$dir" HEAD^ HEAD "docs/와 코드가 함께 바뀜" || return 1
+
+  echo c2 > "$dir/CLAUDE.md"
+  scope_commit "$dir" claude-md >/dev/null 2>&1 || return 1
+  expect_scope all "$dir" HEAD^ HEAD "루트 CLAUDE.md만 바뀜(테스트가 오류 코드 표를 읽음)" || return 1
+
+  git -C "$dir" mv backend/A.java docs/A.java >/dev/null 2>&1 &&
+    scope_commit "$dir" move-into-docs >/dev/null 2>&1 || return 1
+  expect_scope all "$dir" HEAD^ HEAD "코드 파일을 docs/로 옮김" || return 1
+
+  expect_scope all "$dir" HEAD HEAD "바뀐 파일 없음" || return 1
+  expect_scope all "$dir" 0123456789abcdef0123456789abcdef01234567 HEAD "없는 커밋"
+}
+
 # ---------- 실행 ----------
 
 echo "하네스 테스트"
@@ -448,6 +599,7 @@ run_test "verify.sh: 표식 파일이 있는 영역은 실행하고, 실패하�
 run_test "verify.sh: 실패 상세에 로그 앞쪽의 첫 오류 줄을 줄 번호와 함께 보여 준다" test_failure_shows_first_error_line
 run_test "verify.sh: E2E는 개발 DB를 띄우지 않고 Docker 확인·프론트엔드 의존성·타입 검사 뒤 Playwright를 돌리며, 실패하면 리포트 경로를 보여 준다" test_e2e_runs_playwright_without_dev_db
 run_test "verify.sh: 전체 검증은 하네스 테스트를 실행하고, 실패하면 전체를 실패로 본다" test_all_runs_harness_tests
+run_test "verify.sh: 색을 켜는 환경(CI, FORCE_COLOR)에서도 단계 명령에 NO_COLOR=1만 넘겨(FORCE_COLOR는 지움) 로그에 색 코드를 남기지 않는다" test_steps_run_without_color
 run_test "Stop 훅: settings.json에 등록돼 있고 훅 스크립트를 실행할 수 있다" test_hook_registered
 run_test "Stop 훅: verify.sh가 통과하면 아무것도 출력하지 않고 멈춤을 허용한다" test_hook_passes_silently
 run_test "Stop 훅: verify.sh가 실패하면 종료 코드 2로 멈춤을 막고 결과를 에이전트에게 준다" test_hook_blocks_on_failure
@@ -461,6 +613,12 @@ run_test "메인 체크아웃 훅: jq가 없어도 판단한다" test_guard_work
 run_test ".gitignore: 생성 파일과 비밀값은 제외하고, 설정·스크립트·.env.example은 남긴다" test_gitignore_rules
 run_test "문서 목차: docs/decisions와 docs/history의 목차가 실제 파일과 맞다" test_docs_index_matches_repo
 run_test "문서 목차: 목차에 없는 파일과 파일이 없는 목차 항목을 찾아 실패한다" test_docs_index_detects_mismatch
+run_test "CI 워크플로: ./scripts/verify.sh를 부르고 검증 명령을 직접 늘어놓지 않는다" test_ci_workflow_calls_verify_only
+run_test "CI 워크플로: GitHub 공식 actions/*만 커밋 SHA와 버전 주석으로 고정해 쓴다" test_ci_workflows_pin_official_actions
+run_test "CI 워크플로: 토큰은 contents: read만, 위험한 트리거 없음, checkout은 토큰을 남기지 않는다" test_ci_workflows_least_privilege
+run_test "CI 워크플로: verify.sh의 '검증 요약' 줄로 실행 화면 요약을 만든다" test_ci_workflow_summary_marker
+run_test "CI 범위: PR이 바꾼 파일이 모두 docs/ 아래면 하네스만 실행한다" test_ci_scope_docs_only_runs_harness
+run_test "CI 범위: docs/ 밖 파일(루트 CLAUDE.md, docs/로 옮긴 코드 포함)이 바뀌었거나 알 수 없으면 전체를 실행한다" test_ci_scope_runs_all_otherwise
 
 echo
 echo "결과: 통과 $PASSED, 실패 $FAILED"

@@ -115,3 +115,7 @@
 | [0184](0184-deploy-first.md) | 지금까지 만든 것을 먼저 배포하고, 추가 기능은 그 뒤에 만든다 | 채택 |
 | [0185](0185-issue-creation-approval.md) | Issue 등록(개정): 로드맵 #64에서 지금 진행할 단계만, 본문 초안을 사람에게 보여 승인을 받은 뒤 등록한다 | 채택 |
 | [0186](0186-handoff-roadmap-issue-scope.md) | 사람에게 넘기는 조건(개정): 로드맵에 있는 Issue는 그 Issue가 범위로 다루는 인증·보안, CI·배포 설정을 그 범위 안에서 고친다 | 채택 |
+| [0190](0190-ci-scope-docs-only.md) | CI 실행 범위: main push는 늘 전체, PR은 바꾼 파일이 모두 docs/ 아래면 하네스만 | 채택 |
+| [0191](0191-ci-workflow-security.md) | CI 보안: GitHub 공식 actions/*만 커밋 SHA로 고정해 쓰고, 토큰은 contents: read, checkout은 토큰을 남기지 않는다 | 채택 |
+| [0192](0192-ci-in-workflow.md) | 작업 흐름: PR 전 로컬 verify.sh 전체는 그대로, PR을 만든 뒤 CI 결과 확인과 실패 수정까지 완료 조건에 넣는다 | 채택 |
+| [0193](0193-ci-workflow-impl.md) | CI 구성: ubuntu-24.04의 잡 하나가 verify.sh를 부르고 도구·캐시만 워크플로가 맡는다. 같은 PR의 이전 실행은 취소, 실패하면 요약과 산출물을 남긴다(0162의 'CI는 범위 밖' 대체) | 에이전트 결정 |
