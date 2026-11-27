@@ -2,6 +2,7 @@ import { Link, matchPath, NavLink, useLocation, useNavigate } from 'react-router
 import { LOGIN_PATH, loginRedirectState } from '../auth/loginRedirect';
 import { clearAccessToken } from '../auth/tokenStorage';
 import { useAccessToken } from '../auth/useAccessToken';
+import { confirmLeave } from '../navigation/leaveGuard';
 import { HOME_PATH, RESERVATIONS_PATH } from '../paths';
 import styles from './Header.module.css';
 
@@ -20,7 +21,9 @@ export function Header() {
   const loginState: unknown = onLoginPage ? location.state : loginRedirectState(location);
 
   // 로그아웃: 서버 API 없이 토큰을 지우고 공연 목록으로 간다. 안내 문구는 보여 주지 않는다(결정 0060, 0061).
-  function logout() {
+  // 결제 화면이면 토큰을 지우기 전에 선점을 해제하고, 결제 요청 중이면 로그아웃하지 않는다(spec 7.3·7.8, 결정 0131).
+  async function logout() {
+    if (!(await confirmLeave())) return;
     clearAccessToken();
     void navigate(HOME_PATH);
   }
@@ -37,7 +40,7 @@ export function Header() {
             로그인
           </NavLink>
         ) : (
-          <button type="button" onClick={logout}>
+          <button type="button" onClick={() => void logout()}>
             로그아웃
           </button>
         )}

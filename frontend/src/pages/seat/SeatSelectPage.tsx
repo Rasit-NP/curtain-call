@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { errorMessage } from '../../api/errorMessages';
+import { errorMessage, isShownOnScreen } from '../../api/errorMessages';
 import { ApiError, type ApiErrorCode } from '../../api/errors';
-import { createHold } from '../../api/holds';
+import { createHold, releaseHoldOnLeave } from '../../api/holds';
 import { getPerformance } from '../../api/performances';
 import type { PerformanceDetail, Seat } from '../../api/types';
 import { LoadStatus } from '../../components/LoadStatus';
 import { useLoad } from '../../components/useLoad';
 import { formatDateTime, formatPrice, formatSeats, seatName } from '../../format';
-import { holdPath, HOME_PATH } from '../../paths';
+import { FROM_SEAT_SELECT_STATE, holdPath, HOME_PATH } from '../../paths';
 import styles from './SeatSelectPage.module.css';
 
 /** 한 번에 고를 수 있는 좌석 수(R2). 화면은 이번에 고른 좌석만 센다. 이미 가진 좌석까지 합친 한도는 서버가 막는다(spec 7.2). */
@@ -69,8 +69,11 @@ function SeatSelectPage({ performanceId }: { performanceId: string }) {
   }
 
   function showNotice(codes: ApiErrorCode[]) {
+    // AUTH_REQUIRED는 로그인 화면만 문구를 보여 준다(결정 0132).
+    const shown = codes.filter(isShownOnScreen);
+    if (shown.length === 0) return;
     noticeCount.current += 1;
-    setNotice({ id: noticeCount.current, codes });
+    setNotice({ id: noticeCount.current, codes: shown });
   }
 
   function toggle(seat: Seat) {
@@ -107,8 +110,14 @@ function SeatSelectPage({ performanceId }: { performanceId: string }) {
     setNotice(null);
     try {
       const hold = await createHold({ performanceId: performance.id, seatIds });
-      // 결제 화면으로 일반 이동(push)한다. 이 화면은 사라지므로 막아 둔 채로 둔다.
-      if (mounted.current) await navigate(holdPath(hold.id));
+      if (mounted.current) {
+        // 결제 화면으로 일반 이동(push)한다. 이 화면은 사라지므로 막아 둔 채로 둔다.
+        // 결제 화면의 '뒤로 가기'가 기록을 되돌려도 되는지 알 수 있게 좌석 선택 화면에서 왔다고 표시한다.
+        await navigate(holdPath(hold.id), { state: FROM_SEAT_SELECT_STATE });
+      } else {
+        // 요청 중에 이 화면을 떠났다. 결제 화면으로 끌고 가지 않고, 결제 전에 떠난 것이므로 선점을 해제한다(spec 1·7.2, 결정 0132).
+        await releaseHoldOnLeave(hold.id);
+      }
       return;
     } catch (error) {
       if (!(error instanceof ApiError)) {

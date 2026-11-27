@@ -145,3 +145,21 @@ describe('내 예매 화면', () => {
     expect(router.state.location.pathname).toBe('/reservations');
   });
 });
+
+describe('내 예매 화면: AUTH_REQUIRED 문구', () => {
+  it('내 예매 요청이 AUTH_REQUIRED로 끝나도 내 예매 화면에는 "로그인이 필요합니다."를 그리지 않는다(다시 로그인한 뒤에 끝난 이전 요청)', async () => {
+    saveAccessToken('expired-token');
+    server.use(
+      http.get(RESERVATIONS_PATH, () => {
+        // 응답이 오기 전에 다른 곳에서 다시 로그인한 상황. 이전 토큰의 AUTH_REQUIRED라 공통 처리는 화면을 옮기지 않는다(결정 0043).
+        saveAccessToken('new-token');
+        return problem(401, 'AUTH_REQUIRED');
+      }),
+    );
+    const { router } = renderApp('/reservations');
+
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/reservations');
+  });
+});

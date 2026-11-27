@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { login } from '../../api/auth';
 import { errorMessage } from '../../api/errorMessages';
@@ -24,6 +24,14 @@ export function LoginPage() {
   const [code, setCode] = useState<ApiErrorCode | null>(() => noticeOf(location.state) ?? null);
   // 버튼이 막히기 전(다시 그리기 전)에 들어온 두 번째 제출을 막는다.
   const inFlight = useRef(false);
+  const mounted = useRef(false);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,8 +41,9 @@ export function LoginPage() {
     setCode(null);
     try {
       const { accessToken } = await login({ username, password });
+      // 요청 중에 이 화면을 떠났어도 로그인은 한다(헤더가 '로그아웃'으로 바뀐다). 떠난 곳에서 끌고 오지는 않는다(spec 7.1, 결정 0132).
       saveAccessToken(accessToken);
-      await navigate(returnPathOf(location.state), { replace: true });
+      if (mounted.current) await navigate(returnPathOf(location.state), { replace: true });
     } catch (error) {
       if (!(error instanceof ApiError)) throw error;
       setCode(error.code);

@@ -1,4 +1,4 @@
-import { act, screen } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
 import { REQUEST_TIMEOUT_MS } from '../../api/client';
@@ -125,5 +125,33 @@ describe('로그인 화면', () => {
     release?.();
     await vi.waitFor(() => expect(router.state.location.pathname).toBe('/'));
     expect(calls).toBe(2);
+  });
+});
+
+describe('로그인 화면: 요청 중에 떠나기', () => {
+  it('로그인 요청 중에 화면을 떠났는데 나중에 성공 응답이 오면 토큰은 저장하고 화면은 옮기지 않는다', async () => {
+    server.use(performancesHandler([]));
+    let open!: () => void;
+    const opened = new Promise<void>((resolve) => (open = resolve));
+    server.use(
+      http.post('/api/auth/login', async () => {
+        await opened;
+        return HttpResponse.json({ accessToken: 'late-token', expiresIn: 3600 });
+      }),
+    );
+    // 가드가 보낸 로그인 화면이라 로그인하면 돌아갈 화면(/reservations)이 있다.
+    const { router, user } = renderApp('/reservations');
+    await user.type(await screen.findByLabelText('아이디'), 'user1');
+    await user.type(screen.getByLabelText('비밀번호'), 'password1');
+    await user.click(screen.getByRole('button', { name: '로그인' }));
+
+    const header = within(screen.getByRole('banner'));
+    await user.click(header.getByRole('link', { name: '커튼콜' }));
+    await screen.findByRole('heading', { level: 1, name: '공연 목록' });
+    open();
+
+    await waitFor(() => expect(getAccessToken()).toBe('late-token'));
+    expect(await header.findByRole('button', { name: '로그아웃' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/');
   });
 });
