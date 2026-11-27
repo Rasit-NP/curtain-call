@@ -10,6 +10,7 @@
 - `StrictLongEditor`(PropertyEditor)가 결정 0090의 규칙(ASCII 10진 정수 표기, long 범위)으로 문자열을 long으로 해석한다.
 - `@ControllerAdvice`인 `StrictLongBinding`의 `@InitBinder`가 모든 컨트롤러의 바인더에 이 편집기를 `long`과 `Long`으로 등록한다.
   그래서 `@PathVariable long`·`@RequestParam long`(Long 포함)은 컨트롤러가 따로 검사하지 않아도 같은 규칙을 따른다. 4단계의 `holdId`도 `long`으로 받기만 하면 된다.
+  적용 범위는 매개변수 타입이 `long`·`Long` 하나일 때다. 감싼 타입은 아래 '적용과 남은 점'을 본다.
 - 해석에 실패하면 지금처럼 Spring MVC의 인자 형식 오류가 되고, 공통 처리기가 400 INVALID_INPUT으로 바꾼다(결정 0012). 새 오류 처리 코드는 없다.
 - 빈 문자열은 Spring 기본 편집기(`CustomNumberEditor`)와 같게 `Long`이면 값 없음(null), `long`이면 해석 실패로 둔다. 빈 쿼리 값의 처리를 바꾸지 않는다.
 - 테스트는 MockMvc 통합 테스트(공연 상세, 시험용 컨트롤러의 long 경로 값)와 편집기 단위 테스트로 한다.
@@ -32,5 +33,8 @@
 ## 적용과 남은 점
 
 - 코드: `backend/src/main/java/com/curtaincall/common/api/StrictLongEditor.java`, `StrictLongBinding.java`.
+- 감싼 타입(`Optional<Long>`, `List<Long>`, `long[]`)의 경로·쿼리 값은 이 편집기를 거치지 않는다. 바인더가 MVC 변환 서비스로 바꾸고, 요소는 Spring 기본 해석으로 읽는다.
+  임시 테스트로 `0x2`·` 3`이 2·3이 되는 것을 확인했다(PR #50 리뷰 지적, 테스트는 지웠다). 지금 그런 매개변수는 없어 고치지 않았다.
+  생기면 그 Issue에서 같은 규칙을 적용할지 정한다. 적용한다면 변환 서비스에도 같은 규칙의 String → Long 변환기를 더해 요소 변환까지 막는다.
 - 요청 본문(JSON)의 숫자는 Jackson이 읽으므로 이 편집기를 거치지 않는다(결정 0072가 따로 정했다).
 - 액세스 토큰의 `sub`는 `CurrentUserIds`가 `Long.parseLong`으로 읽는다(결정 0038). 서버가 서명한 값이라 이 결정의 범위 밖이다.

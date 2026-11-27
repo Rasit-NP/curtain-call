@@ -29,7 +29,7 @@
 
 ## 적용과 남은 점
 
-- 구현 방법은 결정 [0091](0091-strict-long-binding.md)(에이전트 결정). 모든 컨트롤러의 long 경로·쿼리 값에 같은 규칙이 적용돼, 4단계 `holdId`도 따로 하지 않아도 된다.
+- 구현 방법은 결정 [0091](0091-strict-long-binding.md)(에이전트 결정). 모든 컨트롤러의 long 경로·쿼리 값(매개변수 타입이 `long`·`Long` 하나일 때)에 같은 규칙이 적용돼, 4단계 `holdId`도 따로 하지 않아도 된다.
 - spec 3.1(공통 400 목록), 6.3 오류 표에 적었다. 6.5·6.6의 `holdId`도 같은 규칙이라고 적었다.
 - 테스트: `PerformanceApiTest`(있는 공연의 id를 공백·16진수·ASCII가 아닌 숫자로 쓴 11가지 → 400, `+{id}`·`0{id}`·`00{id}`·`+0{id}` → 200, `-0`·`+0`·`00`·long 범위 끝 → 404,
   long 범위 밖 → 400), `ErrorResponseTest`(공연 상세와 관계없는 시험용 long 경로 값에도 같은 규칙), `StrictLongEditorTest`(단위).
