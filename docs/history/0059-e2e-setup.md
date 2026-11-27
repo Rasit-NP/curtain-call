@@ -1,7 +1,7 @@
 # #59 E2E 첫 설정(R1·R2·R6): Playwright 골격, e2e 프로필 데이터 초기화 API, 시나리오 1~4
 
 - 기간: 2026-11-28 ~
-- Issue: [#59](https://github.com/Rasit-NP/curtain-call/issues/59), PR: (만들면 적는다)
+- Issue: [#59](https://github.com/Rasit-NP/curtain-call/issues/59), PR: [#63](https://github.com/Rasit-NP/curtain-call/pull/63)
 - 관련 결정: [0160](../decisions/0160-e2e-reset-impl.md), [0161](../decisions/0161-e2e-environment.md), [0162](../decisions/0162-e2e-setup-impl.md),
   [0163](../decisions/0163-e2e-test-writing.md). 기존 [0011](../decisions/0011-dev-db-credentials.md), [0013](../decisions/0013-flyway-out-of-order-local.md),
   [0015](../decisions/0015-health-probes-off.md), [0016](../decisions/0016-integration-test-base.md), [0036](../decisions/0036-seed-accounts.md),
@@ -47,6 +47,7 @@
     임시 점검(커밋하지 않음)으로 기본 흐름과 R1·R2 흐름의 브라우저 콘솔을 모았는데, R1의 409 응답 기록 하나뿐이었다(잡히지 않은 예외·React 경고 없음).
 11. 규칙 시나리오 되돌림 확인(아래)을 한 뒤, 원래 코드로 전체 E2E를 3회 연속 돌려 모두 통과했다(매번 4개, 8.6초 안팎).
 12. 영역별 `CLAUDE.md`(e2e, backend, frontend, 루트의 `compose.yaml` 줄), 대응표, 결정 기록(0160~0163), 이 진행 기록을 고쳤다.
+13. `./scripts/verify.sh` 전체를 통과시킨 뒤 PR #63을 만들고 `/code-review medium`으로 리뷰했다(아래 '리뷰').
 
 ## 정책 결정(사람)
 
@@ -93,11 +94,18 @@ Issue의 '아직 정하지 않은 정책' 1번을 구현 전에 물었다. 지�
 
 ## 리뷰
 
-(PR을 만든 뒤 `/code-review medium`으로 리뷰하고 적는다.)
+PR [#63](https://github.com/Rasit-NP/curtain-call/pull/63)을 `/code-review medium`으로 리뷰했다(루트 `CLAUDE.md` '리뷰'의 영역 첫 설정 + 초기화 API. E2E가 찾은 결함이 없어 R1~R6 구현·인증 코드를 바꾸지 않았다).
+머지 전에 고칠 결함은 없었고 사소한 지적 3건이 나왔다.
+
+- 포트 환경변수를 하나만 미리 주면, 새로 고른 다른 포트가 그 값과 같을 수 있었다. 고른 포트 중 미리 준 값과 다른 것을 쓰게 고쳤다(`E2E_BACKEND_PORT`만 주고 목록·전체 실행 확인).
+- 이 진행 기록의 PR 링크·리뷰·결과가 자리표시자였다. 채웠다.
+- E2E 임시 DB 컨테이너가 0.0.0.0에 열린다. 통합 테스트와 같은 방식이고 결정 0162 '적용과 남은 점'에 적어 두어 고치지 않았다.
 
 ## 결과
 
-(PR을 만든 뒤 적는다.)
+`./scripts/verify.sh` 전체 통과(하네스 19개, 백엔드 단위 153개·통합 307개, 프론트엔드 220개, E2E 4개). E2E는 실행마다 전용 백엔드(e2e 프로필, 임시 DB)·프론트엔드를
+빈 포트에 띄워 시나리오 1~4를 돌리고, 사람의 개발 서버와 개발 DB는 건드리지 않는다. R1·R2·R6 시나리오는 구현을 되돌리면 실패하고, 원래 코드로 3회 연속 통과했다.
+병합은 사람이 한다.
 
 ## 배운 점
 

@@ -30,9 +30,10 @@ function choosePorts(): { backend: number; frontend: number } {
           }
         });
       }`;
-    const [backend, frontend] = execFileSync(process.execPath, ['-e', script], { encoding: 'utf8' }).trim().split(' ');
-    process.env[BACKEND_PORT] ||= backend;
-    process.env[FRONTEND_PORT] ||= frontend;
+    // 하나만 미리 주었으면, 고른 포트 중 그 값과 다른 것을 쓴다(미리 준 포트는 아직 열리지 않아 다시 골라질 수 있다).
+    const chosen = execFileSync(process.execPath, ['-e', script], { encoding: 'utf8' }).trim().split(' ');
+    process.env[BACKEND_PORT] ||= chosen.find((candidate) => candidate !== process.env[FRONTEND_PORT]);
+    process.env[FRONTEND_PORT] ||= chosen.find((candidate) => candidate !== process.env[BACKEND_PORT]);
   }
   return { backend: port(BACKEND_PORT), frontend: port(FRONTEND_PORT) };
 }
