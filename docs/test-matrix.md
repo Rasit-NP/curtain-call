@@ -202,7 +202,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 좌석(5) | 공연 상세(DB 정렬)와 선점 응답(자바 정렬)의 좌석은 row 코드 포인트 순서이고 서로 같다(대소문자가 섞인 row `a`·`B`, U+FFFD와 보충 문자). V2의 `COLLATE "C"`를 빼면 실패한다(#45에서 확인) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/SeatListOrderTest.java`) |
 | 선점(2.1) | 선점 저장 상태는 ACTIVE·RELEASED·PAID만이다(만료는 저장하지 않는다, DB 제약) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldSchemaTest.java`) |
 | 선점(2.1, 2.2) | 선점은 서로 다른 좌석 1~4석의 묶음으로만 만들고, 해제·결제된 선점은 만료 시각 전이라도 유효하지 않다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
-| 선점(2.3) | 선점을 해제하면 저장 상태가 RELEASED가 되어 유효하지 않고(만료된 선점도 해제한다), ACTIVE가 아닌 선점(해제·결제됨)은 해제할 수 없다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
+| 선점(2.3) | 선점을 해제하면 저장 상태가 RELEASED가 되어 만료 시각 전이라도 유효하지 않고, ACTIVE가 아닌 선점(해제·결제됨)은 해제할 수 없다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
 | 좌석(2.3) | 선점이 잡은 좌석을 해제하면 AVAILABLE이 되고 holdId를 비우며, HELD가 아닌 좌석은 해제할 수 없다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/performance/domain/SeatTest.java`) |
 | 선점(6.4) | 선점에 성공하면 201 Hold다: status ACTIVE, performance는 PerformanceSummary, seats는 row·number 오름차순의 SeatRef, amount는 가격 × 좌석 수, expiresAt은 요청 시각 + 5분 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 선점(6.4) | 없는 공연이나 그 공연에 없는 좌석으로 선점하면 404 NOT_FOUND이고 아무 좌석도 선점되지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |

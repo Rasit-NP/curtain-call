@@ -51,19 +51,17 @@ class HoldTest {
     }
 
     @Test
-    @DisplayName("선점을 해제하면 저장 상태가 RELEASED가 되어 만료 시각 전이라도 유효하지 않다(만료된 선점도 해제한다)")
+    @DisplayName("선점을 해제하면 저장 상태가 RELEASED가 되어 만료 시각 전이라도 유효하지 않다")
     void releaseMakesHoldReleased() {
-        Hold valid = Hold.create(7L, 30L, List.of(101L), CREATED_AT);
-        Hold expired = Hold.create(7L, 30L, List.of(102L), CREATED_AT);
+        // 해제는 현재 시각을 받지 않는다. 만료된 선점의 해제는 통합 테스트(releasingMyExpiredHold)가 본다.
+        Hold hold = Hold.create(7L, 30L, List.of(101L), CREATED_AT);
 
-        valid.release();
-        expired.release();
+        hold.release();
 
-        assertThat(valid.getStatus()).isEqualTo(HoldStatus.RELEASED);
-        assertThat(valid.isValidAt(CREATED_AT)).isFalse();
-        assertThat(expired.getStatus()).isEqualTo(HoldStatus.RELEASED);
+        assertThat(hold.getStatus()).isEqualTo(HoldStatus.RELEASED);
+        assertThat(hold.isValidAt(CREATED_AT)).isFalse();
         // 만든 때의 좌석 묶음은 그대로다.
-        assertThat(valid.getSeatIds()).containsExactly(101L);
+        assertThat(hold.getSeatIds()).containsExactly(101L);
     }
 
     @Test
