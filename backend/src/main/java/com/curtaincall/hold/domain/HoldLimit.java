@@ -11,7 +11,7 @@ import java.util.Collection;
  */
 public final class HoldLimit {
 
-    public static final int MAX_SEATS_PER_PERFORMANCE = 5;
+    public static final int MAX_SEATS_PER_PERFORMANCE = 4;
 
     private HoldLimit() {
     }
