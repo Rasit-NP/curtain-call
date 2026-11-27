@@ -1,7 +1,7 @@
 # #39 진행 기록 최신화: 병합된 Issue의 상태와 결과 문장, 대화에서 바로잡은 것
 
-- 기간: 2026-11-27 ~
-- Issue: [#39](https://github.com/Rasit-NP/curtain-call/issues/39)
+- 기간: 2026-11-27
+- Issue: [#39](https://github.com/Rasit-NP/curtain-call/issues/39), PR: [#40](https://github.com/Rasit-NP/curtain-call/pull/40)
 - 관련 결정: 없음
 
 ## 배경
@@ -29,7 +29,10 @@
 
 ## 결과
 
-이 파일의 목차 상태는 '진행 중'으로 두었다. 기존 관례가 그렇지만, 이 PR이 병합되면 이 항목도 이번에 고친 다른 항목처럼 낡는다.
+PR [#40](https://github.com/Rasit-NP/curtain-call/pull/40)을 만들었고, 사람이 main에 병합했다(병합 커밋 `77e4bdf`).
+
+이 파일의 목차 상태는 PR 안에서 기존 관례대로 '진행 중'으로 두었다. 예상대로 병합 뒤 이 항목도 낡았고, 같은 날 병합된 #41·#42 항목도 '진행 중'으로 남았다.
+3단계 뒤 점검에서 이를 찾아 [#46](https://github.com/Rasit-NP/curtain-call/issues/46)에서 '완료'로 고쳤다([0046](0046-payment-lock-order.md)).
 병합 전에 쓰는 진행 기록이 병합 뒤에 낡는 구조는 이 Issue 범위 밖이다. 바꿀지는 사람이 따로 정한다.
 
 ## 배운 점

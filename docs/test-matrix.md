@@ -63,11 +63,16 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 경계 | R2: 선점을 해제하면 그 좌석은 보유 좌석 수에서 빠져 다시 4석을 선점할 수 있다(4단계 선점 해제 Issue에서 작성) | 백엔드 통합 | 미작성 |
 | 실패 | R2: 5석 묶음은 409 HOLD_LIMIT_EXCEEDED이고 아무 좌석도 선점되지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 실패 | R2: 같은 사용자가 서로 다른 좌석 3석 묶음 두 개를 동시에 선점하면 하나만 201이고 나머지는 409 HOLD_LIMIT_EXCEEDED다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
+| 실패 | R2: 2석 선점의 결제가 만료 시각을 넘겨 끝나는 동안 같은 사용자가 같은 공연에 4석을 새로 선점하면 409 HOLD_LIMIT_EXCEEDED이고, 결제가 끝난 뒤 보유 좌석 수는 예매 2석이다(모의 결제를 래치로 멈춤, 5단계 결제 Issue에서 작성) | 백엔드 통합(동시성) | 미작성 |
 | 경계 | R2: 4석까지는 고를 수 있고, 4석을 고른 뒤 5번째 좌석은 선택되지 않고 안내 문구가 보인다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 경계 | R2: 5번째 좌석을 눌러 뜬 안내 문구는 좌석을 취소하면 지우고, 5번째 좌석을 다시 누르면 다시 보인다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 경계 | R2: 선점 요청이 409 HOLD_LIMIT_EXCEEDED로 끝나 뜬 안내 문구는 좌석을 하나 더 고르면 지운다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 실패 | R2: 선점 요청이 409 HOLD_LIMIT_EXCEEDED면 안내 문구를 보여 주고 고른 좌석은 그대로 두며 좌석 상태를 다시 불러오지 않는다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 실패 | R2: 4석을 고른 뒤에는 5번째 좌석을 고를 수 없다(시나리오 3) | E2E | 미작성 |
+
+- 결제와 선점이 부딪히는 행(5단계)은 결제가 만료 1초 전에 판정을 통과한 뒤 모의 결제를 래치로 멈추고, 시각을 만료 시각으로 옮긴 뒤 같은 사용자가 선점한다.
+  선점 요청이 결제를 기다리는 것을 확인한 뒤 래치를 푼다. 결제의 사용자 행 잠금(spec 2.4)을 빼면 선점이 201이 되어 예매 2석 + 선점 4석 = 6석이 되므로,
+  되돌림 확인에서 이 테스트가 실패해야 한다([결정 0100](decisions/0100-hold-concurrency-v2.md)).
 
 ## R3. 선점은 5분간 유효(지연 만료)
 
