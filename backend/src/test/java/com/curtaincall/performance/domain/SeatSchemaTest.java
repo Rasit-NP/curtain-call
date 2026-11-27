@@ -15,11 +15,12 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 
 import com.curtaincall.support.IntegrationTest;
+import com.curtaincall.support.TestHolds;
 import com.curtaincall.support.TestPerformances;
 
 /**
  * 좌석과 공연장 배치의 DB 제약(spec 2.1). 같은 공연(공연장) 안에서 (row, number)가 고유하고 (gridRow, gridColumn)도 겹치지 않는다.
- * 응용 코드의 검사가 아니라 DB 제약으로 막히는지 SQL로 직접 넣어 확인한다.
+ * 저장 상태가 HELD인 좌석에만 holdId(좌석을 지금 잡은 선점)가 있다. 응용 코드의 검사가 아니라 DB 제약으로 막히는지 SQL로 직접 넣어 확인한다.
  */
 class SeatSchemaTest extends IntegrationTest {
 
@@ -27,6 +28,9 @@ class SeatSchemaTest extends IntegrationTest {
 
     @Autowired
     private TestPerformances performances;
+
+    @Autowired
+    private TestHolds holds;
 
     private long venue;
     private long performance;
@@ -100,6 +104,37 @@ class SeatSchemaTest extends IntegrationTest {
     @DisplayName("좌석 저장 상태는 AVAILABLE·HELD·SOLD만 쓸 수 있다")
     void seatStatusIsRestricted() {
         assertThatThrownBy(() -> performances.addSeat(performance, "A", 1, 1, 1, "EXPIRED"))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    /** spec 2.1: holdId는 지금 이 좌석을 잡은 선점이고 HELD일 때만 있다. 해제는 holdId를 비우고, 결제는 SOLD로 바꾸며 holdId를 비운다. */
+    @Test
+    @DisplayName("저장 상태가 HELD인 좌석에만 holdId가 있다(HELD인데 holdId가 없거나, AVAILABLE·SOLD인데 holdId가 있으면 저장할 수 없다)")
+    void holdIdExistsOnlyForHeldSeats() {
+        long user = testUsers.create("schema-user", "schema-password");
+        long hold = holds.insertHold(user, performance, "ACTIVE", STARTS_AT, STARTS_AT.plusSeconds(300));
+        long seat = performances.addSeat(performance, "A", 1, 1, 1);
+
+        assertThatThrownBy(() -> performances.addSeat(performance, "A", 2, 1, 2, "HELD"))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> holds.updateSeat(seat, "HELD", null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> holds.updateSeat(seat, "AVAILABLE", hold))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> holds.updateSeat(seat, "SOLD", hold))
+                .isInstanceOf(DataIntegrityViolationException.class);
+
+        assertThatCode(() -> holds.updateSeat(seat, "HELD", hold)).doesNotThrowAnyException();
+        assertThatCode(() -> holds.updateSeat(seat, "SOLD", null)).doesNotThrowAnyException();
+        assertThatCode(() -> holds.updateSeat(seat, "AVAILABLE", null)).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("좌석의 holdId는 있는 선점만 가리킨다")
+    void holdIdReferencesExistingHold() {
+        long seat = performances.addSeat(performance, "A", 1, 1, 1);
+
+        assertThatThrownBy(() -> holds.updateSeat(seat, "HELD", 999_999L))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 }

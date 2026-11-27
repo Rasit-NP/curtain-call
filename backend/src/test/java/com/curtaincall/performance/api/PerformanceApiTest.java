@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Duration;
 import java.time.Instant;
 
 import org.junit.jupiter.api.DisplayName;
@@ -16,14 +17,15 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.json.JsonCompareMode;
 
+import com.curtaincall.support.HoldRequests;
 import com.curtaincall.support.IntegrationTest;
 import com.curtaincall.support.TestPerformances;
 
 /**
  * 공연 목록·상세 API(spec 6.2, 6.3)와 공개 경로(R6). 테스트 데이터는 테스트마다 직접 만든다(시드에 기대지 않는다).
  *
- * <p>이 단계에는 선점과 예매가 없어 좌석 status는 저장 상태를 그대로 쓴다. 만료 반영(spec 2.2 '좌석의 API 상태')은
- * 선점 생성 Issue(3단계)에서 한다.
+ * <p>좌석 status는 API 상태다(spec 2.2): 저장 상태가 HELD라도 좌석을 잡은 선점이 만료됐으면 AVAILABLE이다. HELD 좌석은 실제 선점
+ * ({@code POST /api/holds})으로 만든다.
  */
 class PerformanceApiTest extends IntegrationTest {
 
@@ -150,23 +152,32 @@ class PerformanceApiTest extends IntegrationTest {
     }
 
     /**
-     * 선점이 없는 단계라 HELD·SOLD 좌석을 선점·예매 없이 상태만 바꿔 만든다. spec 2.1에서 HELD 좌석은 holdId가 있어야 하므로,
-     * 선점 생성 Issue(3단계)가 hold_id와 그 제약을 더하면 이 테스트의 데이터를 만들 수 없게 된다. 그때 이 테스트는 지우지 말고
-     * 대응표 R3 행('공연 상세는 만료 시각 1초 전까지 HELD, 만료 시각부터 AVAILABLE')처럼 실제 선점으로 HELD를 만드는 테스트로 바꾼다.
-     * 기대값(저장 상태가 응답에 나온다)을 바꾸려고 고치는 것이 아니다.
+     * 2단계(#35)에서는 선점이 없어 HELD 좌석을 선점 없이 저장 상태만 바꿔 만들고 "저장 상태를 그대로 쓴다"를 확인했다. spec 2.1에서
+     * HELD 좌석은 holdId가 있어야 하므로 선점 생성 Issue(#41)가 그 제약을 더하면서, 그 테스트를 지우지 않고 실제 선점으로 HELD를 만드는 이
+     * 테스트로 바꿨다(PR #37 리뷰 지적 3). AVAILABLE·SOLD가 그대로 나오는 것은 그대로 확인하고, HELD는 좌석을 잡은 선점이 유효할 때만
+     * HELD다(spec 2.2 '좌석의 API 상태'). 판매(SOLD)는 결제 단계 전이라 저장 상태로 만든다(SOLD는 holdId가 없다).
      */
     @Test
-    @DisplayName("이 단계(선점 전)의 좌석 status는 저장 상태 AVAILABLE·HELD·SOLD를 그대로 쓴다")
-    void seatStatusIsStoredStatus() throws Exception {
+    @DisplayName("R3: 공연 상세는 만료 시각 1초 전까지 HELD, 만료 시각부터 AVAILABLE을 보여 준다")
+    void seatStatusReflectsHoldExpiry() throws Exception {
+        long user = testUsers.create("holder", "holder-password");
         long venue = performances.createVenue("상태홀");
         long performance = performances.createPerformance("상태 공연", venue, STARTS_AT, 30000);
         performances.addSeat(performance, "A", 1, 1, 1, "AVAILABLE");
-        performances.addSeat(performance, "A", 2, 1, 2, "HELD");
+        long held = performances.addSeat(performance, "A", 2, 1, 2);
         performances.addSeat(performance, "A", 3, 1, 3, "SOLD");
+        mockMvc.perform(HoldRequests.hold(user, performance, held)).andExpect(status().isCreated());
+        Instant expiresAt = clock.instant().plus(Duration.ofMinutes(5));
 
+        clock.setInstant(expiresAt.minusSeconds(1));
         mockMvc.perform(get("/api/performances/{performanceId}", performance))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.seats[*].status", contains("AVAILABLE", "HELD", "SOLD")));
+
+        clock.setInstant(expiresAt);
+        mockMvc.perform(get("/api/performances/{performanceId}", performance))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.seats[*].status", contains("AVAILABLE", "AVAILABLE", "SOLD")));
     }
 
     @Test

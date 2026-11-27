@@ -3,7 +3,7 @@
 R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 계층에서 검증할지 정한다.
 동작의 기준은 [`spec.md`](spec.md)이고, 괄호 안의 숫자는 그 문서의 절 번호다.
 
-현황(2026-11-27): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 조회 단계에서 백엔드(#35)는 공연 목록·상세 API(공개 경로 R6 포함), 공연장별 좌석 배치, 공연·좌석 시드 테스트를, 프론트엔드(#36)는 공연 목록·내 예매 화면, 공통 헤더와 로그아웃, 내 예매 화면의 실제 경로로 R6 가드 테스트를 썼다. 선점 단계에서 프론트엔드(#42)는 공연 상세·선점 API 함수, 좌석 선택 화면(격자 배치, 4석 선택, 선점 요청의 응답별 처리), 좌석 선택 화면의 실제 경로로 R1·R2·R6 프론트 테스트를 썼다. 결제 화면이 있어야 하는 R6 행과 R3~R5 프론트 테스트, R1~R5 백엔드 테스트는 미작성이다.
+현황(2026-11-27): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 조회 단계에서 백엔드(#35)는 공연 목록·상세 API(공개 경로 R6 포함), 공연장별 좌석 배치, 공연·좌석 시드 테스트를, 프론트엔드(#36)는 공연 목록·내 예매 화면, 공통 헤더와 로그아웃, 내 예매 화면의 실제 경로로 R6 가드 테스트를 썼다. 선점 단계에서 프론트엔드(#42)는 공연 상세·선점 API 함수, 좌석 선택 화면(격자 배치, 4석 선택, 선점 요청의 응답별 처리), 좌석 선택 화면의 실제 경로로 R1·R2·R6 프론트 테스트를 썼다. 백엔드(#41)는 선점 생성 API(R1·R2·R3·R6), 같은 좌석·같은 사용자 동시 요청, 선점 스키마, 공연 상세의 만료 반영 테스트를 썼다. 선점 조회·해제(4단계)와 예매(5단계)에 기대는 R2·R3·R6 백엔드 행과 R4·R5 백엔드 테스트, 결제 화면이 있어야 하는 R6 행과 R3~R5 프론트 테스트는 미작성이다.
 
 ## 읽는 법
 
@@ -26,14 +26,14 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 
 | 구분 | 테스트 | 계층 | 상태 |
 |---|---|---|---|
-| 정상 | R1: 유효한 선점이 없고 판매되지 않은 좌석만 선점할 수 있다고 판정한다 | 백엔드 단위 | 미작성 |
-| 정상 | R1: 선택 가능한 좌석 묶음을 선점하면 201을 받고 묶음의 모든 좌석이 HELD로 보인다 | 백엔드 통합 | 미작성 |
-| 실패 | R1: 같은 좌석에 선점 요청 10개가 동시에 오면 하나만 201이고 나머지는 409 SEAT_ALREADY_HELD다 | 백엔드 통합(동시성) | 미작성 |
-| 실패 | R1: 겹치는 묶음(A-1·A-2와 A-2·A-3)을 동시에 선점하면 하나만 성공하고, 실패한 쪽 좌석은 하나도 잡히지 않는다 | 백엔드 통합(동시성) | 미작성 |
-| 실패 | R1: 같은 두 좌석을 반대 순서로 담은 묶음([A-1, A-2]와 [A-2, A-1])을 동시에 선점하기를 여러 번(예: 50회) 반복해도 매번 하나만 성공하고 500이 나지 않는다 | 백엔드 통합(동시성) | 미작성 |
-| 실패 | R1: 묶음 중 한 좌석이라도 이미 선점됐으면 409 SEAT_ALREADY_HELD이고 나머지 좌석도 선점되지 않는다 | 백엔드 통합 | 미작성 |
-| 실패 | R1: 판매된 좌석이나 내가 이미 선점한 좌석을 선점하면 409 SEAT_ALREADY_HELD다(보유 좌석 수는 한도 안에서) | 백엔드 통합 | 미작성 |
-| 경계 | R1: 서로 다른 좌석을 동시에 선점하면 모두 성공한다 | 백엔드 통합(동시성) | 미작성 |
+| 정상 | R1: 유효한 선점이 없고 판매되지 않은 좌석만 선점할 수 있다고 판정한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/SeatAvailabilityTest.java`) |
+| 정상 | R1: 선택 가능한 좌석 묶음을 선점하면 201을 받고 묶음의 모든 좌석이 HELD로 보인다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 실패 | R1: 같은 좌석에 선점 요청 10개가 동시에 오면 하나만 201이고 나머지는 409 SEAT_ALREADY_HELD다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
+| 실패 | R1: 겹치는 묶음(A1·A2와 A2·A3)을 동시에 선점하면 하나만 성공하고, 실패한 쪽 좌석은 하나도 잡히지 않는다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
+| 실패 | R1: 같은 두 좌석을 반대 순서로 담은 묶음([A1, A2]와 [A2, A1])을 동시에 선점하기를 50회 반복해도 매번 하나만 성공하고 500이 나지 않는다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
+| 실패 | R1: 묶음 중 한 좌석이라도 이미 선점됐으면 409 SEAT_ALREADY_HELD이고 나머지 좌석도 선점되지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 실패 | R1: 판매된 좌석이나 내가 이미 선점한 좌석을 선점하면 409 SEAT_ALREADY_HELD다(보유 좌석 수는 한도 안에서) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 경계 | R1: 서로 다른 좌석을 동시에 선점하면 모두 성공한다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
 | 실패 | R1: 선점됨·판매됨 좌석은 '선택 불가'로 보이고 누를 수 없다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 실패 | R1: 선점 요청이 409 SEAT_ALREADY_HELD면 안내 문구를 보여 주고, 고른 좌석을 비운 뒤 좌석 상태를 다시 불러와 그 좌석을 '선택 불가'로 보여 준다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 실패 | R1: 409 SEAT_ALREADY_HELD 뒤 다시 불러오는 동안 격자와 안내 문구를 그대로 두고 로딩 문구 없이 좌석을 막으며, 다시 불러오기가 실패하면 실패 문구를 함께 보여 준다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
@@ -43,6 +43,9 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 - 만료된 선점의 좌석을 다시 선점하는 경우는 R3에서 다룬다.
 - 교착 상태 테스트는 좌석을 `id` 순으로 잠그는 부분(spec 2.4)을 되돌렸을 때 실패해야 한다. 겹치는 좌석이 하나뿐인 묶음으로는
   교착 상태가 생기지 않으므로 같은 두 좌석을 반대 순서로 담고, 한 번에 걸리지 않을 수 있으니 여러 번 반복한다.
+  선점 생성(#41)은 좌석을 한 문장(`ORDER BY id ... FOR NO KEY UPDATE`)으로 잠근다. 그 문장에서 정렬만 빼면 두 요청이 같은 실행 계획으로 같은 순서로
+  잠가 이 테스트가 실패하지 않았다. 요청 순서대로 한 좌석씩 잠그게 바꾸면 500으로 실패한다([결정 0073](decisions/0073-hold-concurrency.md)).
+- 두 요청이 부딪히는 동시성 테스트(겹치는 묶음, R2 같은 사용자)도 공연을 새로 만들어 20회 반복한다. 잠금을 되돌렸을 때 경합을 놓치지 않기 위해서다.
 
 ## R2. 한 공연에서 최대 4석
 
@@ -50,14 +53,16 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 
 | 구분 | 테스트 | 계층 | 상태 |
 |---|---|---|---|
-| 정상 | R2: 보유 좌석이 없으면 4석 묶음을 선점할 수 있다 | 백엔드 통합 | 미작성 |
-| 경계 | R2: 보유 3석이면 1석은 허용하고 2석은 거부한다 | 백엔드 단위 | 미작성 |
-| 경계 | R2: 만료·해제된 선점과 다른 공연의 좌석은 보유 좌석 수에 넣지 않는다 | 백엔드 단위 | 미작성 |
-| 경계 | R2: 예매 2석이 있으면 2석은 선점할 수 있고 3석은 409 HOLD_LIMIT_EXCEEDED다 | 백엔드 통합 | 미작성 |
-| 경계 | R2: 4석 선점이 만료된 순간 새로 4석을 선점할 수 있다 | 백엔드 통합 | 미작성 |
-| 경계 | R2: 선점을 해제하면 그 좌석은 보유 좌석 수에서 빠져 다시 4석을 선점할 수 있다 | 백엔드 통합 | 미작성 |
-| 실패 | R2: 5석 묶음은 409 HOLD_LIMIT_EXCEEDED이고 아무 좌석도 선점되지 않는다 | 백엔드 통합 | 미작성 |
-| 실패 | R2: 같은 사용자가 서로 다른 좌석 3석 묶음 두 개를 동시에 선점하면 하나만 201이고 나머지는 409 HOLD_LIMIT_EXCEEDED다 | 백엔드 통합(동시성) | 미작성 |
+| 정상 | R2: 보유 좌석이 없으면 4석 묶음을 선점할 수 있다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 경계 | R2: 보유 3석이면 1석은 허용하고 2석은 거부한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldLimitTest.java`) |
+| 경계 | R2: 만료·해제된 선점은 보유 좌석 수에 넣지 않는다(결제된 선점의 좌석은 예매로 센다) | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldLimitTest.java`) |
+| 경계 | R2: 다른 공연의 선점은 보유 좌석 수에 넣지 않는다(다른 공연에 4석이 있어도 4석을 선점할 수 있다) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 경계 | R2: 유효한 선점이 여러 건이면 그 좌석을 모두 더해 센다(2석, 1석, 1석을 차례로 선점하면 그다음 1석은 409 HOLD_LIMIT_EXCEEDED) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 경계 | R2: 예매 2석이 있으면 2석은 선점할 수 있고 3석은 409 HOLD_LIMIT_EXCEEDED다(5단계 결제 Issue에서 작성) | 백엔드 통합 | 미작성 |
+| 경계 | R2: 4석 선점이 만료된 순간 새로 4석을 선점할 수 있다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 경계 | R2: 선점을 해제하면 그 좌석은 보유 좌석 수에서 빠져 다시 4석을 선점할 수 있다(4단계 선점 해제 Issue에서 작성) | 백엔드 통합 | 미작성 |
+| 실패 | R2: 5석 묶음은 409 HOLD_LIMIT_EXCEEDED이고 아무 좌석도 선점되지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 실패 | R2: 같은 사용자가 서로 다른 좌석 3석 묶음 두 개를 동시에 선점하면 하나만 201이고 나머지는 409 HOLD_LIMIT_EXCEEDED다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
 | 경계 | R2: 4석까지는 고를 수 있고, 4석을 고른 뒤 5번째 좌석은 선택되지 않고 안내 문구가 보인다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 경계 | R2: 안내 문구는 좌석을 고르거나 취소하면 지우고, 5번째 좌석을 다시 누르면 다시 보인다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 실패 | R2: 선점 요청이 409 HOLD_LIMIT_EXCEEDED면 안내 문구를 보여 주고 고른 좌석은 그대로 두며 좌석 상태를 다시 불러오지 않는다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
@@ -69,13 +74,14 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 
 | 구분 | 테스트 | 계층 | 상태 |
 |---|---|---|---|
-| 정상 | R3: 선점의 만료 시각은 만든 시각 + 5분이다 | 백엔드 단위 | 미작성 |
-| 경계 | R3: 현재 시각이 만료 시각 1초 전이면 유효하고, 같거나 이후면 만료로 판정한다 | 백엔드 단위 | 미작성 |
-| 경계 | R3: 만료 시각 1초 전에는 다른 사용자가 선점할 수 없다(409 SEAT_ALREADY_HELD) | 백엔드 통합 | 미작성 |
-| 경계 | R3: 만료 시각과 같은 순간에는 다른 사용자가 선점할 수 있다 | 백엔드 통합 | 미작성 |
-| 경계 | R3: 공연 상세는 만료 시각 1초 전까지 HELD, 만료 시각부터 AVAILABLE을 보여 준다 | 백엔드 통합 | 미작성 |
-| 경계 | R3: 선점 조회는 만료 시각부터 status EXPIRED를 돌려준다 | 백엔드 통합 | 미작성 |
-| 실패 | R3: 만료된 내 선점을 해제해도 그 좌석을 새로 선점한 다른 사용자의 선점은 유지된다 | 백엔드 통합 | 미작성 |
+| 정상 | R3: 선점의 만료 시각은 만든 시각 + 5분이다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
+| 경계 | R3: 현재 시각이 만료 시각 1초 전이면 유효하고, 같거나 이후면 만료로 판정한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
+| 경계 | R3: 좌석의 API 상태는 저장 상태가 HELD라도 좌석을 잡은 선점이 만료됐으면 AVAILABLE이다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/SeatAvailabilityTest.java`) |
+| 경계 | R3: 만료 시각 1초 전에는 다른 사용자가 선점할 수 없다(409 SEAT_ALREADY_HELD) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 경계 | R3: 만료 시각과 같은 순간에는 다른 사용자가 선점할 수 있다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 경계 | R3: 공연 상세는 만료 시각 1초 전까지 HELD, 만료 시각부터 AVAILABLE을 보여 준다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
+| 경계 | R3: 선점 조회는 만료 시각부터 status EXPIRED를 돌려준다(4단계 선점 조회 Issue에서 작성) | 백엔드 통합 | 미작성 |
+| 실패 | R3: 만료된 내 선점을 해제해도 그 좌석을 새로 선점한 다른 사용자의 선점은 유지된다(4단계 선점 해제 Issue에서 작성) | 백엔드 통합 | 미작성 |
 | 정상 | R3: 결제 화면은 남은 시간을 보여 주고, 0이 되면 결제 버튼을 막고 만료 안내를 보여 준다 | 프론트 | 미작성 |
 | 실패 | R3: 선점 조회 결과가 EXPIRED면 결제 버튼 없이 만료 안내를 보여 준다 | 프론트 | 미작성 |
 | - | 시간을 조작해야 하므로 E2E에서 다루지 않고 백엔드에서 검증한다(`e2e/CLAUDE.md`) | E2E | 해당 없음 |
@@ -121,8 +127,9 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 
 | 구분 | 테스트 | 계층 | 상태 |
 |---|---|---|---|
-| 정상 | R6: 유효한 토큰이면 선점·선점 조회·해제·결제·내 예매를 쓸 수 있다 | 백엔드 통합 | 미작성 |
-| 정상 | R6: 로그인 API로 받은 토큰으로 선점까지 할 수 있다(실제 흐름). 선점 생성 Issue에서 완성한다 | 백엔드 통합 | 미작성 |
+| 정상 | R6: 유효한 토큰이면 선점을 할 수 있다(같은 요청에 토큰이 없으면 401 AUTH_REQUIRED) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 정상 | R6: 유효한 토큰이면 선점 조회·해제·결제·내 예매를 쓸 수 있다(4·5단계 Issue에서 작성) | 백엔드 통합 | 미작성 |
+| 정상 | R6: 로그인 API로 받은 토큰으로 선점까지 할 수 있다(실제 흐름) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 정상 | R6: 로그인 API로 받은 토큰은 인증을 통과하고(등록되지 않은 비공개 경로가 404), 토큰이 없으면 401이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 정상 | R6: 같은 키로 서명한 정상 토큰은 인증을 통과한다(등록되지 않은 비공개 경로가 404) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 실패 | R6: 토큰 없이 선점·선점 조회·해제·결제·내 예매를 부르면 401 AUTH_REQUIRED다(기능 경로가 없어도 보안 설정으로) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
@@ -179,11 +186,18 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 공연(6.2) | 공연이 없으면 공연 목록은 빈 목록이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
 | 공연(5, 6.2) | 공연 목록 항목은 PerformanceSummary(id, title, venue, startsAt, price)이고 venue는 공연장 이름이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
 | 공연(5, 6.3) | 공연 상세는 PerformanceSummary에 seats를 더하고, 좌석은 id·row·number·gridRow·gridColumn·status다. 좌석은 row, number 오름차순(number는 숫자 순)이고 그 공연의 좌석만 나온다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
-| 공연(6.3) | 선점이 생기기 전 단계의 좌석 status는 저장 상태(AVAILABLE·HELD·SOLD)를 그대로 쓴다. 만료 반영은 R3 행에서 선점 Issue가 작성한다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
+| 공연(6.3) | 좌석 status는 API 상태다: AVAILABLE·SOLD는 저장 상태 그대로이고 HELD는 실제 선점으로 만든다. 선점 전 단계(#35)의 저장 상태 테스트를 지우지 않고 R3 행('공연 상세는 만료 시각 1초 전까지 HELD, 만료 시각부터 AVAILABLE')의 테스트로 바꿨다(#41) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
 | 공연(6.3) | performanceId가 정수가 아니면(long 범위 밖 포함) 400 INVALID_INPUT이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
-| 좌석(2.1) | 같은 공연에서 (row, number)와 (gridRow, gridColumn)은 겹치지 않고(다른 공연은 겹쳐도 됨), 공연장 배치도 같은 공연장 안에서 같다. 번호와 위치는 1 이상, row는 빈 문자열이 아니고, 저장 상태는 AVAILABLE·HELD·SOLD만이다(DB 제약) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/domain/SeatSchemaTest.java`) |
-| 선점(6.4) | 없는 공연이나 그 공연에 없는 좌석으로 선점하면 404 NOT_FOUND다 | 백엔드 통합 | 미작성 |
-| 선점(6.4) | seatIds가 비었거나 중복이 있으면 400 INVALID_INPUT이다 | 백엔드 통합 | 미작성 |
+| 좌석(2.1) | 같은 공연에서 (row, number)와 (gridRow, gridColumn)은 겹치지 않고(다른 공연은 겹쳐도 됨), 공연장 배치도 같은 공연장 안에서 같다. 번호와 위치는 1 이상, row는 빈 문자열이 아니고, 저장 상태는 AVAILABLE·HELD·SOLD만이다. 저장 상태가 HELD인 좌석에만 holdId가 있고, holdId는 있는 선점만 가리킨다(DB 제약) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/domain/SeatSchemaTest.java`) |
+| 좌석(5) | 좌석 row는 코드 포인트 순서로 비교한다(보충 문자는 String.compareTo와 달리 BMP의 마지막 글자들보다 뒤). 선점 응답의 좌석 정렬이 공연 상세의 DB 정렬과 같다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/performance/domain/SeatOrderTest.java`) |
+| 선점(2.1) | 선점 저장 상태는 ACTIVE·RELEASED·PAID만이다(만료는 저장하지 않는다, DB 제약) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldSchemaTest.java`) |
+| 선점(2.1, 2.2) | 선점은 서로 다른 좌석 1~4석의 묶음으로만 만들고, 해제·결제된 선점은 만료 시각 전이라도 유효하지 않다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
+| 선점(6.4) | 선점에 성공하면 201 Hold다: status ACTIVE, performance는 PerformanceSummary, seats는 row·number 오름차순의 SeatRef, amount는 가격 × 좌석 수, expiresAt은 요청 시각 + 5분 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 선점(6.4) | 없는 공연이나 그 공연에 없는 좌석으로 선점하면 404 NOT_FOUND이고 아무 좌석도 선점되지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 선점(6.4) | performanceId·seatIds가 없거나, 비었거나, 양수가 아니거나, 정수가 아니거나(소수·숫자 문자열, 결정 0072), seatIds에 중복이 있으면 400 INVALID_INPUT이고 아무 좌석도 선점되지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 선점(6.4) | 선점 오류는 6.4 표의 순서로 처음 걸린 하나만 돌려준다(401 → 400 → 404 → 409 HOLD_LIMIT_EXCEEDED → 409 SEAT_ALREADY_HELD) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 선점(6.4) | seatIds가 아주 많아도(7만 개) 500이 아니라 표의 오류로 끝난다(없는 좌석이 있으면 404 NOT_FOUND) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
+| 선점(6.4) | 토큰의 사용자가 DB에 없으면 따로 처리하지 않아 500 INTERNAL_ERROR이고 아무 좌석도 선점되지 않는다(결정 0071) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 선점 조회(6.5) | 다른 사용자의 선점과 해제·결제된 선점은 404 NOT_FOUND다 | 백엔드 통합 | 미작성 |
 | 선점 해제(6.6) | 내 선점을 해제하면 204이고 그 좌석이 AVAILABLE이 된다 | 백엔드 통합 | 미작성 |
 | 선점 해제(6.6) | 만료된 내 선점의 해제는 204이고, 다른 사용자의 선점과 이미 해제·결제된 선점은 404 NOT_FOUND다 | 백엔드 통합 | 미작성 |
