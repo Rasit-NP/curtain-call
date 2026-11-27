@@ -232,7 +232,7 @@ describe('좌석 선택 화면: 표시', () => {
     expectSummary('A1, A2, A3, A4', '120,000원');
   });
 
-  it('R2: 안내 문구는 좌석을 고르거나 취소하면 지우고, 5번째 좌석을 다시 누르면 다시 보인다', async () => {
+  it('R2: 5번째 좌석을 눌러 뜬 안내 문구는 좌석을 취소하면 지우고, 5번째 좌석을 다시 누르면 다시 보인다', async () => {
     const { user } = await openPage();
     for (const name of ['A1', 'A2', 'A3', 'A4']) {
       await user.click(seat(`${name} 선택 가능`));
@@ -464,6 +464,21 @@ describe('좌석 선택 화면: 좌석 선택 완료', () => {
     await waitFor(() => expect(seat('A1 선택됨')).toBeEnabled());
     expect(submitButton()).toBeEnabled();
     expect(calls.count).toBe(1);
+  });
+
+  it('R2: 선점 요청이 409 HOLD_LIMIT_EXCEEDED로 끝나 뜬 안내 문구는 좌석을 하나 더 고르면 지운다', async () => {
+    const { user } = await openPage();
+    holdHandler(() => problem(409, 'HOLD_LIMIT_EXCEEDED'));
+    await user.click(seat('A1 선택 가능'));
+    await user.click(seat('A2 선택 가능'));
+    await user.click(submitButton());
+    expect(await page().findByRole('alert')).toHaveTextContent('한 공연에서 최대 4석까지 예매할 수 있습니다.');
+    await waitFor(() => expect(seat('A3 선택 가능')).toBeEnabled());
+
+    await user.click(seat('A3 선택 가능'));
+
+    expect(page().queryByRole('alert')).not.toBeInTheDocument();
+    expectSummary('A1, A2, A3', '90,000원');
   });
 
   it('선점 요청이 404 NOT_FOUND면 안내 문구와 "공연 목록" 링크를 보여 주고 고른 좌석은 그대로 둔다', async () => {
