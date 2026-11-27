@@ -3,7 +3,7 @@
 R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 계층에서 검증할지 정한다.
 동작의 기준은 [`spec.md`](spec.md)이고, 괄호 안의 숫자는 그 문서의 절 번호다.
 
-현황(2026-11-28): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 조회 단계에서 백엔드(#35)는 공연 목록·상세 API(공개 경로 R6 포함), 공연장별 좌석 배치, 공연·좌석 시드 테스트를, 프론트엔드(#36)는 공연 목록·내 예매 화면, 공통 헤더와 로그아웃, 내 예매 화면의 실제 경로로 R6 가드 테스트를 썼다. 선점 단계에서 프론트엔드(#42)는 공연 상세·선점 API 함수, 좌석 선택 화면(격자 배치, 4석 선택, 선점 요청의 응답별 처리), 좌석 선택 화면의 실제 경로로 R1·R2·R6 프론트 테스트를 썼다. 백엔드(#41)는 선점 생성 API(R1·R2·R3·R6), 같은 좌석·같은 사용자 동시 요청, 선점 스키마, 공연 상세의 만료 반영 테스트를 썼다. 3단계 뒤 점검 수정에서 백엔드(#45)는 경로 long 값의 엄격한 해석(공연 상세, 모든 경로)과 공연 상세·선점 응답의 좌석 row 정렬 통합 테스트를 썼다. 선점 조회·해제 단계에서 백엔드(#51)는 선점 조회·해제 API(R2·R3·R6), 같은 선점의 동시 해제, 만료된 선점의 해제와 다른 사용자의 선점이 겹치는 경우, 선점·좌석의 해제 상태 전이 테스트를 썼다. 결제 화면 단계에서 프론트엔드(#52)는 선점 조회·해제·결제 API 함수, 결제·예매 확인 화면(표시, 결제 응답별 처리, 멱등 키, 떠날 때의 해제), 결제 화면의 실제 경로로 R3·R4·R5·R6 프론트 테스트를 썼고, 로드맵에서 넘겨받은 정책(떠난 뒤 온 선점·로그인 성공, code 없는 502·503·504, AUTH_REQUIRED 문구)을 테스트로 고정했다. 결제 단계에서 백엔드(#55)는 결제 API(R4, R5의 Idempotency-Key 헤더 검증, R6), 모의 결제, 내 예매 API, 예매 좌석을 함께 세는 4석 한도(R2), 결제와 선점·해제가 겹치는 동시성, 결제된 선점의 조회·해제, 예매·결제 스키마 테스트를 썼다. R5의 멱등 기록(같은 키의 결과 저장·재사용, 같은 키 동시 요청) 백엔드 테스트는 다음 Issue(#56)에서 쓴다(미작성).
+현황(2026-11-28): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 조회 단계에서 백엔드(#35)는 공연 목록·상세 API(공개 경로 R6 포함), 공연장별 좌석 배치, 공연·좌석 시드 테스트를, 프론트엔드(#36)는 공연 목록·내 예매 화면, 공통 헤더와 로그아웃, 내 예매 화면의 실제 경로로 R6 가드 테스트를 썼다. 선점 단계에서 프론트엔드(#42)는 공연 상세·선점 API 함수, 좌석 선택 화면(격자 배치, 4석 선택, 선점 요청의 응답별 처리), 좌석 선택 화면의 실제 경로로 R1·R2·R6 프론트 테스트를 썼다. 백엔드(#41)는 선점 생성 API(R1·R2·R3·R6), 같은 좌석·같은 사용자 동시 요청, 선점 스키마, 공연 상세의 만료 반영 테스트를 썼다. 3단계 뒤 점검 수정에서 백엔드(#45)는 경로 long 값의 엄격한 해석(공연 상세, 모든 경로)과 공연 상세·선점 응답의 좌석 row 정렬 통합 테스트를 썼다. 선점 조회·해제 단계에서 백엔드(#51)는 선점 조회·해제 API(R2·R3·R6), 같은 선점의 동시 해제, 만료된 선점의 해제와 다른 사용자의 선점이 겹치는 경우, 선점·좌석의 해제 상태 전이 테스트를 썼다. 결제 화면 단계에서 프론트엔드(#52)는 선점 조회·해제·결제 API 함수, 결제·예매 확인 화면(표시, 결제 응답별 처리, 멱등 키, 떠날 때의 해제), 결제 화면의 실제 경로로 R3·R4·R5·R6 프론트 테스트를 썼고, 로드맵에서 넘겨받은 정책(떠난 뒤 온 선점·로그인 성공, code 없는 502·503·504, AUTH_REQUIRED 문구)을 테스트로 고정했다. 결제 단계에서 백엔드(#55)는 결제 API(R4, R5의 Idempotency-Key 헤더 검증, R6), 모의 결제, 내 예매 API, 예매 좌석을 함께 세는 4석 한도(R2), 결제와 선점·해제가 겹치는 동시성, 결제된 선점의 조회·해제, 예매·결제 스키마 테스트를 썼다. 멱등 키 단계에서 백엔드(#56)는 R5의 멱등 기록(같은 키의 결과 저장·재사용, 같은 키 동시 요청, 500 미저장), 오류 표 3번의 자리, 멱등 기록 스키마, 모의 결제의 '다음 호출 실패' 테스트를 썼다.
 
 ## 읽는 법
 
@@ -116,18 +116,23 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 
 | 구분 | 테스트 | 계층 | 상태 |
 |---|---|---|---|
-| 정상 | R5: 같은 키로 두 번 결제하면 두 번 다 같은 201 응답이고 예매는 하나다 | 백엔드 통합 | 미작성 |
-| 실패 | R5: 같은 키로 결제 요청 5개가 동시에 오면 예매는 하나이고 모두 같은 201 응답이다 | 백엔드 통합(동시성) | 미작성 |
-| 실패 | R5: 402로 거절된 결제를 같은 키로 다시 요청하면 모의 결제를 다시 부르지 않고 같은 402를 돌려주며, 선점은 유지된다 | 백엔드 통합 | 미작성 |
-| 정상 | R5: 결제가 거절된 뒤 새 키로 다시 결제하면 승인될 수 있다 | 백엔드 통합 | 미작성 |
-| 실패 | R5: 이미 처리한 키로 다른 선점을 결제하면 400 INVALID_INPUT이고 아무것도 처리하지 않는다 | 백엔드 통합 | 미작성 |
+| 정상 | R5: 같은 키로 두 번 결제하면 두 번 다 같은 201 응답이고 예매는 하나다(선점이 이미 결제돼 다시 처리하면 404일 때도. 같은 응답 = 상태·Content-Type·본문 문자열) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
+| 실패 | R5: 같은 키로 결제 요청 5개가 동시에 오면 예매는 하나이고 모두 같은 201 응답이다(모의 결제는 한 번만 부른다, 5회 반복, 결정 0152) | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/payment/PaymentConcurrencyTest.java`) |
+| 경계 | R5: 같은 키의 먼저 요청이 500으로 끝나면 기다리던 나중 요청은 처음 온 요청처럼 처리돼 201이다(500은 저장하지 않는다) | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/payment/PaymentConcurrencyTest.java`) |
+| 실패 | R5: 402로 거절된 결제를 같은 키로 다시 요청하면 모의 결제를 다시 부르지 않고 같은 402를 돌려주며, 선점은 유지된다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
+| 경계 | R5: 402가 저장된 키로 다시 요청하면 그 사이 선점이 해제되거나 만료됐어도 같은 402다(다시 처리하면 404·409) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
+| 정상 | R5: 결제가 거절된 뒤 새 키로 다시 결제하면 승인될 수 있다. 거절된 키는 그 뒤에도 같은 402다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
+| 실패 | R5: 이미 처리한 키로 다른 선점을 결제하면 400 INVALID_INPUT이고 아무것도 처리하지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
+| 실패 | R5: 멱등 키 확인(오류 표 3번)은 요청 검증(2번) 뒤, 선점 확인(4번) 앞이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
 | 실패 | R5: Idempotency-Key가 없거나 공백뿐이면 400 INVALID_INPUT이다 | 백엔드 단위, 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/IdempotencyKeyHeaderTest.java`, `backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
 | 경계 | R5: 키 길이 100자는 허용하고 101자는 400 INVALID_INPUT이다(글자 수 = ASCII 문자 수, 결정 0141) | 백엔드 단위, 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/IdempotencyKeyHeaderTest.java`, `backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
 | 실패 | R5: Idempotency-Key에 ASCII 출력 문자가 아닌 문자(공백, 제어 문자, ASCII가 아닌 문자)가 있으면 400 INVALID_INPUT이다(실제 서버가 ISO-8859-1로 읽은 한글 키 포함, 결정 0141) | 백엔드 단위, 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/IdempotencyKeyHeaderTest.java`, `backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
 | 실패 | R5: Idempotency-Key 헤더가 두 개 이상이면 값이 같아도 400 INVALID_INPUT이다(결정 0141) | 백엔드 단위, 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/IdempotencyKeyHeaderTest.java`, `backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
-| 경계 | R5: 다른 사용자가 같은 키를 쓰면 서로 영향 없이 따로 처리된다 | 백엔드 통합 | 미작성 |
-| 경계 | R5: 404나 409로 끝난 요청도 저장해, 같은 키로 다시 보내면 같은 응답이고 다른 선점에는 쓸 수 없다(400) | 백엔드 통합 | 미작성 |
-| 경계 | R5: 검증 실패(400)로 끝난 요청은 저장하지 않아 같은 키를 다시 쓸 수 있다 | 백엔드 통합 | 미작성 |
+| 경계 | R5: 다른 사용자가 같은 키를 쓰면 서로 영향 없이 따로 처리된다(다른 사용자의 저장된 응답을 받지 않는다) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
+| 경계 | R5: 멱등 기록은 같은 사용자·같은 키로 둘을 만들 수 없고, 다른 사용자나 다른 키면 만들 수 있다((사용자, 키) 복합 유니크, DB 제약. 같은 사용자의 결제는 사용자 행에서 한 줄로 서므로 동시성 테스트 대신 SQL로 확인) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/domain/IdempotencyRecordSchemaTest.java`) |
+| 경계 | R5: 404나 409로 끝난 요청도 저장해, 같은 키로 다시 보내면 같은 응답이고 다른 선점에는 쓸 수 없다(400). 404는 없던 선점이 그 id로 생겨도 같은 404다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
+| 경계 | R5: 검증 실패(400)로 끝난 요청은 저장하지 않아 같은 키를 다시 쓸 수 있다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
+| 실패 | R5: 예상하지 못한 오류(500)로 끝난 요청은 저장하지 않아(되돌려짐) 같은 키로 다시 보내면 처음 온 요청처럼 처리한다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
 | 정상 | R5: 응답을 받은 뒤(402, 500, 400)에는 새 키로, 응답을 받지 못한 뒤(네트워크 오류, code 없는 502, 10초 시간 초과)에는 같은 키로 다시 결제한다. 키는 UUID다 | 프론트 | 작성(`frontend/src/pages/payment/PaymentPage.test.tsx`) |
 | 정상 | R5: 결제 요청 중에는 '결제하기'와 '뒤로 가기'를 누를 수 없고, 두 번 눌러도 요청은 한 번만 간다 | 프론트 | 작성(`frontend/src/pages/payment/PaymentPage.test.tsx`) |
 | - | 같은 키 재요청은 화면 조작으로 만들 수 없어 백엔드 통합 테스트가 맡는다 | E2E | 해당 없음 |
@@ -238,7 +243,8 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 결제(6.7) | 이미 결제된 선점을 새 키로 결제하면 404 NOT_FOUND이고 예매는 하나다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
 | 결제(6.7) | 다른 사용자의 선점, 해제된 선점, 없는 선점으로 결제하면 404 NOT_FOUND이고 모의 결제를 부르지 않으며 선점은 그대로다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
 | 결제(6.7) | holdId가 없거나, 양수가 아니거나, JSON 정수가 아니면(소수·지수 표기·문자열·배열·long 범위 밖, 결정 0072) 400 INVALID_INPUT이고 결제하지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
-| 결제(6.7) | 결제 오류는 6.7 표의 순서로 처음 걸린 하나만 돌려준다(401 → 400 → 404 → 409 HOLD_EXPIRED → 402 PAYMENT_FAILED, 3번 멱등 키는 #56) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 결제(6.7) | 결제 오류는 6.7 표의 순서로 처음 걸린 하나만 돌려준다(401 → 400 → 404 → 409 HOLD_EXPIRED → 402 PAYMENT_FAILED. 3번 멱등 키의 자리는 R5 행) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 결제(6.7) | 토큰의 사용자가 DB에 없으면 따로 처리하지 않아 결제는 500 INTERNAL_ERROR이고 멱등 기록·결제가 남지 않는다(멱등 기록의 사용자 외래 키, 결정 0071·0150) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentIdempotencyApiTest.java`) |
 | 결제(2.4) | 같은 선점을 서로 다른 키로 동시에 결제하면 하나만 201이고 나머지는 404 NOT_FOUND이며 예매는 하나다(5회 반복) | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/payment/PaymentConcurrencyTest.java`) |
 | 결제(2.4) | 같은 선점에 결제와 해제가 동시에 오면 하나씩 처리된다. 결제가 먼저 승인되면 해제는 404 NOT_FOUND, 결제가 먼저 거절되면 해제는 204다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/payment/PaymentConcurrencyTest.java`) |
 | 결제(2.4) | 결제와 다른 사용자의 같은 좌석 선점(반대 순서)이 동시에 와도 결제는 201, 선점은 409 SEAT_ALREADY_HELD이고 교착 상태로 500이 나지 않는다(50회 반복, 결제를 0~10ms 늦게 보내 순서를 섞음, 결정 0143) | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/payment/PaymentConcurrencyTest.java`) |
@@ -246,6 +252,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 내 예매(5, 6.8) | 내 예매의 모양은 Reservation이다: performance는 PerformanceSummary, seats는 row·number 오름차순의 SeatRef, amount, reservedAt | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/reservation/api/ReservationApiTest.java`) |
 | 내 예매(6.8) | 예매가 없으면 []다(유효한 선점만 있어도 예매가 아니다) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/reservation/api/ReservationApiTest.java`) |
 | 예매·결제(2.1) | 한 선점으로 예매는 하나, 한 좌석은 예매 하나에만 들어가고, 결제는 SUCCEEDED일 때만 예매가 있으며 상태는 SUCCEEDED·FAILED만이다(DB 제약, 결정 0140) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/reservation/domain/ReservationSchemaTest.java`) |
+| 멱등 기록(2.1, 6.7.1) | 저장한 응답은 상태와 본문이 함께 있거나 함께 없고, 상태는 201·402·404·409만이다. 선점은 없는 선점 id여도 저장하고(404 저장), 사용자는 있는 사용자여야 한다(DB 제약, 결정 0150) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/domain/IdempotencyRecordSchemaTest.java`) |
 | 예매(2.3) | 예매는 결제된 선점으로만 만들고, 선점의 사용자·공연·좌석 묶음과 금액·예매 시각을 가진다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/reservation/domain/ReservationTest.java`) |
 | 오류 형식(3.1) | 오류 응답은 ProblemDetail에 code가 있고, 500 응답에 스택 트레이스가 없다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
 | 오류 형식(3.1) | 잘못된 JSON, 형식이 틀린 경로·쿼리 값, 필수 쿼리 값 없음, 검증 실패(본문 필드, 쿼리 값, `@Validated` 빈), 지원하지 않는 메서드(405)·`Content-Type`(415)은 400 INVALID_INPUT이고, 없는 경로는 404 NOT_FOUND다(MVC 안의 오류 변환. 서블릿 필터를 끈 MockMvc) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
@@ -342,8 +349,8 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 시계 | 테스트 시계는 시각을 정하거나 옮길 수 있고 되돌리면 정해진 시각으로 돌아간다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/support/MutableClockTest.java`) |
 | 통합 기반 | 운영 코드에 주입되는 Clock은 테스트 시계이고, 테스트마다 정해진 시각으로 되돌린다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
 | 통합 기반 | 테스트마다 시작 전에 테이블을 비우고, Flyway 이력 테이블은 남긴다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
-| 통합 기반 | 운영 코드에 주입되는 PaymentGateway는 모의 결제이고, 테스트마다 시작 전에 모의 결제의 설정(다음 호출 거절, 멈추기)과 호출 횟수를 초기화한다(spec 6.7.2) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
-| 모의 결제(6.7.2) | 아무것도 지정하지 않으면 늘 승인하고(테스트가 아닌 프로필의 동작), 다음 호출 거절·호출 횟수·멈추기(풀 때까지 결과를 돌려주지 않음)·초기화(멈춘 호출을 풂)를 할 수 있다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/payment/infra/FakePaymentGatewayTest.java`) |
+| 통합 기반 | 운영 코드에 주입되는 PaymentGateway는 모의 결제이고, 테스트마다 시작 전에 모의 결제의 설정(다음 호출 거절·실패, 멈추기)과 호출 횟수를 초기화한다(spec 6.7.2) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
+| 모의 결제(6.7.2) | 아무것도 지정하지 않으면 늘 승인하고(테스트가 아닌 프로필의 동작), 다음 호출 거절·다음 호출 실패(예외, 멈추기와 함께 쓰면 풀린 뒤)·호출 횟수·멈추기(풀 때까지 결과를 돌려주지 않음)·초기화(멈춘 호출을 풂)를 할 수 있다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/payment/infra/FakePaymentGatewayTest.java`) |
 | 시드 실행 | 시드 테스트는 시드 파일을 파일 이름 문자열이 아니라 버전 번호 순서로 실행하고(V10000은 V1001 뒤), 버전 번호를 읽을 수 없는 이름은 거부한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/support/SeedFilesTest.java`) |
 | 프론트 MSW | 핸들러가 없는 요청은 실제 네트워크로 나가지 않고 실패한다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |
 | 프론트 MSW | 테스트가 끝날 때 핸들러가 없는 요청이 있었으면(아직 처리 중이던 요청 포함) 테스트를 실패로 만든다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |

@@ -101,3 +101,6 @@
 | [0141](0141-idempotency-key-format.md) | Idempotency-Key는 ASCII 출력 문자(0x21~0x7E) 1~100자이고 헤더는 하나여야 한다. 그 밖은 400 INVALID_INPUT | 채택 |
 | [0142](0142-payment-impl.md) | 결제 구현: 잠금 뒤 판정하고 결과를 값으로 돌려 커밋한다(402도 결제 FAILED가 남는다). 선점은 판정 시각으로 PAID, 모의 결제는 한 구현에 테스트 조작을 둔다 | 에이전트 결정 |
 | [0143](0143-payment-concurrency-test-latch.md) | 결제 동시성 테스트: 모의 결제를 멈추고, 나중 요청이 DB 행 잠금을 기다리는 것을 pg_stat_activity로 확인한 뒤 푼다 | 에이전트 결정 |
+| [0150](0150-idempotency-record-schema.md) | 멱등 기록 테이블: (사용자, 키) 유니크, 선점은 외래 키 없이, 응답은 상태 코드와 본문(201은 응답 본문 JSON 그대로, 오류는 code·detail) | 에이전트 결정 |
+| [0151](0151-idempotency-impl.md) | 멱등 키 처리: 사용자 행 뒤에 INSERT … ON CONFLICT DO NOTHING으로 키를 먼저 잡고, 결과 응답을 같은 트랜잭션에서 채운다. 응답 모양은 API 계층이 넘기고, 처음 응답도 저장값으로 만든다 | 에이전트 결정 |
+| [0152](0152-idempotency-test.md) | 멱등 키 테스트: 다시 처리하면 결과가 달라지는 상황에서 같은 키로 보내고, 응답은 상태·Content-Type·본문 문자열로 비교한다. 500은 모의 결제의 '다음 호출 실패'로 만든다 | 에이전트 결정 |
