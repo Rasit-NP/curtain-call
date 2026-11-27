@@ -1,6 +1,6 @@
 # 0073. 선점 동시성: 사용자 행 잠금으로 같은 사용자 요청을 한 줄로 세우고, 좌석은 id 오름차순 한 문장으로 잠그며, 404·한도 검사는 좌석을 잠그기 전에
 
-- 상태: 에이전트 결정
+- 상태: 대체됨(→0100)
 - 날짜: 2026-11-27
 - 결정한 사람: 에이전트(Issue #41이 동시성 구현 방법을 에이전트에게 맡김. spec 2.4의 결과와 `backend/CLAUDE.md`의 'DB로 보장'을 지킨다)
 - 관련: Issue [#41](https://github.com/Rasit-NP/curtain-call/issues/41), 결정 [0003](0003-hold-is-seat-bundle.md), [0070](0070-hold-schema.md), [0071](0071-missing-token-user-not-handled.md), spec 2.4, 6.4
