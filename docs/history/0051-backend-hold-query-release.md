@@ -1,7 +1,7 @@
 # #51 백엔드 선점 조회·해제(R2·R3·R6): 내 선점 조회 API, 내 선점 해제 API, 해제 동시성
 
 - 기간: 2026-11-27
-- Issue: [#51](https://github.com/Rasit-NP/curtain-call/issues/51), PR: (만들면 적는다)
+- Issue: [#51](https://github.com/Rasit-NP/curtain-call/issues/51), PR: [#53](https://github.com/Rasit-NP/curtain-call/pull/53)
 - 관련 결정: [0120](../decisions/0120-hold-query-release-impl.md), [0121](../decisions/0121-release-race-test-staggered.md).
   기존 [0070](../decisions/0070-hold-schema.md), [0071](../decisions/0071-missing-token-user-not-handled.md),
   [0074](../decisions/0074-valid-hold-single-place.md), [0090](../decisions/0090-path-id-ascii-decimal.md),
