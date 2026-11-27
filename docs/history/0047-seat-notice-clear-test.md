@@ -1,7 +1,7 @@
 # #47 프론트엔드 좌석 선택 화면 테스트 보강(R2): 좌석을 고르면 안내 문구를 지운다
 
 - 기간: 2026-11-27 ~
-- Issue: [#47](https://github.com/Rasit-NP/curtain-call/issues/47), PR: (작성 중)
+- Issue: [#47](https://github.com/Rasit-NP/curtain-call/issues/47), PR: [#48](https://github.com/Rasit-NP/curtain-call/pull/48)
 - 관련 결정: [0110](../decisions/0110-seat-notice-clear-on-select-test.md)
 
 ## 배경
