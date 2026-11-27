@@ -1,0 +1,49 @@
+.page {
+  max-width: 40rem;
+  margin: 2rem auto;
+}
+
+.booking {
+  padding: 1rem;
+  border: 1px solid #d0d5dd;
+  border-radius: 0.5rem;
+}
+
+.title {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+.detail {
+  margin: 0.25rem 0 0;
+}
+
+.limit {
+  margin: 1rem 0 0;
+  color: #475467;
+  font-size: 0.875rem;
+}
+
+.done {
+  margin: 0 0 1rem;
+  font-weight: 600;
+}
+
+.alert {
+  margin: 0.75rem 0 0;
+  color: #b42318;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.actions button {
+  padding: 0.625rem 1.25rem;
+}
+
+.pay {
+  font-weight: 600;
+}

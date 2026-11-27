@@ -1,6 +1,6 @@
 import { handleAuthRequired } from '../auth/authRequired';
 import { getAccessToken } from '../auth/tokenStorage';
-import { ApiError, isErrorCode, NO_RESPONSE } from './errors';
+import { ApiError, isErrorCode, NO_RESPONSE, type ApiErrorCode, type ErrorCode } from './errors';
 
 /** 응답을 기다리는 최대 시간. 넘으면 요청을 끊고 응답 없음으로 본다(spec 7.5). */
 export const REQUEST_TIMEOUT_MS = 10_000;
@@ -25,6 +25,7 @@ export interface ApiRequestOptions {
  * API를 호출한다. fetch는 여기서만 부른다.
  * - 성공(2xx): JSON 본문을 돌려준다. 본문이 없으면(204) undefined.
  * - 오류 응답: ApiError(status, code). 본문에 오류 코드 표의 code가 없으면 INTERNAL_ERROR로 본다.
+ *   단, code가 없는 502·503·504는 중간 서버(개발 서버 프록시 등)가 만든 응답이라 NO_RESPONSE로 본다(결정 0133).
  *   code가 AUTH_REQUIRED면 넘기기 전에 토큰을 지우고 로그인 화면으로 보내도록 알린다(handleAuthRequired).
  * - 응답 없음(네트워크 오류, 10초 시간 초과): ApiError(null, NO_RESPONSE)
  */
@@ -63,7 +64,7 @@ export async function apiRequest<T>(path: ApiPath, options: ApiRequestOptions): 
     }
 
     if (!response.ok) {
-      const code = await errorCodeOf(response);
+      const code = (await errorCodeOf(response)) ?? fallbackCodeOf(response.status);
       // 토큰 삭제와 로그인 이동은 code로만 판단한다. 로그인 실패(INVALID_CREDENTIALS)도 401이기 때문이다(spec 3.3, 결정 0008).
       if (code === 'AUTH_REQUIRED') {
         handleAuthRequired(sentToken);
@@ -76,10 +77,23 @@ export async function apiRequest<T>(path: ApiPath, options: ApiRequestOptions): 
   }
 }
 
-async function errorCodeOf(response: Response) {
+/** 오류 응답 본문의 code. 본문이 JSON이 아니거나 오류 코드 표의 code가 없으면 null이다. */
+async function errorCodeOf(response: Response): Promise<ErrorCode | null> {
   const body = await readJson(response);
   const code = typeof body === 'object' && body !== null ? (body as { code?: unknown }).code : undefined;
-  return isErrorCode(code) ? code : 'INTERNAL_ERROR';
+  return isErrorCode(code) ? code : null;
+}
+
+/** 중간 서버(게이트웨이, 프록시)가 백엔드에 닿지 못했거나 기다리다 끊었을 때 주는 상태 */
+const GATEWAY_STATUSES: ReadonlySet<number> = new Set([502, 503, 504]);
+
+/**
+ * 본문에 code가 없는 오류 응답의 code. 백엔드는 모든 오류에 code를 붙이므로(spec 3.1) 이런 응답은 백엔드가 만든 것이 아니다.
+ * 502·503·504면 백엔드에 닿았는지 알 수 없어 응답 없음으로 본다. 결제 화면은 같은 멱등 키를 다시 쓴다(결정 0133, R5).
+ * 그 밖에는 예상하지 못한 오류로 본다(결정 0018).
+ */
+function fallbackCodeOf(status: number): ApiErrorCode {
+  return GATEWAY_STATUSES.has(status) ? NO_RESPONSE : 'INTERNAL_ERROR';
 }
 
 async function successBodyOf(response: Response): Promise<unknown> {

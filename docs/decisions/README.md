@@ -38,7 +38,7 @@
 | [0015](0015-health-probes-off.md) | health 응답을 {"status":"UP"}로 두려고 프로브 그룹을 끈다 | 에이전트 결정 |
 | [0016](0016-integration-test-base.md) | 통합 테스트는 컨테이너 하나 공유, 테스트 시계, 테이블 비우기 | 에이전트 결정 |
 | [0017](0017-java21-toolchain.md) | Java 21을 Gradle 툴체인으로 고정 | 에이전트 결정 |
-| [0018](0018-frontend-error-fallback.md) | 프론트: code가 없는 오류 응답은 INTERNAL_ERROR | 에이전트 결정 |
+| [0018](0018-frontend-error-fallback.md) | 프론트: code가 없는 오류 응답은 INTERNAL_ERROR | 대체됨(→0133) |
 | [0019](0019-frontend-no-response.md) | 프론트: '응답 없음'은 프론트 전용 NO_RESPONSE, 본문 수신 중 끊김도 포함 | 에이전트 결정 |
 | [0020](0020-frontend-auth-option.md) | 프론트 API 클라이언트의 auth는 기본값 없는 필수 옵션 | 에이전트 결정 |
 | [0021](0021-frontend-lint-boundaries.md) | fetch는 src/api, localStorage는 src/auth에서만 쓰도록 ESLint로 막는다 | 에이전트 결정 |
@@ -92,3 +92,8 @@
 | [0110](0110-seat-notice-clear-on-select-test.md) | 프론트: '좌석을 고르면 안내 문구를 지운다'는 409 HOLD_LIMIT_EXCEEDED 뒤에 좌석을 고르는 새 테스트로 검증하고, 기존 테스트 이름은 '취소'만 말하게 바꾼다 | 에이전트 결정 |
 | [0120](0120-hold-query-release-impl.md) | 선점 조회·해제 구현: 해제는 선점 행을 잠근 뒤 주인·상태를 보고, 선점의 좌석 묶음을 id 오름차순으로 잠가 holdId가 이 선점인 좌석만 되돌린다. 조회는 잠그지 않는다 | 에이전트 결정 |
 | [0121](0121-release-race-test-staggered.md) | 해제·선점 경합 테스트: 해제를 반복마다 0~10ms 늦게 보내 선점이 먼저 좌석을 잡는 순서도 만든다 | 에이전트 결정 |
+| [0130](0130-frontend-payment-human.md) | 프론트: 결제 화면 — 시계 없이 만료는 서버만 판단, 만료면 결제 버튼을 남기고 막음, 제한 안내 문구, '뒤로 가기' 버튼 | 채택 |
+| [0131](0131-frontend-payment-recommended.md) | 프론트: 결제 화면 — 제목·정보, 예매 완료 표시, 결제 중 이동 막기, 해제를 기다린 뒤 이동, AUTH_REQUIRED는 해제하지 않음, 404 뒤 버튼, 문구 지우기 | 에이전트 결정 |
+| [0132](0132-frontend-late-responses-and-auth-notice.md) | 프론트: 떠난 뒤 온 선점 성공은 해제하고, 떠난 뒤 온 로그인 성공은 토큰만 저장한다. AUTH_REQUIRED 문구는 로그인 화면에만 보인다 | 에이전트 결정 |
+| [0133](0133-frontend-error-fallback-v2.md) | 프론트(개정): code가 없는 오류 응답은 INTERNAL_ERROR, 단 code가 없는 502·503·504는 응답 없음(NO_RESPONSE) | 에이전트 결정 |
+| [0134](0134-frontend-payment-impl.md) | 프론트: 결제 화면은 라우터 이동을 useBlocker로, 로그아웃을 확인 장치로 막고 해제 판단을 한 함수에 모은다. '뒤로 가기'는 좌석 선택 화면이 남긴 기록 표시로 되돌릴지 정한다 | 에이전트 결정 |

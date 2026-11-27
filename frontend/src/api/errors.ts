@@ -14,7 +14,7 @@ export const ERROR_CODES = [
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
 /**
- * 응답을 받지 못함(네트워크 오류, 10초 시간 초과). 서버가 보내는 code가 아니라 프론트엔드에서만 쓴다.
+ * 응답을 받지 못함(네트워크 오류, 10초 시간 초과, 본문에 code가 없는 502·503·504). 서버가 보내는 code가 아니라 프론트엔드에서만 쓴다.
  * 결제 화면은 이 값으로 '응답을 받지 못했으니 같은 멱등 키를 다시 쓴다'를 판단한다(spec 7.3, R5).
  */
 export const NO_RESPONSE = 'NO_RESPONSE';
@@ -25,7 +25,10 @@ export function isErrorCode(value: unknown): value is ErrorCode {
   return typeof value === 'string' && (ERROR_CODES as readonly string[]).includes(value);
 }
 
-/** API 요청 실패. 응답을 받았으면 status와 code가 있고, 받지 못했으면 status가 null이고 code가 NO_RESPONSE다. */
+/**
+ * API 요청 실패. 응답을 받았으면 status와 code가 있고, 받지 못했으면 status가 null이고 code가 NO_RESPONSE다.
+ * 중간 서버가 준 code 없는 502·503·504도 code가 NO_RESPONSE이고, status는 받은 상태 그대로다(결정 0133).
+ */
 export class ApiError extends Error {
   readonly status: number | null;
   readonly code: ApiErrorCode;

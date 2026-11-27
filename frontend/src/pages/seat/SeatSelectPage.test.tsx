@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import type { PerformanceDetail, Seat, SeatStatus } from '../../api/types';
@@ -6,6 +6,8 @@ import { getAccessToken, saveAccessToken } from '../../auth/tokenStorage';
 import { aHold, aPerformanceDetail, aSeat } from '../../test/data';
 import {
   HOLDS_PATH,
+  holdHandler as holdQueryHandler,
+  holdReleaseHandler,
   PERFORMANCE_DETAIL_PATH,
   performanceDetailHandler,
   performancesHandler,
@@ -291,7 +293,7 @@ describe('좌석 선택 화면: 불러오기', () => {
   it.each([
     ['500 INTERNAL_ERROR', () => problem(500, 'INTERNAL_ERROR'), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
     ['400 INVALID_INPUT', () => problem(400, 'INVALID_INPUT'), '입력한 내용을 확인해 주세요.'],
-    ['code 없는 오류 응답', () => new HttpResponse('Bad Gateway', { status: 502 }), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
+    ['code 없는 오류 응답', () => new HttpResponse('Internal Server Error', { status: 500 }), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
     ['응답 없음(네트워크 오류)', () => HttpResponse.error(), '서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.'],
   ])('%s면 code별 안내 문구만 보여 주고 좌석과 "공연 목록" 링크는 보여 주지 않는다', async (_name, respond, message) => {
     saveAccessToken('token-1');
@@ -333,6 +335,8 @@ describe('좌석 선택 화면: 불러오기', () => {
 
 describe('좌석 선택 화면: 좌석 선택 완료', () => {
   it('고른 좌석으로 POST /api/holds(performanceId, seatIds)를 보내고, 201이면 /holds/{id}로 일반 이동(push)한다', async () => {
+    // 201 뒤에는 실제 결제 화면이 그려져 선점을 불러온다.
+    server.use(holdQueryHandler(aHold({ id: 31 })));
     const { router, user } = await openPage();
     const requests = holdHandler(() => HttpResponse.json(aHold({ id: 31 }), { status: 201 }));
 
@@ -346,6 +350,8 @@ describe('좌석 선택 화면: 좌석 선택 완료', () => {
   });
 
   it('선점 요청 중에는 "좌석 선택 완료"와 좌석 버튼을 누를 수 없고, 두 번 눌러도 요청은 한 번만 간다', async () => {
+    // 201 뒤에는 실제 결제 화면이 그려져 선점을 불러온다.
+    server.use(holdQueryHandler(aHold({ id: 31 })));
     const { router, user } = await openPage();
     const { open, opened } = gate();
     const requests = holdHandler(async () => {
@@ -369,6 +375,8 @@ describe('좌석 선택 화면: 좌석 선택 완료', () => {
   });
 
   it('"좌석 선택 완료"를 누르면 이전 안내 문구를 지운다', async () => {
+    // 201 뒤에는 실제 결제 화면이 그려져 선점을 불러온다.
+    server.use(holdQueryHandler(aHold({ id: 31 })));
     const { router, user } = await openPage();
     const { open, opened } = gate();
     holdHandler(async () => {
@@ -496,7 +504,7 @@ describe('좌석 선택 화면: 좌석 선택 완료', () => {
   it.each([
     ['500 INTERNAL_ERROR', () => problem(500, 'INTERNAL_ERROR'), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
     ['400 INVALID_INPUT', () => problem(400, 'INVALID_INPUT'), '입력한 내용을 확인해 주세요.'],
-    ['code 없는 오류 응답', () => new HttpResponse('Bad Gateway', { status: 502 }), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
+    ['code 없는 오류 응답', () => new HttpResponse('Internal Server Error', { status: 500 }), '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'],
     ['응답 없음(네트워크 오류)', () => HttpResponse.error(), '서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.'],
   ])('선점 요청이 %s면 code별 안내 문구를 보여 주고, 고른 좌석을 그대로 두며 자동으로 다시 보내지 않는다', async (_name, respond, message) => {
     const { user } = await openPage();
@@ -528,6 +536,8 @@ describe('좌석 선택 화면: 로그인(R6)', () => {
   });
 
   it('R6: 저장된 토큰이 있어도 공연 상세 요청에는 토큰을 붙이지 않고, 선점 요청에는 Bearer로 붙인다', async () => {
+    // 201 뒤에는 실제 결제 화면이 그려져 선점을 불러온다.
+    server.use(holdQueryHandler(aHold({ id: 31 })));
     saveAccessToken('token-1');
     const authorizations: Record<string, string | null> = {};
     server.use(
@@ -571,6 +581,71 @@ describe('좌석 선택 화면: 로그인(R6)', () => {
     await login(user, 'new-token');
 
     expect(await page().findByRole('button', { name: 'A1 선택 가능' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe(PAGE_PATH);
+  });
+});
+
+describe('좌석 선택 화면: 선점 요청 중에 떠나기', () => {
+  function header() {
+    return within(screen.getByRole('banner'));
+  }
+
+  it('선점 요청 중에 화면을 떠났는데 나중에 201이 오면 결제 화면으로 가지 않고 그 선점을 해제한다', async () => {
+    const { router, user } = await openPage();
+    const released: string[] = [];
+    server.use(performancesHandler([]), holdReleaseHandler(released));
+    const { open, opened } = gate();
+    holdHandler(async () => {
+      await opened;
+      return HttpResponse.json(aHold({ id: 31 }), { status: 201 });
+    });
+    await user.click(seat('A1 선택 가능'));
+    await user.click(submitButton());
+
+    await user.click(header().getByRole('link', { name: '커튼콜' }));
+    await screen.findByRole('heading', { level: 1, name: '공연 목록' });
+    open();
+
+    await waitFor(() => expect(released).toEqual(['31']));
+    expect(router.state.location.pathname).toBe('/');
+  });
+
+  it('선점 요청 중에 로그아웃했으면 늦게 온 201의 선점은 해제 요청을 보내지 않는다(토큰이 없음)', async () => {
+    const { router, user } = await openPage();
+    // 해제 핸들러를 두지 않는다. 해제를 보내면 '핸들러 없는 요청'으로 테스트가 실패한다.
+    server.use(performancesHandler([]));
+    const { open, opened } = gate();
+    const requests = holdHandler(async () => {
+      await opened;
+      return HttpResponse.json(aHold({ id: 31 }), { status: 201 });
+    });
+    await user.click(seat('A1 선택 가능'));
+    await user.click(submitButton());
+    await waitFor(() => expect(requests).toHaveLength(1));
+
+    await user.click(header().getByRole('button', { name: '로그아웃' }));
+    await screen.findByRole('heading', { level: 1, name: '공연 목록' });
+    open();
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+    expect(router.state.location.pathname).toBe('/');
+    expect(getAccessToken()).toBeNull();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('R6: 선점 요청이 AUTH_REQUIRED로 끝나도 좌석 선택 화면에는 "로그인이 필요합니다."를 그리지 않는다(다시 로그인한 뒤에 끝난 이전 요청)', async () => {
+    const { router, user } = await openPage();
+    holdHandler(() => {
+      // 응답이 오기 전에 다른 곳에서 다시 로그인한 상황. 이전 토큰의 AUTH_REQUIRED라 공통 처리는 화면을 옮기지 않는다(결정 0043).
+      saveAccessToken('new-token');
+      return problem(401, 'AUTH_REQUIRED');
+    });
+    await user.click(seat('A1 선택 가능'));
+
+    await user.click(submitButton());
+
+    await waitFor(() => expect(submitButton()).toBeEnabled());
+    expect(page().queryByRole('alert')).not.toBeInTheDocument();
     expect(router.state.location.pathname).toBe(PAGE_PATH);
   });
 });

@@ -17,3 +17,11 @@ export const ERROR_MESSAGES: Record<ApiErrorCode, string> = {
 export function errorMessage(code: ApiErrorCode): string {
   return ERROR_MESSAGES[code];
 }
+
+/**
+ * 요청한 화면에 문구를 그릴 code인지. AUTH_REQUIRED는 공통 처리가 로그인 화면으로 보내며 그 화면에만 보여 주므로(spec 3.3·7.6),
+ * 요청한 화면에는 그리지 않는다. 그리면 로그인 화면으로 가기 전에 잠깐 보이고, 화면 읽기 프로그램이 두 번 읽는다(결정 0132).
+ */
+export function isShownOnScreen(code: ApiErrorCode): boolean {
+  return code !== 'AUTH_REQUIRED';
+}

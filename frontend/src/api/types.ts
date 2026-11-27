@@ -59,3 +59,12 @@ export interface Reservation {
   amount: number;
   reservedAt: string;
 }
+
+/** 결제 승인 응답(POST /api/payments의 201, spec 6.7) */
+export interface PaymentResult {
+  paymentId: number;
+  /** 결제 금액(원) */
+  amount: number;
+  /** 결제로 만든 예매 */
+  reservation: Reservation;
+}
