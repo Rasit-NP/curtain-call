@@ -583,7 +583,8 @@ test_mutation_workflow_manual_only() {
   [ -f "$MUTATION_WORKFLOW" ] || fail ".github/workflows/mutation.yml이 없음" || return 1
   # 뮤테이션 테스트는 수동 실행(workflow_dispatch)으로만 돌린다. PR·push마다 돌리지 않는다(결정 0202).
   code_lines "$MUTATION_WORKFLOW" | grep -qE '^[[:space:]]*workflow_dispatch:' || fail "workflow_dispatch 트리거가 없음" || return 1
-  if code_lines "$MUTATION_WORKFLOW" | grep -qE '^[[:space:]]*(pull_request|push|schedule|merge_group|workflow_call):'; then
+  # 블록 형식(  push:)과 한 줄 형식(on: [workflow_dispatch, push]) 모두 본다.
+  if code_lines "$MUTATION_WORKFLOW" | grep -qE '^[[:space:]]*(pull_request|push|schedule|merge_group|workflow_call):|^on:.*(pull_request|push|schedule|merge_group|workflow_call)'; then
     fail "workflow_dispatch 말고 다른 트리거가 있음"
     return 1
   fi

@@ -1,7 +1,7 @@
 # #69 뮤테이션 테스트(PIT) 기준선: 규칙 코드 점수 측정, 살아남은 변이 분석·테스트 보강, 재측정
 
 - 기간: 2026-11-28 ~
-- Issue: [#69](https://github.com/Rasit-NP/curtain-call/issues/69), PR: (만들면 적는다)
+- Issue: [#69](https://github.com/Rasit-NP/curtain-call/issues/69), PR: [#70](https://github.com/Rasit-NP/curtain-call/pull/70)
 - 관련 결정: [0202](../decisions/0202-pit-when-to-run.md), [0203](../decisions/0203-pit-threshold.md)(사람),
   [0200](../decisions/0200-pit-setup.md), [0201](../decisions/0201-pit-target-classes.md), [0204](../decisions/0204-pit-survivor-classification.md)(에이전트).
   기존 [0001](../decisions/0001-verify-single-entry.md), [0180](../decisions/0180-roadmap2-transition.md), [0190](../decisions/0190-ci-scope-docs-only.md)~[0193](../decisions/0193-ci-workflow-impl.md)을 따른다
@@ -52,6 +52,11 @@
     `Mutation score of 93 is below threshold of 94`였다(이 실행도 195개를 죽였다, 3분 23초). 기준값은 93으로 되돌렸다.
 13. 보고서(`docs/mutation-testing.md`), 결정 기록 0200~0204, 대응표, 루트·`backend/` `CLAUDE.md`, PR 템플릿, `docs/agent-log.md`를 고쳤다.
 
+14. 로컬 `./scripts/verify.sh` 전체가 통과했다(64초, 백엔드 단위 176개·통합 308개). 작은 커밋 4개로 PR [#70](https://github.com/Rasit-NP/curtain-call/pull/70)을 열었다.
+15. 수동 실행 워크플로는 main에 있어야 실행할 수 있어, 임시 커밋으로 `pull_request` 트리거를 잠시 더해 PR에서 한 번 돌렸다. 실행 [46076896926](https://github.com/Rasit-NP/curtain-call/actions/runs/46076896926)이 성공했다.
+    CI 표준 러너(4코어)에서 변이 209개, 죽음 195(93%), 테스트 강도 94%로 로컬과 같았다. PIT 6분 32초, `verify.sh mutation` 단계 7분 21초(캐시 없음).
+    산출물 `mutation-report-1`(115KB, 30일 보관)이 남았다. 임시 커밋은 되돌림 커밋으로 지웠다. 그 커밋의 `verify`는 하네스가 이 트리거를 막아 의도대로 실패했다.
+
 ## 정책 결정(사람)
 
 첫 측정 뒤 이 Issue 세션에서 선택지·추천·근거를 붙여 한 번에 물었다. 사람이 두 번 모두 추천안을 골랐다.
@@ -77,6 +82,15 @@
 - 첫 측정의 R6 점수가 낮았다(`SecurityConfig` 0%). 테스트가 약하다고 보고 테스트부터 더하지 않고, 같은 변이에 어떤 테스트가 돌았는지를 먼저 확인했다(`fullMutationMatrix`).
   컨텍스트를 처음 만든 테스트 5개만 돌았다는 것을 보고 측정 한계로 판단했고, 손으로 넣은 변이 10개로 확인했다.
 - 결정 기록 목차를 고치기 전에 하네스를 돌려 '목차에 없는 파일: 0200, 0201'로 실패했다. 목차에 다섯 줄을 더해 통과시켰다.
+
+## 리뷰
+
+`/code-review medium`(테스트·빌드 설정·스크립트·문서만 바뀌어 medium, 루트 `CLAUDE.md` '리뷰'). 지적 2개.
+
+| 지적 | 처리 |
+|---|---|
+| 1. 임시 커밋의 `pull_request` 트리거가 PR에 남아 있다. 그대로 병합하면 PR마다 PIT가 돈다(결정 0202 위반) | 의도한 임시 커밋이다. CI에서 워크플로를 한 번 돌려 본 뒤 되돌림 커밋으로 지웠다 |
+| 2. 하네스의 '수동 실행만' 검사가 블록 형식(`  push:`)만 봐서 `on: [workflow_dispatch, pull_request]`를 놓친다 | 한 줄 형식도 보게 고쳤다. 그 형식으로 바꾼 워크플로에서 검사가 실패하는 것을 확인하고 되돌렸다 |
 
 ## 결과
 
