@@ -78,7 +78,10 @@ public class FakePaymentGateway implements PaymentGateway {
         return calls.get();
     }
 
-    /** 테스트: 호출 횟수와 거절·실패·멈추기 지정을 지우고, 멈춘 호출이 있으면 푼다. */
+    /**
+     * 테스트: 호출 횟수와 거절·실패·멈추기 지정을 지우고, 멈춘 호출이 있으면 푼다. 이미 들어와 멈춘 호출은 들어올 때 가져간 거절·실패 지정대로 끝난다
+     * (실패 지정을 가져간 호출은 풀린 뒤 예외를 던진다).
+     */
     public void reset() {
         calls.set(0);
         declineNext.set(false);

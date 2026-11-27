@@ -1,7 +1,7 @@
 # #56 백엔드 멱등 키(R5): 결제 결과 저장과 재사용, 같은 키 동시 요청
 
 - 기간: 2026-11-28
-- Issue: [#56](https://github.com/Rasit-NP/curtain-call/issues/56), PR: (만들면 적는다)
+- Issue: [#56](https://github.com/Rasit-NP/curtain-call/issues/56), PR: [#58](https://github.com/Rasit-NP/curtain-call/pull/58)
 - 관련 결정: [0150](../decisions/0150-idempotency-record-schema.md), [0151](../decisions/0151-idempotency-impl.md), [0152](../decisions/0152-idempotency-test.md).
   기존 [0005](../decisions/0005-payment-failed-402.md), [0006](../decisions/0006-idempotency-record.md), [0071](../decisions/0071-missing-token-user-not-handled.md),
   [0100](../decisions/0100-hold-concurrency-v2.md), [0140](../decisions/0140-reservation-payment-schema.md), [0141](../decisions/0141-idempotency-key-format.md),
@@ -27,6 +27,7 @@
 5. 되돌림 확인을 했다(아래 '규칙 테스트 되돌림 확인'). 되돌림 5(b)의 500 원인은 짐작으로 적지 않고 그 변형을 다시 돌려 로그로 확인했다.
 6. 원래 코드로 `PaymentConcurrencyTest`·`HoldConcurrencyTest`·`PaymentIdempotencyApiTest`를 3회 연속 실행해 모두 통과했다(매번 27개).
 7. 명세(6.7.2에 모의 결제의 '다음 호출 실패'), 대응표, 결정 기록(0150~0152), 이 진행 기록을 고쳤다.
+8. `./scripts/verify.sh` 전체를 통과시킨 뒤 PR #58을 만들고 `/code-review high`로 리뷰했다(아래 '리뷰').
 
 ## 판단과 근거
 
@@ -82,11 +83,18 @@
 
 ## 리뷰
 
-(PR을 만든 뒤 `/code-review high` 결과를 적는다.)
+PR [#58](https://github.com/Rasit-NP/curtain-call/pull/58)을 `/code-review high`로 리뷰했다(리뷰 강도는 루트 `CLAUDE.md` '리뷰'의 규칙 코드: R5, 멱등 키, 동시성). 머지 전에 고칠 결함은 없었고, 사소한 지적 3건이 나왔다.
+
+- 이 진행 기록의 PR 링크와 '리뷰'·'결과'가 자리표시자로 남아 있었다(루트 `CLAUDE.md` '문서화' 1번). 채웠다.
+- 모의 결제의 `reset()`은 '멈춘 호출을 푼다'고만 적었는데, 실패 지정을 이미 가져가 멈춘 호출은 풀린 뒤 예외를 던진다. 동작은 테스트 도구로서 맞으므로 주석에 그대로 적었다.
+- 저장한 201 본문을 커밋 뒤 `PaymentResponse`로 읽으므로, 읽기가 실패하면 결제는 됐는데 그 키는 계속 500이 된다. 지금 모양의 왕복은 통합 테스트가 확인한다.
+  `PaymentResponse`를 바꿀 때 이전 기록을 어떻게 돌려줄지는 결정 0150 '적용과 남은 점'에 이미 적었으므로 고치지 않았다.
 
 ## 결과
 
-(PR을 만든 뒤 적는다.)
+`./scripts/verify.sh` 전체 통과(하네스, 백엔드 단위 149개·통합 298개, 프론트엔드. E2E는 아직 없어 SKIP). 같은 사용자가 같은 키로 다시 보내면 저장한 응답(상태 코드와 본문)을 그대로 받고,
+같은 키 동시 요청은 하나씩 처리돼 예매가 하나만 생긴다. 저장 여부(201·402·404·409는 저장, 400·500은 저장하지 않음), 사용자별 키, 유니크 제약을 각각 되돌리면 R5 테스트가 실패한다.
+병합은 사람이 한다.
 
 ## 배운 점
 
