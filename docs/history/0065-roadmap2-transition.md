@@ -1,7 +1,7 @@
 # #65 로드맵 2 전환(0단계): 회원가입을 범위에 넣고, Issue 등록 전 승인 규칙과 CI·배포 넘김 조건 정리
 
 - 기간: 2026-11-28 ~
-- Issue: [#65](https://github.com/Rasit-NP/curtain-call/issues/65), PR: (만들면 적는다)
+- Issue: [#65](https://github.com/Rasit-NP/curtain-call/issues/65), PR: [#66](https://github.com/Rasit-NP/curtain-call/pull/66)
 - 관련 결정: [0180](../decisions/0180-roadmap2-transition.md), [0181](../decisions/0181-signup-in-scope.md), [0182](../decisions/0182-no-queue-no-performance-registration.md),
   [0183](../decisions/0183-github-actions.md), [0184](../decisions/0184-deploy-first.md), [0185](../decisions/0185-issue-creation-approval.md)(0026 대체),
   [0186](../decisions/0186-handoff-roadmap-issue-scope.md)
@@ -30,6 +30,7 @@
    - 명세 2.1 사용자, 8장(예매 취소를 따로 적고, 대기열·공연 등록의 근거를 더함).
    - 결정 0180~0185를 만들고 0026을 `대체됨(→0185)`으로 바꿨다.
 3. 정책 질문을 하고(아래 '정책 결정(사람)'), 답대로 '사람에게 넘기는 조건'을 고치고 결정 0186을 만들었다.
+4. `verify.sh harness`(목차 검사)와 `verify.sh` 전체를 통과시킨 뒤 `/code-review low`로 리뷰하고 PR을 만들었다.
 
 ## 정책 결정(사람)
 
@@ -58,3 +59,17 @@ Issue가 에이전트에게 맡긴 것(문구와 위치, 결정 파일 나누기
   회원가입이 범위 안으로 들어왔다는 것도 8장에 한 줄 남겼다. 8장을 보고 '회원가입이 왜 목록에서 빠졌나'를 찾는 사람을 위해서다.
 - **명세 2.1의 예매 행 '취소 기능은 없다'는 고치지 않았다**: 지금도 사실이고, Issue가 2.1은 사용자 행만 고치라고 했다. 5단계 명세 Issue에서 고친다.
 - **근거를 지어내지 않았다**: 메인 세션의 대화 원문이 이 세션에 없어, 결정의 근거는 #64·#65 본문에 적힌 것만 썼다. 0182·0184의 '고려했지만 고르지 않은 것'은 에이전트가 정리했다고 표시했다.
+
+## 리뷰
+
+`/code-review low`(문서 PR). 지적은 없었다.
+
+## 결과
+
+`./scripts/verify.sh` 전체 통과(2026-11-28, 하네스, 백엔드 단위 153개·통합 307개, 프론트엔드, E2E). 문서만 바꿔 테스트와 대응표는 그대로다.
+PR [#66](https://github.com/Rasit-NP/curtain-call/pull/66)을 만들었다.
+
+## 배운 점
+
+- 정책 질문 하나만 남은 Issue는 답에 기대지 않는 부분을 먼저 끝내고 물으면, 답을 기다리는 동안 작업이 멈추지 않는다.
+- 선택지마다 바뀐 문구를 미리 보이면, 사람이 고른 문구를 그대로 반영해 다시 확인할 일이 없다.
