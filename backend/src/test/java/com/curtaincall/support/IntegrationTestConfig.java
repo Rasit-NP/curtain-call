@@ -35,6 +35,16 @@ class IntegrationTestConfig {
     }
 
     @Bean
+    TestPayments testPayments(JdbcTemplate jdbcTemplate) {
+        return new TestPayments(jdbcTemplate);
+    }
+
+    @Bean
+    DatabaseLocks databaseLocks(JdbcTemplate jdbcTemplate) {
+        return new DatabaseLocks(jdbcTemplate);
+    }
+
+    @Bean
     TestUsers testUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return new TestUsers(userRepository, passwordEncoder);
     }

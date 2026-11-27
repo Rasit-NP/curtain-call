@@ -5,6 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.DisplayName;
@@ -14,8 +18,10 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.curtaincall.payment.domain.PaymentGateway;
+
 /**
- * 통합 테스트 기반(테스트 시계, 시각 되돌림, 테이블 비우기)이 동작하는지 확인한다.
+ * 통합 테스트 기반(테스트 시계, 시각 되돌림, 테이블 비우기, 모의 결제 초기화)이 동작하는지 확인한다.
  * 되돌림·비우기는 같은 테스트를 두 번 반복해, 두 번째 반복이 첫 번째가 남긴 상태를 보지 않는지로 확인한다.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -23,12 +29,16 @@ class IntegrationTestSupportTest extends IntegrationTest {
 
     private static final String PROBE_TABLE = "integration_support_probe";
     private static final int HISTORY_PROBE_RANK = -1;
+    private static final PaymentGateway.Request PAYMENT_PROBE = new PaymentGateway.Request(1L, 1L, 30000L);
 
     @Autowired
     private Clock injectedClock;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private PaymentGateway injectedPaymentGateway;
 
     @AfterAll
     void dropProbeTable() {
@@ -63,6 +73,30 @@ class IntegrationTestSupportTest extends IntegrationTest {
 
         jdbcTemplate.update("INSERT INTO " + PROBE_TABLE + " (name) VALUES ('남은 데이터')");
         assertThat(count(PROBE_TABLE)).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("운영 코드에 주입되는 PaymentGateway는 테스트가 조작하는 모의 결제와 같은 빈이다")
+    void injectedPaymentGatewayIsFake() {
+        assertThat(injectedPaymentGateway).isSameAs(paymentGateway);
+    }
+
+    @RepeatedTest(2)
+    @DisplayName("테스트마다 시작 전에 모의 결제의 설정(다음 호출 거절, 멈추기)과 호출 횟수를 초기화한다")
+    void paymentGatewayIsResetBeforeEachTest() throws Exception {
+        assertThat(paymentGateway.callCount()).isZero();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            // 앞 반복이 남긴 멈추기가 남아 있으면 이 호출이 끝나지 않는다.
+            Future<PaymentGateway.Result> call = executor.submit(() -> paymentGateway.pay(PAYMENT_PROBE));
+            assertThat(call.get(5, TimeUnit.SECONDS)).isEqualTo(PaymentGateway.Result.APPROVED);
+        } finally {
+            executor.shutdownNow();
+        }
+
+        // 다음 반복에 남길 설정
+        paymentGateway.declineNext();
+        paymentGateway.pauseNext();
     }
 
     @Test

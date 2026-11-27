@@ -33,13 +33,14 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.curtaincall.support.AuthRequests;
 import com.curtaincall.support.IntegrationTest;
+import com.curtaincall.support.PaymentRequests;
 import com.curtaincall.support.TestHolds;
 import com.curtaincall.support.TestPerformances;
 import com.curtaincall.support.TestTokens;
 import com.jayway.jsonpath.JsonPath;
 
 /**
- * 좌석 묶음 선점 API(spec 6.4)와 R1·R2·R3·R6. 동시에 오는 요청은 {@code HoldConcurrencyTest}가 다룬다.
+ * 좌석 묶음 선점 API(spec 6.4)와 R1·R2·R3·R6. 예매 좌석을 보유 좌석 수(R2)에 넣는 것은 결제 API로 예매를 만들어 확인한다. 동시에 오는 요청은 {@code HoldConcurrencyTest}가 다룬다.
  *
  * <p>테스트 데이터는 테스트마다 직접 만든다. 인증은 {@link AuthRequests#asUser(long)}({@code jwt()})로 하고, 실제로 서명한 토큰과
  * 로그인 흐름은 R6 테스트에서 따로 본다. 실패한 요청은 응답과 함께 DB 최종 상태(선점 행, 좌석의 저장 상태와 holdId)로 "어떤 좌석도
@@ -211,6 +212,25 @@ class HoldApiTest extends IntegrationTest {
         assertThat(holds.seatIdsOf(first)).containsExactly(a1, a2);
         assertThat(holds.seatIdsOf(second)).containsExactly(a3);
         assertThat(holds.seatIdsOf(third)).containsExactly(a4);
+    }
+
+    @Test
+    @DisplayName("R2: 예매 2석이 있으면 2석은 선점할 수 있고 3석은 409 HOLD_LIMIT_EXCEEDED다(결제된 선점의 좌석은 예매로 한 번만 센다)")
+    void reservedSeatsCountTowardTheLimit() throws Exception {
+        long paid = createHold(alice, performance, a1, a2);
+        mockMvc.perform(PaymentRequests.pay(alice, paid)).andExpect(status().isCreated());
+
+        expectProblem(mockMvc.perform(hold(alice, performance, a3, a4, a5)), 409, "HOLD_LIMIT_EXCEEDED");
+        assertAvailable(a3);
+        assertAvailable(a4);
+        assertAvailable(a5);
+
+        // 결제된 선점(PAID)의 좌석을 예매와 함께 두 번 세면 2석도 거부된다.
+        long hold = createHold(alice, performance, a3, a4);
+        assertThat(holds.seatIdsOf(hold)).containsExactly(a3, a4);
+        expectProblem(mockMvc.perform(hold(alice, performance, a5)), 409, "HOLD_LIMIT_EXCEEDED");
+        // 다른 사용자의 예매는 내 보유 좌석 수에 넣지 않는다.
+        createHold(bob, performance, a5, a6, a7, a8);
     }
 
     @Test

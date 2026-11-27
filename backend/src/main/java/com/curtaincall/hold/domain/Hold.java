@@ -112,6 +112,33 @@ public class Hold {
         this.status = HoldStatus.RELEASED;
     }
 
+    /**
+     * 조회·해제·결제할 수 있는 선점: 요청한 사용자의 선점이고 저장 상태가 ACTIVE다(만료된 선점 포함, spec 6.5·6.6·6.7).
+     * 다른 사용자의 선점과 해제·결제된 선점은 없는 선점과 같게 404다. 만료(결제의 409)는 따로 {@link #isValidAt}으로 판정한다.
+     */
+    public boolean isOpenFor(long userId) {
+        return this.userId == userId && status == HoldStatus.ACTIVE;
+    }
+
+    /**
+     * 결제 승인(spec 2.3): ACTIVE → PAID. judgedAt은 결제가 만료를 판정한 시각(모든 잠금 뒤에 읽은 현재 시각, spec 2.4)이고,
+     * 그 시각에 유효해야 한다(R4). 판정을 통과했으면 모의 결제가 만료 시각을 넘겨 끝나도 결제를 마치므로(spec 2.4), 승인된 때가 아니라
+     * 판정한 시각을 받는다. 좌석은 호출하는 쪽이 잠근 뒤 SOLD로 바꾼다. 만든 때의 좌석 묶음({@code seatIds})은 그대로 둔다.
+     *
+     * @throws IllegalStateException judgedAt에 유효한 선점이 아니면(만료, 해제·결제됨). 서비스가 앞에서 걸러 정상 흐름에서는 생기지 않는다.
+     */
+    public void pay(Instant judgedAt) {
+        if (!isValidAt(judgedAt)) {
+            throw new IllegalStateException("판정 시각에 유효한 선점만 결제한다: " + status + ", 만료 " + expiresAt + ", 판정 " + judgedAt);
+        }
+        this.status = HoldStatus.PAID;
+    }
+
+    /** spec 2.2 '결제 금액': 공연 가격 × 선점 좌석 수(만든 때의 묶음). */
+    public long amount(int unitPrice) {
+        return (long) unitPrice * seatIds.size();
+    }
+
     public Long getId() {
         return id;
     }

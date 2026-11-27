@@ -97,3 +97,7 @@
 | [0132](0132-frontend-late-responses-and-auth-notice.md) | 프론트: 떠난 뒤 온 선점 성공은 해제하고, 떠난 뒤 온 로그인 성공은 토큰만 저장한다. AUTH_REQUIRED 문구는 로그인 화면에만 보인다 | 에이전트 결정 |
 | [0133](0133-frontend-error-fallback-v2.md) | 프론트(개정): code가 없는 오류 응답은 INTERNAL_ERROR, 단 code가 없는 502·503·504는 응답 없음(NO_RESPONSE) | 에이전트 결정 |
 | [0134](0134-frontend-payment-impl.md) | 프론트: 결제 화면은 라우터 이동을 useBlocker로, 로그아웃을 확인 장치로 막고 해제 판단을 한 함수에 모은다. '뒤로 가기'는 좌석 선택 화면이 남긴 기록 표시로 되돌릴지 정한다 | 에이전트 결정 |
+| [0140](0140-reservation-payment-schema.md) | 예매·결제 테이블: reservations와 reservation_seats, payments. 한 선점에 예매 하나, 한 좌석에 예매 하나, 승인된 결제에만 예매가 있다는 DB 제약. 예매 시각은 판정 시각 | 에이전트 결정 |
+| [0141](0141-idempotency-key-format.md) | Idempotency-Key는 ASCII 출력 문자(0x21~0x7E) 1~100자이고 헤더는 하나여야 한다. 그 밖은 400 INVALID_INPUT | 채택 |
+| [0142](0142-payment-impl.md) | 결제 구현: 잠금 뒤 판정하고 결과를 값으로 돌려 커밋한다(402도 결제 FAILED가 남는다). 선점은 판정 시각으로 PAID, 모의 결제는 한 구현에 테스트 조작을 둔다 | 에이전트 결정 |
+| [0143](0143-payment-concurrency-test-latch.md) | 결제 동시성 테스트: 모의 결제를 멈추고, 나중 요청이 DB 행 잠금을 기다리는 것을 pg_stat_activity로 확인한 뒤 푼다 | 에이전트 결정 |

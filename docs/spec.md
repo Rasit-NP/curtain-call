@@ -364,7 +364,7 @@ Idempotency-Key: 6f1c2e7a-0b5d-4c1e-9a7f-2d3b4c5e6f70
 | 순서 | 상태 | code | 상황 |
 |---|---|---|---|
 | 1 | 401 | `AUTH_REQUIRED` | 토큰이 없거나 잘못됨(R6) |
-| 2 | 400 | `INVALID_INPUT` | `Idempotency-Key`가 없거나 공백뿐이거나 100자를 넘음. `holdId`가 없거나 양수가 아님 |
+| 2 | 400 | `INVALID_INPUT` | `Idempotency-Key`가 없거나 공백뿐이거나 100자를 넘음(ASCII 출력 문자가 아닌 문자가 있거나 헤더가 두 번 이상 와도 같다, 6.7.1). `holdId`가 없거나 양수가 아님(정수가 아닌 값 포함, 3.1) |
 | 3 | 저장된 응답 또는 400 | 저장된 응답의 code 또는 `INVALID_INPUT` | 같은 사용자·같은 키의 요청이 처리 중이면 끝날 때까지 기다린다. 그 키에 저장된 응답이 있으면 6.7.1대로 응답하고 끝낸다. |
 | 4 | 404 | `NOT_FOUND` | 선점이 없음, 다른 사용자의 선점, 해제됐거나 이미 결제된 선점 |
 | 5 | 409 | `HOLD_EXPIRED` | 선점이 만료됨(현재 시각 ≥ `expiresAt`, R4). 모의 결제를 부르지 않는다. |
@@ -375,6 +375,9 @@ Idempotency-Key: 6f1c2e7a-0b5d-4c1e-9a7f-2d3b4c5e6f70
 #### 6.7.1 멱등 키(R5)
 
 - 클라이언트가 결제 시도마다 새로 만든다(UUID v4 권장). 길이는 1~100자다.
+- 키는 ASCII 출력 문자(0x21~0x7E)로만 쓴다. 공백·탭·제어 문자·ASCII가 아닌 문자가 하나라도 있으면 `400 INVALID_INPUT`이다(공백뿐인 키 포함).
+  글자 수는 문자 수 = 바이트 수다. `Idempotency-Key` 헤더가 없거나 두 번 이상 오면 `400 INVALID_INPUT`이다([결정 0141](decisions/0141-idempotency-key-format.md)).
+  HTTP 헤더 값은 바이트열이라 서버가 ASCII 밖 문자를 클라이언트와 같은 글자로 읽는다는 보장이 없기 때문이다.
 - 키는 사용자별로 구분한다. `backend/CLAUDE.md`의 "`Idempotency-Key`에 대한 DB 유니크 제약"은
   (`userId`, `idempotencyKey`) 복합 유니크 제약으로 만든다. 다른 사용자가 같은 키를 쓰면 별개의 요청이다.
 - 검증(오류 표 2번)을 통과한 요청은 결과가 `201`, `402`, `404`, `409` 중 무엇이든 키, `holdId`와 함께 응답(상태 코드와 본문)을 저장한다.

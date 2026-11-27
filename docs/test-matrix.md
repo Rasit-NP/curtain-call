@@ -3,7 +3,7 @@
 R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 계층에서 검증할지 정한다.
 동작의 기준은 [`spec.md`](spec.md)이고, 괄호 안의 숫자는 그 문서의 절 번호다.
 
-현황(2026-11-28): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 조회 단계에서 백엔드(#35)는 공연 목록·상세 API(공개 경로 R6 포함), 공연장별 좌석 배치, 공연·좌석 시드 테스트를, 프론트엔드(#36)는 공연 목록·내 예매 화면, 공통 헤더와 로그아웃, 내 예매 화면의 실제 경로로 R6 가드 테스트를 썼다. 선점 단계에서 프론트엔드(#42)는 공연 상세·선점 API 함수, 좌석 선택 화면(격자 배치, 4석 선택, 선점 요청의 응답별 처리), 좌석 선택 화면의 실제 경로로 R1·R2·R6 프론트 테스트를 썼다. 백엔드(#41)는 선점 생성 API(R1·R2·R3·R6), 같은 좌석·같은 사용자 동시 요청, 선점 스키마, 공연 상세의 만료 반영 테스트를 썼다. 3단계 뒤 점검 수정에서 백엔드(#45)는 경로 long 값의 엄격한 해석(공연 상세, 모든 경로)과 공연 상세·선점 응답의 좌석 row 정렬 통합 테스트를 썼다. 선점 조회·해제 단계에서 백엔드(#51)는 선점 조회·해제 API(R2·R3·R6), 같은 선점의 동시 해제, 만료된 선점의 해제와 다른 사용자의 선점이 겹치는 경우, 선점·좌석의 해제 상태 전이 테스트를 썼다. 결제 화면 단계에서 프론트엔드(#52)는 선점 조회·해제·결제 API 함수, 결제·예매 확인 화면(표시, 결제 응답별 처리, 멱등 키, 떠날 때의 해제), 결제 화면의 실제 경로로 R3·R4·R5·R6 프론트 테스트를 썼고, 로드맵에서 넘겨받은 정책(떠난 뒤 온 선점·로그인 성공, code 없는 502·503·504, AUTH_REQUIRED 문구)을 테스트로 고정했다. 예매(5단계)에 기대는 R2·R6 백엔드 행과 결제된 선점의 조회·해제 행, R4·R5 백엔드 테스트는 미작성이다.
+현황(2026-11-28): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 조회 단계에서 백엔드(#35)는 공연 목록·상세 API(공개 경로 R6 포함), 공연장별 좌석 배치, 공연·좌석 시드 테스트를, 프론트엔드(#36)는 공연 목록·내 예매 화면, 공통 헤더와 로그아웃, 내 예매 화면의 실제 경로로 R6 가드 테스트를 썼다. 선점 단계에서 프론트엔드(#42)는 공연 상세·선점 API 함수, 좌석 선택 화면(격자 배치, 4석 선택, 선점 요청의 응답별 처리), 좌석 선택 화면의 실제 경로로 R1·R2·R6 프론트 테스트를 썼다. 백엔드(#41)는 선점 생성 API(R1·R2·R3·R6), 같은 좌석·같은 사용자 동시 요청, 선점 스키마, 공연 상세의 만료 반영 테스트를 썼다. 3단계 뒤 점검 수정에서 백엔드(#45)는 경로 long 값의 엄격한 해석(공연 상세, 모든 경로)과 공연 상세·선점 응답의 좌석 row 정렬 통합 테스트를 썼다. 선점 조회·해제 단계에서 백엔드(#51)는 선점 조회·해제 API(R2·R3·R6), 같은 선점의 동시 해제, 만료된 선점의 해제와 다른 사용자의 선점이 겹치는 경우, 선점·좌석의 해제 상태 전이 테스트를 썼다. 결제 화면 단계에서 프론트엔드(#52)는 선점 조회·해제·결제 API 함수, 결제·예매 확인 화면(표시, 결제 응답별 처리, 멱등 키, 떠날 때의 해제), 결제 화면의 실제 경로로 R3·R4·R5·R6 프론트 테스트를 썼고, 로드맵에서 넘겨받은 정책(떠난 뒤 온 선점·로그인 성공, code 없는 502·503·504, AUTH_REQUIRED 문구)을 테스트로 고정했다. 결제 단계에서 백엔드(#55)는 결제 API(R4, R5의 Idempotency-Key 헤더 검증, R6), 모의 결제, 내 예매 API, 예매 좌석을 함께 세는 4석 한도(R2), 결제와 선점·해제가 겹치는 동시성, 결제된 선점의 조회·해제, 예매·결제 스키마 테스트를 썼다. R5의 멱등 기록(같은 키의 결과 저장·재사용, 같은 키 동시 요청) 백엔드 테스트는 다음 Issue(#56)에서 쓴다(미작성).
 
 ## 읽는 법
 
@@ -56,14 +56,15 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 정상 | R2: 보유 좌석이 없으면 4석 묶음을 선점할 수 있다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 경계 | R2: 보유 3석이면 1석은 허용하고 2석은 거부한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldLimitTest.java`) |
 | 경계 | R2: 만료·해제된 선점은 보유 좌석 수에 넣지 않는다(결제된 선점의 좌석은 예매로 센다) | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldLimitTest.java`) |
+| 경계 | R2: 보유 좌석 수는 유효한 선점의 좌석과 예매 좌석을 더한다(예매 2석과 선점 1석이면 1석만 더 선점할 수 있다) | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldLimitTest.java`) |
 | 경계 | R2: 다른 공연의 선점은 보유 좌석 수에 넣지 않는다(다른 공연에 4석이 있어도 4석을 선점할 수 있다) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 경계 | R2: 유효한 선점이 여러 건이면 그 좌석을 모두 더해 센다(2석, 1석, 1석을 차례로 선점하면 그다음 1석은 409 HOLD_LIMIT_EXCEEDED) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
-| 경계 | R2: 예매 2석이 있으면 2석은 선점할 수 있고 3석은 409 HOLD_LIMIT_EXCEEDED다(5단계 결제 Issue에서 작성) | 백엔드 통합 | 미작성 |
+| 경계 | R2: 예매 2석이 있으면 2석은 선점할 수 있고 3석은 409 HOLD_LIMIT_EXCEEDED다(결제된 선점의 좌석은 예매로 한 번만 센다) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 경계 | R2: 4석 선점이 만료된 순간 새로 4석을 선점할 수 있다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 경계 | R2: 선점을 해제하면 그 좌석은 보유 좌석 수에서 빠져 다시 4석을 선점할 수 있다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldQueryAndReleaseApiTest.java`) |
 | 실패 | R2: 5석 묶음은 409 HOLD_LIMIT_EXCEEDED이고 아무 좌석도 선점되지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 실패 | R2: 같은 사용자가 서로 다른 좌석 3석 묶음 두 개를 동시에 선점하면 하나만 201이고 나머지는 409 HOLD_LIMIT_EXCEEDED다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
-| 실패 | R2: 2석 선점의 결제가 만료 시각을 넘겨 끝나는 동안 같은 사용자가 같은 공연에 4석을 새로 선점하면 409 HOLD_LIMIT_EXCEEDED이고, 결제가 끝난 뒤 보유 좌석 수는 예매 2석이다(모의 결제를 래치로 멈춤, 5단계 결제 Issue에서 작성) | 백엔드 통합(동시성) | 미작성 |
+| 실패 | R2: 2석 선점의 결제가 만료 시각을 넘겨 끝나는 동안 같은 사용자가 같은 공연에 4석을 새로 선점하면 409 HOLD_LIMIT_EXCEEDED이고, 결제가 끝난 뒤 보유 좌석 수는 예매 2석이다(모의 결제를 래치로 멈춤) | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/payment/PaymentConcurrencyTest.java`) |
 | 경계 | R2: 4석까지는 고를 수 있고, 4석을 고른 뒤 5번째 좌석은 선택되지 않고 안내 문구가 보인다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 경계 | R2: 5번째 좌석을 눌러 뜬 안내 문구는 좌석을 취소하면 지우고, 5번째 좌석을 다시 누르면 다시 보인다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 경계 | R2: 선점 요청이 409 HOLD_LIMIT_EXCEEDED로 끝나 뜬 안내 문구는 좌석을 하나 더 고르면 지운다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
@@ -72,7 +73,8 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 
 - 결제와 선점이 부딪히는 행(5단계)은 결제가 만료 1초 전에 판정을 통과한 뒤 모의 결제를 래치로 멈추고, 시각을 만료 시각으로 옮긴 뒤 같은 사용자가 선점한다.
   선점 요청이 결제를 기다리는 것을 확인한 뒤 래치를 푼다. 결제의 사용자 행 잠금(spec 2.4)을 빼면 선점이 201이 되어 예매 2석 + 선점 4석 = 6석이 되므로,
-  되돌림 확인에서 이 테스트가 실패해야 한다([결정 0100](decisions/0100-hold-concurrency-v2.md)).
+  되돌림 확인에서 이 테스트가 실패해야 한다([결정 0100](decisions/0100-hold-concurrency-v2.md)). #55에서 확인했다: 결제의 사용자 행 잠금을 빼자 선점이 기다리지 않고 201이 됐다.
+  선점이 결제를 기다리는지는 sleep이 아니라 PostgreSQL에서 잠금을 기다리는 연결로 확인한다([결정 0143](decisions/0143-payment-concurrency-test-latch.md)).
 
 ## R3. 선점은 5분간 유효(지연 만료)
 
@@ -98,12 +100,13 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 
 | 구분 | 테스트 | 계층 | 상태 |
 |---|---|---|---|
-| 경계 | R4: 만료 시각 1초 전에는 결제할 수 있고, 같은 순간부터는 결제할 수 없다고 판정한다 | 백엔드 단위 | 미작성 |
-| 정상 | R4: 만료 시각 1초 전의 결제는 201이고 예매가 생긴다 | 백엔드 통합 | 미작성 |
-| 경계 | R4: 만료 시각과 같은 순간의 결제는 409 HOLD_EXPIRED다 | 백엔드 통합 | 미작성 |
-| 실패 | R4: 만료된 선점으로 결제하면 예매가 생기지 않고, 좌석이 판매되지 않으며, 모의 결제를 부르지 않는다 | 백엔드 통합 | 미작성 |
-| 실패 | R4: 만료 뒤 다른 사용자가 좌석을 선점했으면 원래 사용자의 결제는 409 HOLD_EXPIRED이고 다른 사용자의 선점은 그대로다 | 백엔드 통합 | 미작성 |
-| 경계 | R4: 결제를 처리하는 동안 만료 시각이 지나도 다른 사용자가 그 좌석을 선점하지 못한다 | 백엔드 통합(동시성) | 미작성 |
+| 경계 | R4: 만료 시각 1초 전에는 결제할 수 있고, 같은 순간부터는 결제할 수 없다고 판정한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
+| 정상 | R4: 만료 시각 1초 전의 결제는 201이고 예매가 생긴다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 경계 | R4: 만료 시각과 같은 순간의 결제는 409 HOLD_EXPIRED다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 실패 | R4: 만료된 선점으로 결제하면 예매가 생기지 않고, 좌석이 판매되지 않으며, 모의 결제를 부르지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 실패 | R4: 만료 뒤 다른 사용자가 좌석을 선점했으면 원래 사용자의 결제는 409 HOLD_EXPIRED이고 다른 사용자의 선점은 그대로다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 경계 | R4: 결제를 처리하는 동안 만료 시각이 지나도 다른 사용자가 그 좌석을 선점하지 못한다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/payment/PaymentConcurrencyTest.java`) |
+| 경계 | R4: 결제가 앞 요청의 잠금을 기다리는 동안 만료 시각이 지나면, 잠근 뒤의 현재 시각으로 판정해 409 HOLD_EXPIRED이고 모의 결제를 부르지 않는다(spec 2.4) | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/payment/PaymentConcurrencyTest.java`) |
 | 실패 | R4: 결제 응답이 409 HOLD_EXPIRED면 만료 안내를 보여 주고, 결제 버튼은 남기되 누를 수 없게 하며 '뒤로 가기'는 누를 수 있다 | 프론트 | 작성(`frontend/src/pages/payment/PaymentPage.test.tsx`) |
 | - | 시간을 조작해야 하므로 E2E에서 다루지 않는다(R3과 같음) | E2E | 해당 없음 |
 
@@ -118,8 +121,10 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 실패 | R5: 402로 거절된 결제를 같은 키로 다시 요청하면 모의 결제를 다시 부르지 않고 같은 402를 돌려주며, 선점은 유지된다 | 백엔드 통합 | 미작성 |
 | 정상 | R5: 결제가 거절된 뒤 새 키로 다시 결제하면 승인될 수 있다 | 백엔드 통합 | 미작성 |
 | 실패 | R5: 이미 처리한 키로 다른 선점을 결제하면 400 INVALID_INPUT이고 아무것도 처리하지 않는다 | 백엔드 통합 | 미작성 |
-| 실패 | R5: Idempotency-Key가 없거나 공백뿐이면 400 INVALID_INPUT이다 | 백엔드 통합 | 미작성 |
-| 경계 | R5: 키 길이 100자는 허용하고 101자는 400 INVALID_INPUT이다 | 백엔드 통합 | 미작성 |
+| 실패 | R5: Idempotency-Key가 없거나 공백뿐이면 400 INVALID_INPUT이다 | 백엔드 단위, 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/IdempotencyKeyHeaderTest.java`, `backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 경계 | R5: 키 길이 100자는 허용하고 101자는 400 INVALID_INPUT이다(글자 수 = ASCII 문자 수, 결정 0141) | 백엔드 단위, 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/IdempotencyKeyHeaderTest.java`, `backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 실패 | R5: Idempotency-Key에 ASCII 출력 문자가 아닌 문자(공백, 제어 문자, ASCII가 아닌 문자)가 있으면 400 INVALID_INPUT이다(실제 서버가 ISO-8859-1로 읽은 한글 키 포함, 결정 0141) | 백엔드 단위, 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/IdempotencyKeyHeaderTest.java`, `backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 실패 | R5: Idempotency-Key 헤더가 두 개 이상이면 값이 같아도 400 INVALID_INPUT이다(결정 0141) | 백엔드 단위, 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/IdempotencyKeyHeaderTest.java`, `backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
 | 경계 | R5: 다른 사용자가 같은 키를 쓰면 서로 영향 없이 따로 처리된다 | 백엔드 통합 | 미작성 |
 | 경계 | R5: 404나 409로 끝난 요청도 저장해, 같은 키로 다시 보내면 같은 응답이고 다른 선점에는 쓸 수 없다(400) | 백엔드 통합 | 미작성 |
 | 경계 | R5: 검증 실패(400)로 끝난 요청은 저장하지 않아 같은 키를 다시 쓸 수 있다 | 백엔드 통합 | 미작성 |
@@ -135,7 +140,7 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 |---|---|---|---|
 | 정상 | R6: 유효한 토큰이면 선점을 할 수 있다(같은 요청에 토큰이 없으면 401 AUTH_REQUIRED) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 정상 | R6: 유효한 토큰이면 선점 조회·해제를 쓸 수 있다(같은 요청에 토큰이 없으면 401 AUTH_REQUIRED) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldQueryAndReleaseApiTest.java`) |
-| 정상 | R6: 유효한 토큰이면 결제·내 예매를 쓸 수 있다(5단계 Issue에서 작성) | 백엔드 통합 | 미작성 |
+| 정상 | R6: 유효한 토큰이면 결제·내 예매를 쓸 수 있다(같은 요청에 토큰이 없으면 401 AUTH_REQUIRED) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
 | 정상 | R6: 로그인 API로 받은 토큰으로 선점까지 할 수 있다(실제 흐름) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 정상 | R6: 로그인 API로 받은 토큰은 인증을 통과하고(등록되지 않은 비공개 경로가 404), 토큰이 없으면 401이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 정상 | R6: 같은 키로 서명한 정상 토큰은 인증을 통과한다(등록되지 않은 비공개 경로가 404) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
@@ -207,6 +212,8 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 선점(2.1, 2.2) | 선점은 서로 다른 좌석 1~4석의 묶음으로만 만들고, 해제·결제된 선점은 만료 시각 전이라도 유효하지 않다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
 | 선점(2.3) | 선점을 해제하면 저장 상태가 RELEASED가 되어 만료 시각 전이라도 유효하지 않고, ACTIVE가 아닌 선점(해제·결제됨)은 해제할 수 없다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
 | 좌석(2.3) | 선점이 잡은 좌석을 해제하면 AVAILABLE이 되고 holdId를 비우며, HELD가 아닌 좌석은 해제할 수 없다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/performance/domain/SeatTest.java`) |
+| 좌석(2.3) | 결제가 승인되면 선점이 잡은 좌석은 SOLD가 되고 holdId를 비우며, 결제하는 선점이 잡지 않은 좌석(다른 선점의 좌석, AVAILABLE, 이미 SOLD)은 팔 수 없다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/performance/domain/SeatTest.java`) |
+| 선점(2.3, 6.7) | 결제하면 저장 상태가 PAID가 되어 만료 시각 전이라도 유효하지 않고, ACTIVE가 아닌 선점은 결제할 수 없다. 조회·해제·결제할 수 있는 선점은 요청한 사용자의 ACTIVE 선점이다. 결제 금액은 가격 × 좌석 수다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
 | 선점(6.4) | 선점에 성공하면 201 Hold다: status ACTIVE, performance는 PerformanceSummary, seats는 row·number 오름차순의 SeatRef, amount는 가격 × 좌석 수, expiresAt은 요청 시각 + 5분 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 선점(6.4) | 없는 공연이나 그 공연에 없는 좌석으로 선점하면 404 NOT_FOUND이고 아무 좌석도 선점되지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 선점(6.4) | performanceId·seatIds가 없거나, 비었거나, 양수가 아니거나, 정수가 아니거나(소수·숫자 문자열, 결정 0072), seatIds에 중복이 있으면 400 INVALID_INPUT이고 아무 좌석도 선점되지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
@@ -216,21 +223,30 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 선점 조회(5, 6.5) | 내 선점의 조회는 200 Hold다: 모양은 선점 생성 응답과 같고, seats는 row·number 오름차순의 SeatRef, amount는 가격 × 좌석 수, expiresAt은 만든 시각 + 5분(조회 시각이 아님) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldQueryAndReleaseApiTest.java`) |
 | 선점 조회(6.5) | 만료된 선점의 조회는 seats와 amount가 만든 때의 묶음이다(만료 뒤 다른 사용자가 새로 선점한 좌석 포함, 결정 0070) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldQueryAndReleaseApiTest.java`) |
 | 선점 조회(6.5) | 다른 사용자의 선점, 해제된 선점, 없는 선점(0·음수 포함)은 404 NOT_FOUND다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldQueryAndReleaseApiTest.java`) |
-| 선점 조회(6.5) | 결제된 선점의 조회는 404 NOT_FOUND다(5단계 결제 Issue에서 실제 결제로 작성) | 백엔드 통합 | 미작성 |
+| 선점 조회(6.5) | 결제된 선점의 조회는 404 NOT_FOUND다(만료 시각 전에도, 실제 결제로 만듦) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldQueryAndReleaseApiTest.java`) |
 | 선점 조회(6.5) | 선점 조회 오류는 6.5 표의 순서로 처음 걸린 하나만 돌려준다(401 → 400 → 404) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldQueryAndReleaseApiTest.java`) |
 | 선점 조회·해제(6.5, 6.6) | holdId가 정수가 아니면(문자, 소수, long 범위 밖, 공백·16진수·ASCII가 아닌 숫자) 내 선점을 가리키는 값이라도 400 INVALID_INPUT이고, 해제는 선점을 그대로 둔다(결정 0090) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldQueryAndReleaseApiTest.java`) |
 | 선점 해제(6.6) | 내 선점을 해제하면 204이고 선점은 RELEASED, 그 좌석은 AVAILABLE이 된다(다른 선점의 좌석은 그대로). 해제한 뒤에는 그 선점의 조회와 해제가 모두 404 NOT_FOUND다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldQueryAndReleaseApiTest.java`) |
 | 선점 해제(6.6) | 만료된 내 선점의 해제는 204이고, 다른 사용자의 선점(만료된 것 포함)과 이미 해제된 선점, 없는 선점(0·음수 포함)은 404 NOT_FOUND이며 선점과 좌석은 그대로다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldQueryAndReleaseApiTest.java`) |
-| 선점 해제(6.6) | 이미 결제된 선점의 해제는 404 NOT_FOUND다(5단계 결제 Issue에서 실제 결제로 작성) | 백엔드 통합 | 미작성 |
+| 선점 해제(6.6) | 이미 결제된 선점의 해제는 404 NOT_FOUND이고 좌석은 SOLD 그대로다(만료 시각 전에도, 실제 결제로 만듦) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldQueryAndReleaseApiTest.java`) |
 | 선점 해제(6.6) | 선점 해제 오류는 6.6 표의 순서로 처음 걸린 하나만 돌려준다(401 → 400 → 404) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldQueryAndReleaseApiTest.java`) |
 | 선점 해제(2.4) | 같은 선점에 해제 요청 5개가 동시에 오면 하나만 204이고 나머지는 404 NOT_FOUND다(선점은 RELEASED, 좌석은 AVAILABLE, 20회 반복). 선점 행 잠금을 빼면 실패한다(#51에서 확인) | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
 | 선점 해제(2.4) | 만료된 선점의 해제와 다른 사용자의 같은 좌석 선점이 동시에 와도 둘 다 성공하고, 새 선점의 좌석은 풀리지 않으며 교착 상태로 500이 나지 않는다(50회 반복, 해제를 0~10ms 늦게 보내 순서를 섞음, 결정 0121) | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
-| 결제(6.7) | 결제가 승인되면 좌석은 SOLD, 선점은 PAID가 되고 금액은 가격 × 좌석 수다 | 백엔드 단위, 백엔드 통합 | 미작성 |
-| 결제(6.7) | 결제가 거절되면 402 PAYMENT_FAILED이고 예매가 생기지 않으며 선점은 유지된다 | 백엔드 통합 | 미작성 |
-| 결제(6.7) | 이미 결제된 선점을 새 키로 결제하면 404 NOT_FOUND이고 예매는 하나다 | 백엔드 통합 | 미작성 |
-| 결제(2.4) | 같은 선점을 서로 다른 키로 동시에 결제하면 하나만 201이고 예매는 하나다 | 백엔드 통합(동시성) | 미작성 |
-| 결제(2.4) | 같은 선점에 결제와 해제가 동시에 오면 하나씩 처리된다. 결제가 먼저 승인되면 해제는 404 NOT_FOUND, 결제가 먼저 거절되면 해제는 204다 | 백엔드 통합(동시성) | 미작성 |
-| 내 예매(6.8) | 내 예매만 최신순(같으면 id 내림차순)으로 돌려준다 | 백엔드 통합 | 미작성 |
+| 결제(6.7) | 결제가 승인되면 201 { paymentId, amount, reservation }이고 선점은 PAID, 좌석은 SOLD(holdId 없음)가 되며 예매와 결제 SUCCEEDED가 생긴다. 금액은 가격 × 좌석 수다 | 백엔드 단위, 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`, `backend/src/test/java/com/curtaincall/performance/domain/SeatTest.java`, `backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 결제(6.7) | 결제가 승인되면 공연 상세에서 그 좌석은 SOLD다(만료 시각이 지나도) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 결제(6.7) | 결제가 거절되면 402 PAYMENT_FAILED이고 예매가 생기지 않으며, 선점·좌석·만료 시각은 그대로이고 결제는 FAILED(예매 없음, 금액은 가격 × 좌석 수)로 남는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 결제(6.7) | 이미 결제된 선점을 새 키로 결제하면 404 NOT_FOUND이고 예매는 하나다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 결제(6.7) | 다른 사용자의 선점, 해제된 선점, 없는 선점으로 결제하면 404 NOT_FOUND이고 모의 결제를 부르지 않으며 선점은 그대로다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 결제(6.7) | holdId가 없거나, 양수가 아니거나, JSON 정수가 아니면(소수·지수 표기·문자열·배열·long 범위 밖, 결정 0072) 400 INVALID_INPUT이고 결제하지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 결제(6.7) | 결제 오류는 6.7 표의 순서로 처음 걸린 하나만 돌려준다(401 → 400 → 404 → 409 HOLD_EXPIRED → 402 PAYMENT_FAILED, 3번 멱등 키는 #56) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/payment/api/PaymentApiTest.java`) |
+| 결제(2.4) | 같은 선점을 서로 다른 키로 동시에 결제하면 하나만 201이고 나머지는 404 NOT_FOUND이며 예매는 하나다(5회 반복) | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/payment/PaymentConcurrencyTest.java`) |
+| 결제(2.4) | 같은 선점에 결제와 해제가 동시에 오면 하나씩 처리된다. 결제가 먼저 승인되면 해제는 404 NOT_FOUND, 결제가 먼저 거절되면 해제는 204다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/payment/PaymentConcurrencyTest.java`) |
+| 결제(2.4) | 결제와 다른 사용자의 같은 좌석 선점(반대 순서)이 동시에 와도 결제는 201, 선점은 409 SEAT_ALREADY_HELD이고 교착 상태로 500이 나지 않는다(50회 반복, 결제를 0~10ms 늦게 보내 순서를 섞음, 결정 0143) | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/payment/PaymentConcurrencyTest.java`) |
+| 내 예매(6.8) | 내 예매만 최신순(reservedAt 내림차순, 같으면 id 내림차순)으로 돌려준다(다른 사용자의 예매, 거절된 결제, 해제한 선점 제외) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/reservation/api/ReservationApiTest.java`) |
+| 내 예매(5, 6.8) | 내 예매의 모양은 Reservation이다: performance는 PerformanceSummary, seats는 row·number 오름차순의 SeatRef, amount, reservedAt | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/reservation/api/ReservationApiTest.java`) |
+| 내 예매(6.8) | 예매가 없으면 []다(유효한 선점만 있어도 예매가 아니다) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/reservation/api/ReservationApiTest.java`) |
+| 예매·결제(2.1) | 한 선점으로 예매는 하나, 한 좌석은 예매 하나에만 들어가고, 결제는 SUCCEEDED일 때만 예매가 있으며 상태는 SUCCEEDED·FAILED만이다(DB 제약, 결정 0140) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/reservation/domain/ReservationSchemaTest.java`) |
+| 예매(2.3) | 예매는 결제된 선점으로만 만들고, 선점의 사용자·공연·좌석 묶음과 금액·예매 시각을 가진다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/reservation/domain/ReservationTest.java`) |
 | 오류 형식(3.1) | 오류 응답은 ProblemDetail에 code가 있고, 500 응답에 스택 트레이스가 없다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
 | 오류 형식(3.1) | 잘못된 JSON, 형식이 틀린 경로·쿼리 값, 필수 쿼리 값 없음, 검증 실패(본문 필드, 쿼리 값, `@Validated` 빈), 지원하지 않는 메서드(405)·`Content-Type`(415)은 400 INVALID_INPUT이고, 없는 경로는 404 NOT_FOUND다(MVC 안의 오류 변환. 서블릿 필터를 끈 MockMvc) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
 | 오류 형식(3.1) | 어느 경로든 long 경로 값은 ASCII 10진 정수 표기만 받는다: 공백·16진수·ASCII가 아닌 숫자는 400 INVALID_INPUT, + 부호나 앞자리 0은 그 수다(공연 상세와 관계없는 시험용 경로. 이후의 holdId도 같은 규칙, 결정 0090·0091) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
@@ -326,6 +342,8 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 시계 | 테스트 시계는 시각을 정하거나 옮길 수 있고 되돌리면 정해진 시각으로 돌아간다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/support/MutableClockTest.java`) |
 | 통합 기반 | 운영 코드에 주입되는 Clock은 테스트 시계이고, 테스트마다 정해진 시각으로 되돌린다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
 | 통합 기반 | 테스트마다 시작 전에 테이블을 비우고, Flyway 이력 테이블은 남긴다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
+| 통합 기반 | 운영 코드에 주입되는 PaymentGateway는 모의 결제이고, 테스트마다 시작 전에 모의 결제의 설정(다음 호출 거절, 멈추기)과 호출 횟수를 초기화한다(spec 6.7.2) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
+| 모의 결제(6.7.2) | 아무것도 지정하지 않으면 늘 승인하고(테스트가 아닌 프로필의 동작), 다음 호출 거절·호출 횟수·멈추기(풀 때까지 결과를 돌려주지 않음)·초기화(멈춘 호출을 풂)를 할 수 있다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/payment/infra/FakePaymentGatewayTest.java`) |
 | 시드 실행 | 시드 테스트는 시드 파일을 파일 이름 문자열이 아니라 버전 번호 순서로 실행하고(V10000은 V1001 뒤), 버전 번호를 읽을 수 없는 이름은 거부한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/support/SeedFilesTest.java`) |
 | 프론트 MSW | 핸들러가 없는 요청은 실제 네트워크로 나가지 않고 실패한다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |
 | 프론트 MSW | 테스트가 끝날 때 핸들러가 없는 요청이 있었으면(아직 처리 중이던 요청 포함) 테스트를 실패로 만든다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |

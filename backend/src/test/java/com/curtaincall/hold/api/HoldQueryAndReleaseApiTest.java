@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.curtaincall.support.AuthRequests;
 import com.curtaincall.support.IntegrationTest;
+import com.curtaincall.support.PaymentRequests;
 import com.curtaincall.support.TestHolds;
 import com.curtaincall.support.TestPerformances;
 import com.curtaincall.support.TestTokens;
@@ -235,6 +236,32 @@ class HoldQueryAndReleaseApiTest extends IntegrationTest {
 
         assertThat(holds.holdStatus(hold)).isEqualTo("RELEASED");
         assertAvailable(a1);
+    }
+
+    @Test
+    @DisplayName("결제된 선점의 조회는 404 NOT_FOUND다(만료 시각 전에도)")
+    void queryOfPaidHoldIsNotFound() throws Exception {
+        long hold = createHold(alice, performance, a1, a2);
+        mockMvc.perform(PaymentRequests.pay(alice, hold)).andExpect(status().isCreated());
+
+        expectProblem(mockMvc.perform(getHold(alice, hold)), 404, "NOT_FOUND");
+
+        assertThat(holds.holdStatus(hold)).isEqualTo("PAID");
+    }
+
+    @Test
+    @DisplayName("이미 결제된 선점의 해제는 404 NOT_FOUND이고 좌석은 SOLD 그대로다(만료 시각 전에도)")
+    void releaseOfPaidHoldIsNotFound() throws Exception {
+        long hold = createHold(alice, performance, a1, a2);
+        mockMvc.perform(PaymentRequests.pay(alice, hold)).andExpect(status().isCreated());
+
+        expectProblem(mockMvc.perform(release(alice, hold)), 404, "NOT_FOUND");
+
+        assertThat(holds.holdStatus(hold)).isEqualTo("PAID");
+        for (long seat : new long[] {a1, a2}) {
+            assertThat(holds.seatStatus(seat)).isEqualTo("SOLD");
+            assertThat(holds.seatHoldId(seat)).isNull();
+        }
     }
 
     @Test
