@@ -215,7 +215,7 @@ describe('결제 화면: 표시', () => {
     expect(page().queryByRole('link')).not.toBeInTheDocument();
   });
 
-  it('선점 조회가 AUTH_REQUIRED로 끝나도 결제 화면에는 "로그인이 필요합니다."를 그리지 않는다(다시 로그인한 뒤에 끝난 이전 요청)', async () => {
+  it('R6: 선점 조회가 AUTH_REQUIRED로 끝나도 결제 화면에는 "로그인이 필요합니다."를 그리지 않는다(다시 로그인한 뒤에 끝난 이전 요청)', async () => {
     saveAccessToken('expired-token');
     server.use(
       http.get(HOLD_PATH, () => {

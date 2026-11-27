@@ -147,7 +147,7 @@ describe('내 예매 화면', () => {
 });
 
 describe('내 예매 화면: AUTH_REQUIRED 문구', () => {
-  it('내 예매 요청이 AUTH_REQUIRED로 끝나도 내 예매 화면에는 "로그인이 필요합니다."를 그리지 않는다(다시 로그인한 뒤에 끝난 이전 요청)', async () => {
+  it('R6: 내 예매 요청이 AUTH_REQUIRED로 끝나도 내 예매 화면에는 "로그인이 필요합니다."를 그리지 않는다(다시 로그인한 뒤에 끝난 이전 요청)', async () => {
     saveAccessToken('expired-token');
     server.use(
       http.get(RESERVATIONS_PATH, () => {

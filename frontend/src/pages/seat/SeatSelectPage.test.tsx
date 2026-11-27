@@ -633,7 +633,7 @@ describe('좌석 선택 화면: 선점 요청 중에 떠나기', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('선점 요청이 AUTH_REQUIRED로 끝나도 좌석 선택 화면에는 "로그인이 필요합니다."를 그리지 않는다(다시 로그인한 뒤에 끝난 이전 요청)', async () => {
+  it('R6: 선점 요청이 AUTH_REQUIRED로 끝나도 좌석 선택 화면에는 "로그인이 필요합니다."를 그리지 않는다(다시 로그인한 뒤에 끝난 이전 요청)', async () => {
     const { router, user } = await openPage();
     holdHandler(() => {
       // 응답이 오기 전에 다른 곳에서 다시 로그인한 상황. 이전 토큰의 AUTH_REQUIRED라 공통 처리는 화면을 옮기지 않는다(결정 0043).

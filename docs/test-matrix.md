@@ -165,6 +165,7 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 경계 | R6: 다시 로그인한 뒤에 끝난 이전 요청의 AUTH_REQUIRED는 새 토큰을 지우거나 로그인 화면으로 다시 보내지 않는다(보낸 토큰과 지금 토큰 비교) | 프론트 | 작성(`frontend/src/auth/AuthRequiredRedirect.test.tsx`, `frontend/src/api/client.test.ts`) |
 | 경계 | R6: 토큰 없이 보낸 요청이 AUTH_REQUIRED를 받으면 알리고, 그 사이 로그인했으면 알리지 않는다 | 프론트 | 작성(`frontend/src/api/client.test.ts`) |
 | 경계 | R6: 로그인 화면 경로 끝에 /가 붙어 있어도(/login/) 늦게 온 AUTH_REQUIRED가 돌아갈 경로를 덮지 않는다 | 프론트 | 작성(`frontend/src/auth/AuthRequiredRedirect.test.tsx`) |
+| 경계 | R6: 요청이 AUTH_REQUIRED로 끝나도 결제·좌석 선택·내 예매 화면에는 '로그인이 필요합니다.'를 그리지 않는다(로그인 화면에만 보인다. 다시 로그인한 뒤에 끝난 이전 요청으로 확인, 결정 0132) | 프론트 | 작성(`frontend/src/pages/payment/PaymentPage.test.tsx`, `frontend/src/pages/seat/SeatSelectPage.test.tsx`, `frontend/src/pages/reservations/MyReservationsPage.test.tsx`) |
 | 경계 | R6: 로그인 실패(401 INVALID_CREDENTIALS)는 토큰을 지우거나 화면을 옮기지 않고 안내 문구만 보여 준다 | 프론트 | 작성(`frontend/src/pages/login/LoginPage.test.tsx`) |
 | 정상 | R6: 로그인 요청에는 저장된 토큰이 있어도 Authorization 헤더를 붙이지 않는다 | 프론트 | 작성(`frontend/src/api/auth.test.ts`) |
 | 정상 | R6: 공연 목록 요청에는 저장된 토큰이 있어도 Authorization 헤더를 붙이지 않는다(API 함수와 공연 목록 화면) | 프론트 | 작성(`frontend/src/api/performances.test.ts`, `frontend/src/pages/performances/PerformanceListPage.test.tsx`) |
@@ -259,7 +260,6 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 화면 공통(7.5) | 좌석 선택 화면은 응답 전에 화면 제목과 '불러오는 중입니다.'를 `role="status"`로 보여 주고, 받으면 지운다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 화면 공통(7.5, 7.6) | 좌석 선택 화면은 공연 상세가 오류(500, 400, code 없는 응답, 응답 없음)면 code별 안내 문구만 보여 주고 좌석과 '공연 목록' 링크는 보여 주지 않는다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 화면 공통(7.5, 7.6) | 결제 화면은 응답 전에 화면 제목과 '불러오는 중입니다.'를 `role="status"`로 보여 주고, 선점 조회가 오류(500, 400, code 없는 응답, 응답 없음)면 code별 안내 문구만, 404면 문구와 '내 예매' 링크를 보여 준다 | 프론트 | 작성(`frontend/src/pages/payment/PaymentPage.test.tsx`) |
-| 화면 공통(3.3, 7.6, 결정 0132) | 요청이 AUTH_REQUIRED로 끝나도 결제·좌석 선택·내 예매 화면에는 '로그인이 필요합니다.'를 그리지 않는다(다시 로그인한 뒤에 끝난 이전 요청으로 확인) | 프론트 | 작성(`frontend/src/pages/payment/PaymentPage.test.tsx`, `frontend/src/pages/seat/SeatSelectPage.test.tsx`, `frontend/src/pages/reservations/MyReservationsPage.test.tsx`) |
 | 화면 공통(7.5) | 공연 목록·내 예매 화면은 응답 전에 '불러오는 중입니다.'를 `role="status"`로 보여 주고, 받으면 지운다 | 프론트 | 작성(`frontend/src/pages/performances/PerformanceListPage.test.tsx`, `frontend/src/pages/reservations/MyReservationsPage.test.tsx`) |
 | 화면 공통(7.5) | 공연 목록·내 예매 화면은 빈 목록 문구를 `role="status"`로 보여 준다 | 프론트 | 작성(`frontend/src/pages/performances/PerformanceListPage.test.tsx`, `frontend/src/pages/reservations/MyReservationsPage.test.tsx`) |
 | 화면 공통(7.5, 7.6) | 공연 목록·내 예매 화면은 오류(500, 400, code 없는 응답, 응답 없음)면 code별 안내 문구를 `role="alert"`로 보여 주고 목록·빈 목록 문구는 보여 주지 않는다 | 프론트 | 작성(`frontend/src/pages/performances/PerformanceListPage.test.tsx`, `frontend/src/pages/reservations/MyReservationsPage.test.tsx`) |
