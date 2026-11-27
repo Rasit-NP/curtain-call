@@ -82,7 +82,8 @@ public class PaymentService {
 
         Optional<Hold> locked = holdRepository.lockById(holdId).filter(hold -> hold.isOpenFor(userId));
         if (locked.isEmpty()) {
-            return Rejected.of(ErrorCode.NOT_FOUND);
+            // 선점 조회·해제의 404(HoldService)와 같은 설명을 쓴다.
+            return new Rejected(ErrorCode.NOT_FOUND, "선점을 찾을 수 없습니다.");
         }
         Hold hold = locked.get();
         List<Seat> seats = seatRepository.lockByPerformanceIdAndIdInOrderById(hold.getPerformanceId(), hold.getSeatIds());

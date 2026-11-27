@@ -289,7 +289,8 @@ class PaymentApiTest extends IntegrationTest {
 
         expectProblem(mockMvc.perform(pay(alice, bobsHold)), 404, "NOT_FOUND");
         expectProblem(mockMvc.perform(pay(alice, released)), 404, "NOT_FOUND");
-        expectProblem(mockMvc.perform(pay(alice, missing)), 404, "NOT_FOUND");
+        expectProblem(mockMvc.perform(pay(alice, missing)), 404, "NOT_FOUND")
+                .andExpect(jsonPath("$.detail").value("선점을 찾을 수 없습니다."));
 
         assertThat(paymentGateway.callCount()).isZero();
         assertThat(payments.countPayments()).isZero();
@@ -487,8 +488,8 @@ class PaymentApiTest extends IntegrationTest {
         assertThat(holds.seatHoldId(seat)).isNull();
     }
 
-    private static void expectProblem(ResultActions result, int status, String code) throws Exception {
-        result.andExpect(status().is(status))
+    private static ResultActions expectProblem(ResultActions result, int status, String code) throws Exception {
+        return result.andExpect(status().is(status))
                 .andExpect(jsonPath("$.status").value(status))
                 .andExpect(jsonPath("$.code").value(code));
     }
