@@ -265,8 +265,13 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 오류 형식(3.1) | MVC 밖 오류도 ProblemDetail과 code다: 공개 경로의 잘못된 쿼리·경로 퍼센트 인코딩, Tomcat이 거부한 인코딩된 슬래시, Spring Security 방화벽이 거부한 경로(세미콜론, 인코딩된 %, 이중 슬래시), 폼 본문은 400 INVALID_INPUT(401이나 500이 아님), 서블릿 필터의 예외는 500 INTERNAL_ERROR(예외 내용 없음). 비공개 경로는 토큰 검사(401)가 먼저이고, /error를 직접 부르면 토큰 없이 401이다(실제 서버) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorPageTest.java`) |
 | 오류 형식(3.1) | Tomcat이 거부한 잘못된 요청(지원하지 않는 HTTP 버전 505, Transfer-Encoding 501, Expect 417)은 500이 아니라 400 INVALID_INPUT이고, Tomcat이 거부한 요청의 본문은 공통 처리기의 본문과 필드가 같다(실제 서버) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorPageTest.java`) |
 | 오류 형식(3.1) | 코드 없이 상태만 정해진 오류의 code: 앱 안(MVC 예외, /error)은 입력 오류 상태만 INVALID_INPUT, Tomcat이 앱에 넘기기 전에 거부한 요청은 4xx와 501·505가 INVALID_INPUT, 404는 NOT_FOUND, 그 밖은 INTERNAL_ERROR | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorCodeStatusMappingTest.java`) |
-| E2E 지원(6.9) | reset 컨트롤러는 e2e 프로필에서만 등록된다. E2E 첫 설정 Issue에서 작성한다 | 백엔드 통합 | 미작성 |
-| E2E 지원(6.9) | e2e 프로필에서는 POST /api/test-support/reset을 토큰 없이 부를 수 있다(인증 검사를 지나 컨트롤러가 없으면 404) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/E2eProfileAuthTest.java`) |
+| E2E 지원(6.9) | reset 컨트롤러와 서비스는 e2e 프로필에서만 등록된다(통합 테스트의 test 프로필 컨텍스트에 없음) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/testsupport/TestDataResetRegistrationTest.java`) |
+| E2E 지원(6.9) | e2e가 아닌 프로필(local, test, prod)과 프로필이 없을 때는 reset 컨트롤러와 서비스를 등록하지 않는다(DB 없이 등록 조건만) | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/testsupport/TestDataResetProfileTest.java`) |
+| E2E 지원(6.9) | e2e 프로필에서는 POST /api/test-support/reset을 토큰 없이 부를 수 있다(인증 검사를 지나 초기화 컨트롤러가 204) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/E2eProfileAuthTest.java`) |
+| E2E 지원(6.9) | e2e 프로필에서 POST /api/test-support/reset은 토큰 없이 204이고 본문이 없다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/testsupport/TestDataResetApiTest.java`) |
+| E2E 지원(6.9) | 초기화는 선점·예매·결제·멱등 기록을 비우고(시드가 넣지 않는 모든 테이블), 좌석 상태와 계정·공연 시드(바꾼 값, 더한 행 포함)를 처음 상태로 되돌린다(id가 아닌 이름으로 비교) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/testsupport/TestDataResetApiTest.java`) |
+| E2E 지원(6.9) | 초기화를 두 번 연달아 불러도 같은 상태이고, 시드가 없는 빈 DB에서 불러도 시드를 넣는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/testsupport/TestDataResetApiTest.java`) |
+| E2E 지원(6.9) | 초기화 뒤에도 시드 계정(demo, e2e-user1, e2e-user2)으로 로그인할 수 있고(초기화 전에 비밀번호를 바꿔 둠), 시드 조건(2.5)을 만족한다(초기화 전에 빈 좌석을 모두 없앰) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/testsupport/TestDataResetApiTest.java`) |
 | E2E 지원(6.9) | e2e가 아닌 프로필에서 POST /api/test-support/reset은 토큰 없이 401 AUTH_REQUIRED, 유효한 토큰이면 404 NOT_FOUND다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |
 | 시드(2.5) | 시드 계정(시연용 demo, E2E용 e2e-user1·e2e-user2)으로 로그인할 수 있다(시드 파일을 실제 스키마에서 실행) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/E2eProfileAuthTest.java`) |
 | 시드(2.5) | 공연장·공연 시드를 실제 스키마에서 실행하면 공연이 2개 이상이고 공연 상세마다 빈 좌석이 5석 이상이며, 공연 좌석은 그 공연장 배치와 같고, 배치가 다른 공연장과 통로·빈자리가 있는 배치가 있다(값이 아닌 성질만 확인) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/PerformanceSeedTest.java`) |
@@ -352,7 +357,7 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 통합 기반 | 테스트마다 시작 전에 테이블을 비우고, Flyway 이력 테이블은 남긴다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
 | 통합 기반 | 운영 코드에 주입되는 PaymentGateway는 모의 결제이고, 테스트마다 시작 전에 모의 결제의 설정(다음 호출 거절·실패, 멈추기)과 호출 횟수를 초기화한다(spec 6.7.2) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/support/IntegrationTestSupportTest.java`) |
 | 모의 결제(6.7.2) | 아무것도 지정하지 않으면 늘 승인하고(테스트가 아닌 프로필의 동작), 다음 호출 거절·다음 호출 실패(예외, 멈추기와 함께 쓰면 풀린 뒤)·호출 횟수·멈추기(풀 때까지 결과를 돌려주지 않음)·초기화(멈춘 호출을 풂)를 할 수 있다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/payment/infra/FakePaymentGatewayTest.java`) |
-| 시드 실행 | 시드 테스트는 시드 파일을 파일 이름 문자열이 아니라 버전 번호 순서로 실행하고(V10000은 V1001 뒤), 버전 번호를 읽을 수 없는 이름은 거부한다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/support/SeedFilesTest.java`) |
+| 시드 실행 | 시드 테스트와 E2E 초기화는 시드 파일을 파일 이름 문자열이 아니라 버전 번호 순서로 실행하고(V10000은 V1001 뒤), 버전 번호를 읽을 수 없는 이름은 거부한다(둘이 함께 쓰는 운영 코드 `SeedScripts`, 결정 0160) | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/support/SeedFilesTest.java`) |
 | 프론트 MSW | 핸들러가 없는 요청은 실제 네트워크로 나가지 않고 실패한다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |
 | 프론트 MSW | 테스트가 끝날 때 핸들러가 없는 요청이 있었으면(아직 처리 중이던 요청 포함) 테스트를 실패로 만든다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |
 | 프론트 MSW | 테스트가 끝날 때 처리 중인 요청은 그 테스트의 핸들러로 처리한다 | 프론트 | 작성(`frontend/src/test/lifecycle.test.ts`) |
