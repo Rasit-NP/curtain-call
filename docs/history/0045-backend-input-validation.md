@@ -1,7 +1,7 @@
 # #45 백엔드 입력 검증 보강: 경로 id 엄격 해석(결정 0050), 좌석 row 정렬 통합 테스트
 
 - 기간: 2026-11-27
-- Issue: [#45](https://github.com/Rasit-NP/curtain-call/issues/45), PR: (만드는 중)
+- Issue: [#45](https://github.com/Rasit-NP/curtain-call/issues/45), PR: [#50](https://github.com/Rasit-NP/curtain-call/pull/50)
 - 관련 결정: [0090](../decisions/0090-path-id-ascii-decimal.md), [0091](../decisions/0091-strict-long-binding.md). 기존 [0050](../decisions/0050-performance-detail-id-errors.md)을 구체화한다(바꾸지 않는다)
 
 ## 배경
@@ -32,6 +32,8 @@
 6. 좌석 row 정렬 통합 테스트(`SeatListOrderTest`)를 썼다. 원래 코드에서는 통과한다. V2의 `COLLATE "C"`를 잠시 빼고(커밋하지 않음) 돌리자 이 테스트만 실패했고
    (공연 상세의 첫 좌석이 `A`가 아니라 `🎭`), `HoldApiTest`(37개)와 `PerformanceApiTest`(40개)는 통과했다. 점검에서 찾은 공백을 이 테스트가 메운다. V2는 바로 되돌렸다.
 7. 명세(3.1, 6.3, 6.5, 6.6), 대응표, 결정 기록(0090, 0091), 결함 기록을 고쳤다.
+8. `origin/main`에 #47(PR #48)과 #46(PR #49)이 먼저 병합돼 리베이스했다. 공유 문서(결정·진행 기록 목차, 결함 기록) 3개가 충돌해 양쪽 행을 모두 살렸다.
+9. `./scripts/verify.sh` 전체 통과(백엔드 단위 108개, 통합 195개, 프론트엔드 158개, 하네스. E2E는 아직 없어 SKIP). PR [#50](https://github.com/Rasit-NP/curtain-call/pull/50)을 만들었다.
 
 ## 판단과 근거
 
