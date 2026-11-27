@@ -52,6 +52,8 @@
 
 ## 적용과 남은 점
 
+- 러너에서만 드러난 차이: Vitest·Vite가 파일로 보내는 출력에도 색 코드를 넣었다. `verify.sh`가 단계 명령에 `NO_COLOR=1`을 넘기고 `FORCE_COLOR`를 지운다(`docs/agent-log.md`, #67).
+  실행 화면 요약은 로그인한 사람에게만 보여, 같은 내용을 요약 단계의 로그에도 남긴다(`gh run view --log`로 본다).
 - 시간대·로캘: 러너는 UTC·영어 로캘이다. 첫 CI 실행 전에 로컬에서 백엔드 테스트 460개를 `-Duser.language=en -Duser.country=US -Duser.timezone=UTC`로,
   프론트엔드 테스트 220개를 `TZ=UTC`로 돌려 모두 통과하는 것을 확인했다.
 - 캐시 범위: main에서 만든 캐시는 모든 PR이 쓰고, PR에서 만든 캐시는 그 PR 안에서만 쓴다. 이 결정이 병합된 뒤 main push가 캐시를 만들면 다음 PR은 첫 실행부터 캐시가 맞는다.

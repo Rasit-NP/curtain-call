@@ -192,6 +192,23 @@ EOF
     assert_contains "$out" "리포트: e2e/playwright-report/index.html"
 }
 
+test_steps_run_without_color() {
+  local dir out code
+  dir="$(new_repo no-color)"
+  echo '{}' > "$dir/frontend/package.json"
+  # 색을 켜는 환경(FORCE_COLOR, CI)에서도 단계 명령은 NO_COLOR=1을 받고 FORCE_COLOR는 받지 않아야 한다.
+  cat > "$dir/bin/npm" <<'EOF'
+#!/usr/bin/env bash
+case "$1" in
+  ci) mkdir -p node_modules ;;
+  run) echo "fake npm run $2 NO_COLOR=${NO_COLOR-없음} FORCE_COLOR=${FORCE_COLOR-없음}" ;;
+esac
+EOF
+  out="$(cd "$dir" && FORCE_COLOR=1 CI=true PATH="$dir/bin:$PATH" bash scripts/verify.sh quick 2>&1)"; code=$?
+  assert_exit "$code" 0 "$out" || return 1
+  assert_contains "$(cat "$dir/.verify-logs/frontend-test.log")" "NO_COLOR=1 FORCE_COLOR=없음"
+}
+
 test_all_runs_harness_tests() {
   local dir out code
   dir="$(new_repo harness)"
@@ -582,6 +599,7 @@ run_test "verify.sh: 표식 파일이 있는 영역은 실행하고, 실패하�
 run_test "verify.sh: 실패 상세에 로그 앞쪽의 첫 오류 줄을 줄 번호와 함께 보여 준다" test_failure_shows_first_error_line
 run_test "verify.sh: E2E는 개발 DB를 띄우지 않고 Docker 확인·프론트엔드 의존성·타입 검사 뒤 Playwright를 돌리며, 실패하면 리포트 경로를 보여 준다" test_e2e_runs_playwright_without_dev_db
 run_test "verify.sh: 전체 검증은 하네스 테스트를 실행하고, 실패하면 전체를 실패로 본다" test_all_runs_harness_tests
+run_test "verify.sh: 색을 켜는 환경(CI, FORCE_COLOR)에서도 단계 명령에 NO_COLOR=1만 넘겨(FORCE_COLOR는 지움) 로그에 색 코드를 남기지 않는다" test_steps_run_without_color
 run_test "Stop 훅: settings.json에 등록돼 있고 훅 스크립트를 실행할 수 있다" test_hook_registered
 run_test "Stop 훅: verify.sh가 통과하면 아무것도 출력하지 않고 멈춤을 허용한다" test_hook_passes_silently
 run_test "Stop 훅: verify.sh가 실패하면 종료 코드 2로 멈춤을 막고 결과를 에이전트에게 준다" test_hook_blocks_on_failure

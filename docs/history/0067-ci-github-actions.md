@@ -60,6 +60,20 @@
     - 실행 로그와 실패 산출물을 누구나 본다. 비밀값을 쓰지 않아 새로 드러나는 것은 없다(0193).
     - GitHub 문서 기준으로 공개 저장소의 러너가 더 커서(2코어→4코어), 실행 B(비공개)와 이후 실행(공개)의 시간을 그대로 비교할 수 없다.
       같은 조건의 캐시 없는 실행은 병합 뒤 main push가 된다. PR에서 만든 캐시는 main이 쓰지 못하기 때문이다.
+16. 실패를 잡는지 확인 1: 임시 커밋으로 백엔드 R2 한도(`HoldLimit.MAX_SEATS_PER_PERFORMANCE`)를 4→5로, 프론트엔드 `HOLD_LIMIT_EXCEEDED` 안내 문구의 '4석'을 '5석'으로 바꿨다.
+    실행 [46066634270](https://github.com/Rasit-NP/curtain-call/actions/runs/46066634270)(공개 뒤 첫 실행, 잡 1분 55초)이 의도대로 실패했다.
+    - 캐시 4개가 모두 적중했다(`Cache hit for: setup-java-…-gradle-…`, `…-gradle-wrapper-…`, `node-cache-…-npm-…`, `playwright-Linux-…`). 백엔드 단위 단계가 61초에서 19초로 줄었다.
+    - `backend-unit`·`backend-integration`·`backend-build`·`frontend-test`가 FAIL, E2E는 '앞 단계 실패'로 SKIP. 실패 상세의 첫 오류 줄이 R2 테스트 이름(`HoldLimitTest`, `HoldApiTest`, 좌석 선택 화면 R2 테스트 등)을 정확히 보였다.
+    - 산출물 `verify-failure-1`(358KB, 7일 뒤 만료)에 `.verify-logs/` 9개와 백엔드 테스트 리포트·결과 XML이 있었다.
+    - 되돌림 커밋(`git revert`)으로 원래대로 돌렸다. 되돌린 뒤 `backend/`·`frontend/`는 main과 같다.
+17. 러너에서만 드러난 결함을 찾았다: 실패 상세와 산출물의 `frontend-test.log`에 색 코드가 149줄 섞여 있었다(로컬 로그에는 없음). 로컬에서는 `CI=true`, `GITHUB_ACTIONS=true`로도 재현되지 않았고,
+    `FORCE_COLOR=1`로 색을 강제해 같은 증상을 만들었다. `NO_COLOR=1`을 더하면 Vitest 출력의 색은 사라지지만 커버리지 표(istanbul)와 Rolldown 빌드 출력은 `FORCE_COLOR`를 따랐다.
+    - 하네스 테스트(색을 켜는 환경에서 단계 명령이 받는 `NO_COLOR`·`FORCE_COLOR`)를 먼저 써 실패를 확인하고, `verify.sh`가 `NO_COLOR=1`을 넘기고 `FORCE_COLOR`를 지우게 고쳤다.
+      `unset FORCE_COLOR` 줄만 빼도 이 테스트가 실패하는 것을 확인했다. `FORCE_COLOR=1 CI=true ./scripts/verify.sh frontend`에서 프론트엔드 로그 5개의 색 코드가 0줄이 됐다. `docs/agent-log.md`에 적었다.
+18. 실행 화면 요약(Job Summary)은 로그인한 사람에게만 보여, 공개 저장소를 로그인하지 않은 브라우저로 열면 보이지 않았다(API로도 읽을 수 없다).
+    요약 단계가 같은 내용을 단계 로그에도 남기게 했다(`tee -a`). 에이전트는 `gh run view --log`로 같은 요약을 본다.
+19. 캐시 없는 실행이 4분 안팎이라 시간 제한을 `verify.sh` 단계 25분→15분, 잡 30분→20분으로 줄였다.
+20. 실패를 잡는지 확인 2: 임시 커밋으로 E2E 시나리오 4(`auth-guard.spec.ts`)가 없는 제목('로그인 화면')을 기다리게 했다. 앞 단계는 모두 통과해야 E2E가 돈다.
 
 ## 리뷰
 

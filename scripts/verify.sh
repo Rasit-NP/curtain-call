@@ -19,6 +19,12 @@
 
 set -o pipefail
 
+# 단계 로그는 파일로 남겨 사람과 에이전트가 읽는다. 색 코드를 넣지 않는다.
+# GitHub Actions 러너에서는 Vitest·Vite가 파일로 보내는 출력에도 색 코드를 넣었다(#67). 두 도구는 NO_COLOR를 가장 먼저 본다.
+# 커버리지 표(istanbul)와 Rolldown은 FORCE_COLOR가 있으면 NO_COLOR보다 그것을 따르므로 FORCE_COLOR는 지운다.
+export NO_COLOR=1
+unset FORCE_COLOR
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="$ROOT/.verify-logs"
 MODE="${1:-all}"
