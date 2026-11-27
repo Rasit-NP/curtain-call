@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -84,6 +85,13 @@ class HoldTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatCode(() -> Hold.create(7L, 30L, List.of(1L), CREATED_AT)).doesNotThrowAnyException();
         assertThatCode(() -> Hold.create(7L, 30L, List.of(1L, 2L, 3L, 4L), CREATED_AT)).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("좌석 id에 null이 있으면 선점을 만들지 않는다")
+    void holdRejectsNullSeatId() {
+        assertThatThrownBy(() -> Hold.create(7L, 30L, Arrays.asList(101L, null), CREATED_AT))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

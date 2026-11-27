@@ -21,6 +21,8 @@ Closes #
 
 - CI:
 
+<!-- 뮤테이션 측정 대상 클래스(결정 0201)를 바꿨으면 ./scripts/verify.sh mutation 결과(점수, 새로 살아남은 변이와 분류)를 적는다. 아니면 지운다 -->
+
 ## 실패와 수정 이력
 
 <!-- 작업 중 실패한 테스트·검증, 원인 가설, 고친 방법을 순서대로. 없으면 "없음" -->
@@ -57,6 +59,7 @@ Closes #
 - [ ] CI(`verify`) 통과, 실행 링크를 '검증 결과'에 적음
 - [ ] Issue의 완료 조건마다 대응 테스트가 있음
 - [ ] `docs/test-matrix.md` 갱신
+- [ ] 뮤테이션 측정 대상 클래스를 바꿨다면 `./scripts/verify.sh mutation` 통과, 결과를 '검증 결과'에 적음
 - [ ] 결함을 찾아 고쳤다면 `docs/agent-log.md`에 기록
 - [ ] `docs/history/`의 Issue 파일 갱신
 - [ ] 결정이 있으면 `docs/decisions/`에 파일 추가(목차 포함)

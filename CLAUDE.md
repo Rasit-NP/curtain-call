@@ -17,7 +17,7 @@
 - `.claude/settings.json`, `.claude/hooks/stop-verify.sh`: 작업을 끝낼 때 `verify.sh quick`을 실행하는 Stop 훅
 - `.claude/settings.json`, `.claude/hooks/guard-main-checkout.sh`: `Edit`·`Write`·`NotebookEdit`로 메인 체크아웃의 파일을 고치려 하면 막는 PreToolUse 훅.
   링크된 워크트리와 저장소 밖 파일은 막지 않는다. Bash로 쓰는 것은 막지 못한다. 아래 '작업 흐름'의 'Issue별 세션' 참고
-- `docs/spec.md`(명세), `docs/test-matrix.md`(규칙-테스트 대응표), `docs/agent-log.md`(결함 탐지·수정 기록)
+- `docs/spec.md`(명세), `docs/test-matrix.md`(규칙-테스트 대응표), `docs/agent-log.md`(결함 탐지·수정 기록), `docs/mutation-testing.md`(뮤테이션 테스트 보고서)
 - `docs/decisions/`(작업용 결정 기록), `docs/history/`(포트폴리오용 진행 기록). 아래 '문서화' 참고
 
 ## 도메인 용어
@@ -70,6 +70,8 @@
 - `./scripts/verify.sh backend` | `frontend` | `e2e`: 영역별 전체 검증
 - `./scripts/verify.sh harness`: 검증 스크립트와 훅 자체 테스트(`scripts/harness.test.sh`). 검증 스크립트나 훅을 고치면 실행
 - `./scripts/verify.sh`: 전체 검증(하네스 → 백엔드 → 프론트엔드 → E2E). PR을 만들기 전에 반드시 통과
+- `./scripts/verify.sh mutation`: 규칙 코드의 뮤테이션 테스트(PIT, 3분 남짓, Docker 필요). 점수가 93% 미만이면 실패. 리포트는 `backend/build/reports/pitest/index.html`.
+  전체 검증·quick·PR CI에는 없다(결정 0202). CI에서는 수동 실행 워크플로 `Mutation`(`gh workflow run mutation.yml --ref <브랜치>`)
 - 아직 만들지 않은 영역은 SKIP한다. 표식 파일(`backend/gradlew`, `frontend/package.json`, `e2e/package.json`)이 생기면 그 영역이 검증에 들어간다.
 - 테스트 하나만 빠르게 돌리는 명령은 각 폴더의 `CLAUDE.md`에 있다.
 - 실패하면 출력 끝의 실패 요약과 실패 상세(첫 오류로 보이는 줄, 로그 끝부분)를 먼저 읽고, 요약에 적힌 리포트 경로에서 상세 내용을 확인한다.
@@ -205,6 +207,7 @@
 - `./scripts/verify.sh` 전체 통과(로컬과 CI)
 - Issue의 완료 조건마다 대응 테스트가 있음
 - `docs/test-matrix.md` 갱신
+- 뮤테이션 측정 대상 클래스(결정 0201)를 바꿨으면 `./scripts/verify.sh mutation` 통과, 점수와 새로 살아남은 변이를 PR 본문에 적음
 - `docs/history/`의 Issue 파일 갱신, 결정이 있으면 `docs/decisions/` 파일 추가
 - PR 본문의 검증 결과, 실패와 수정 이력, 테스트가 잡는 결함을 채움
 

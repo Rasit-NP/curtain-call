@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # 커튼콜 검증 스크립트: 모든 검증의 단일 진입점
 #
-# 사용법: ./scripts/verify.sh [quick|harness|backend|frontend|e2e|all]
+# 사용법: ./scripts/verify.sh [quick|harness|backend|frontend|e2e|mutation|all]
 #   quick     백엔드 단위 테스트 + 프론트엔드 테스트 (작업 중 수시로, Stop 훅)
 #   harness   검증 스크립트와 Stop 훅 자체 테스트 (scripts/harness.test.sh)
 #   backend   백엔드 단위·통합 테스트, 빌드, 커버리지
 #   frontend  프론트엔드 타입 검사, 린트, 테스트(커버리지), 빌드
 #   e2e       Playwright E2E 테스트(이 체크아웃의 백엔드·프론트엔드·임시 DB를 빈 포트에 띄운다. 개발 DB는 쓰지 않는다)
+#   mutation  백엔드 규칙 코드의 뮤테이션 테스트(PIT, 3분 남짓). 점수가 기준값보다 낮으면 실패한다. all·quick에는 넣지 않는다(결정 0202)
 #   all       harness → backend → frontend → e2e (기본값, PR 전에 반드시 통과)
 #
 # - 단계별 전체 로그는 .verify-logs/<단계>.log 에 남는다.
@@ -112,6 +113,14 @@ backend_all() {
     ./gradlew assemble jacocoTestReport
 }
 
+# 뮤테이션 테스트(PIT)는 단위·통합 테스트를 모두 쓰므로 Docker가 필요하다. 꺼져 있으면 Gradle 실패 대신 첫 단계에서 바로 보이게 한다.
+backend_mutation() {
+  area_ready backend backend/gradlew || return 0
+  run_step mutation-docker . "-" docker info || return 1
+  run_step backend-mutation backend "backend/build/reports/pitest/index.html" \
+    ./gradlew pitest
+}
+
 frontend_quick() {
   area_ready frontend frontend/package.json || return 0
   run_step frontend-install frontend "-" ensure_node_modules || return 1
@@ -139,9 +148,9 @@ e2e_all() {
 }
 
 case "$MODE" in
-  quick|harness|backend|frontend|e2e|all) ;;
+  quick|harness|backend|frontend|e2e|mutation|all) ;;
   *)
-    echo "사용법: $0 [quick|harness|backend|frontend|e2e|all]" >&2
+    echo "사용법: $0 [quick|harness|backend|frontend|e2e|mutation|all]" >&2
     exit 2
     ;;
 esac
@@ -164,6 +173,9 @@ case "$MODE" in
     ;;
   e2e)
     e2e_all
+    ;;
+  mutation)
+    backend_mutation
     ;;
   all)
     harness_all

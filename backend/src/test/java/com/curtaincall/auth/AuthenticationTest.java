@@ -110,6 +110,17 @@ class AuthenticationTest extends IntegrationTest {
     }
 
     @Test
+    @DisplayName("R6: 401의 WWW-Authenticate는 토큰이 없으면 Bearer이고, 토큰이 잘못됐으면 Bearer error=\"invalid_token\"이다(결정 0034)")
+    void wwwAuthenticateTellsMissingFromInvalidToken() throws Exception {
+        String otherKey = TestTokens.signWithOtherKey(USER_ID, clock.instant(), clock.instant().plus(Duration.ofHours(1)));
+
+        expectProblem(mockMvc.perform(get(UNREGISTERED_PRIVATE)), 401, "AUTH_REQUIRED")
+                .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"));
+        expectProblem(withToken(get(UNREGISTERED_PRIVATE), otherKey), 401, "AUTH_REQUIRED")
+                .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer error=\"invalid_token\""));
+    }
+
+    @Test
     @DisplayName("R6: sub가 long 최댓값인 토큰은 인증을 통과하고, 1 더 크면 401 AUTH_REQUIRED다")
     void subjectRangeBoundary() throws Exception {
         Instant exp = clock.instant().plus(Duration.ofHours(1));

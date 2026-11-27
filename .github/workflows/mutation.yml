@@ -1,0 +1,82 @@
+# 뮤테이션 테스트(PIT): 사람이 Actions 화면이나 `gh workflow run mutation.yml --ref <브랜치>`로 돌린다(결정 0202).
+#
+# - PR·push마다 돌리지 않는다. 측정 대상 클래스를 바꾼 PR과 로드맵 7단계의 재측정에 쓴다. 로컬에서는 ./scripts/verify.sh mutation이다.
+# - 검증 명령은 verify.sh에만 둔다(결정 0001). 보안 규칙은 CI 워크플로와 같다(결정 0191). 하네스(scripts/harness.test.sh)가 검사한다.
+# - 점수가 기준값보다 낮으면 verify.sh가 실패한다(결정 0203). 리포트는 측정 기록이라 성공해도 산출물로 남긴다.
+
+name: Mutation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    # shell을 적으면 bash가 -eo pipefail로 돈다. 출력을 tee로 남겨도 verify.sh의 종료 코드가 단계 결과가 된다.
+    shell: bash
+
+jobs:
+  mutation:
+    name: mutation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: 체크아웃
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Java 21과 Gradle 캐시
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+          cache-dependency-path: |
+            backend/*.gradle*
+            backend/gradle/wrapper/gradle-wrapper.properties
+
+      - name: verify.sh mutation
+        id: verify
+        # 로컬(스레드 4) 3분 30초. 러너에서 몇 배 느려도 끝나게 두고, 잡의 시간 제한보다 짧게 두어 요약과 산출물 단계가 돈다.
+        timeout-minutes: 25
+        run: ./scripts/verify.sh mutation 2>&1 | tee "$RUNNER_TEMP/verify.out"
+
+      - name: 결과를 실행 화면에
+        if: always() && steps.verify.outcome != 'skipped'
+        # 실행 화면 요약은 로그인한 사람에게만 보인다. 같은 내용을 단계 로그에도 남겨 gh run view --log로도 본다.
+        env:
+          OUTCOME: ${{ steps.verify.outcome }}
+        run: |
+          out="$RUNNER_TEMP/verify.out"
+          {
+            echo "## verify.sh mutation: $OUTCOME"
+            echo
+            echo '~~~~~~~~text'
+            # PIT 통계: 변이 수, 죽인 수와 점수, 덮이지 않은 수와 테스트 강도, 실행 시간
+            grep -E '^>> (Line Coverage|Generated [0-9]+ mutations|Mutations with no coverage|Ran [0-9]+ tests)|^> Total' \
+              .verify-logs/backend-mutation.log 2>/dev/null || true
+            echo
+            summary="$(sed -n '/^===== 검증 요약/,$p' "$out" 2>/dev/null || true)"
+            [ -n "$summary" ] || summary="$(tail -n 60 "$out" 2>/dev/null || true)"
+            printf '%s\n' "$summary"
+            echo '~~~~~~~~'
+            echo
+            echo "리포트(HTML·XML)와 로그는 산출물 mutation-report-${GITHUB_RUN_ATTEMPT}에 있다(30일 보관). 받기: \`gh run download ${GITHUB_RUN_ID}\`"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: 리포트 올리기
+        if: always() && steps.verify.outcome != 'skipped'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mutation-report-${{ github.run_attempt }}
+          # .verify-logs/는 이름이 점으로 시작해, 이 옵션이 없으면 빠진다.
+          include-hidden-files: true
+          path: |
+            .verify-logs/
+            backend/build/reports/pitest/
+            backend/build/reports/tests/
+          if-no-files-found: ignore
+          retention-days: 30

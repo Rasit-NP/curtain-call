@@ -1,6 +1,7 @@
 package com.curtaincall.hold.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
 import java.util.List;
@@ -36,5 +37,14 @@ class SeatAvailabilityTest {
         assertThat(SeatAvailability.apiStatus(SeatStatus.HELD, validHolder, NOW)).isEqualTo(SeatStatus.HELD);
         assertThat(SeatAvailability.apiStatus(SeatStatus.HELD, expiredHolder, NOW)).isEqualTo(SeatStatus.AVAILABLE);
         assertThat(SeatAvailability.apiStatus(SeatStatus.SOLD, null, NOW)).isEqualTo(SeatStatus.SOLD);
+    }
+
+    @Test
+    @DisplayName("R1: HELD 좌석을 좌석을 잡은 선점 없이 판정하면 선점할 수 있다고 보지 않고 IllegalArgumentException을 던진다")
+    void heldSeatWithoutHolderIsNotJudged() {
+        assertThatThrownBy(() -> SeatAvailability.isHoldable(SeatStatus.HELD, null, NOW))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> SeatAvailability.apiStatus(SeatStatus.HELD, null, NOW))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }
