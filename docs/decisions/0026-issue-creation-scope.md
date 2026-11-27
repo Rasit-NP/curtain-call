@@ -1,6 +1,6 @@
 # 0026. Issue 등록은 로드맵에서 지금 진행할 단계만, 더 필요하면 목록을 먼저 보여 주고 묻는다
 
-- 상태: 채택
+- 상태: 대체됨(→0185)
 - 날짜: 2026-11-26
 - 결정한 사람: 사람(대화에서 지시)
 - 관련: Issue [#29](https://github.com/Rasit-NP/curtain-call/issues/29), 로드맵 [#13](https://github.com/Rasit-NP/curtain-call/issues/13)
