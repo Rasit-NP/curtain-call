@@ -1,6 +1,7 @@
 package com.curtaincall.support;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -64,6 +65,33 @@ public class TestPayments {
     /** 선점의 만료 시각(저장 값). */
     public @Nullable Timestamp holdExpiresAt(long holdId) {
         return jdbcTemplate.queryForObject("SELECT expires_at FROM holds WHERE id = ?", Timestamp.class, holdId);
+    }
+
+    /** 예매 행을 SQL로 직접 만들고 id를 돌려준다(스키마 제약 테스트용). 좌석은 {@link #insertReservationSeat}로 따로 넣는다. */
+    public long insertReservation(long userId, long performanceId, long holdId, long amount, Instant reservedAt) {
+        return insert("""
+                INSERT INTO reservations (user_id, performance_id, hold_id, amount, reserved_at)
+                VALUES (?, ?, ?, ?, ?) RETURNING id""", userId, performanceId, holdId, amount, Timestamp.from(reservedAt));
+    }
+
+    /** 예매에 좌석 하나를 SQL로 직접 넣는다(스키마 제약 테스트용). */
+    public void insertReservationSeat(long reservationId, long seatId) {
+        jdbcTemplate.update("INSERT INTO reservation_seats (reservation_id, seat_id) VALUES (?, ?)", reservationId, seatId);
+    }
+
+    /** 결제 행을 SQL로 직접 만들고 id를 돌려준다(스키마 제약 테스트용). */
+    public long insertPayment(long userId, long holdId, long amount, String status, @Nullable Long reservationId, Instant createdAt) {
+        return insert("""
+                INSERT INTO payments (user_id, hold_id, amount, status, reservation_id, created_at)
+                VALUES (?, ?, ?, ?, ?, ?) RETURNING id""", userId, holdId, amount, status, reservationId, Timestamp.from(createdAt));
+    }
+
+    private long insert(String sql, Object... args) {
+        Long id = jdbcTemplate.queryForObject(sql, Long.class, args);
+        if (id == null) {
+            throw new IllegalStateException("id를 돌려받지 못했다: " + sql);
+        }
+        return id;
     }
 
     private int count(String sql, Object... args) {
