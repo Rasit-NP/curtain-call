@@ -93,6 +93,7 @@ jobs:
 
       - name: 검증 요약을 실행 화면에
         if: always() && steps.verify.outcome != 'skipped'
+        # 실행 화면 요약은 로그인한 사람에게만 보인다. 같은 내용을 단계 로그에도 남겨 gh run view --log로도 본다.
         env:
           MODE: ${{ steps.scope.outputs.mode }}
           OUTCOME: ${{ steps.verify.outcome }}
@@ -119,7 +120,7 @@ jobs:
               echo
               echo "로그와 리포트는 산출물 verify-failure-${GITHUB_RUN_ATTEMPT}에 있다(7일 보관). 받기: \`gh run download ${GITHUB_RUN_ID}\`"
             fi
-          } >> "$GITHUB_STEP_SUMMARY"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: 실패 산출물 올리기
         if: failure() && steps.verify.outcome == 'failure'
