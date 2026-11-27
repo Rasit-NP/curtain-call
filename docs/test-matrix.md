@@ -64,7 +64,8 @@ R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 �
 | 실패 | R2: 5석 묶음은 409 HOLD_LIMIT_EXCEEDED이고 아무 좌석도 선점되지 않는다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
 | 실패 | R2: 같은 사용자가 서로 다른 좌석 3석 묶음 두 개를 동시에 선점하면 하나만 201이고 나머지는 409 HOLD_LIMIT_EXCEEDED다 | 백엔드 통합(동시성) | 작성(`backend/src/test/java/com/curtaincall/hold/HoldConcurrencyTest.java`) |
 | 경계 | R2: 4석까지는 고를 수 있고, 4석을 고른 뒤 5번째 좌석은 선택되지 않고 안내 문구가 보인다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
-| 경계 | R2: 안내 문구는 좌석을 고르거나 취소하면 지우고, 5번째 좌석을 다시 누르면 다시 보인다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
+| 경계 | R2: 5번째 좌석을 눌러 뜬 안내 문구는 좌석을 취소하면 지우고, 5번째 좌석을 다시 누르면 다시 보인다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
+| 경계 | R2: 선점 요청이 409 HOLD_LIMIT_EXCEEDED로 끝나 뜬 안내 문구는 좌석을 하나 더 고르면 지운다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 실패 | R2: 선점 요청이 409 HOLD_LIMIT_EXCEEDED면 안내 문구를 보여 주고 고른 좌석은 그대로 두며 좌석 상태를 다시 불러오지 않는다 | 프론트 | 작성(`frontend/src/pages/seat/SeatSelectPage.test.tsx`) |
 | 실패 | R2: 4석을 고른 뒤에는 5번째 좌석을 고를 수 없다(시나리오 3) | E2E | 미작성 |
 
