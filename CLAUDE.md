@@ -13,7 +13,7 @@
 - `compose.yaml`: 로컬 개발용 PostgreSQL 17(`db` 서비스, 프로젝트 이름 `curtain-call`). 루트에서 `docker compose up -d db`로 띄운다.
   E2E는 이 DB를 쓰지 않고 실행마다 임시 DB를 띄운다(결정 0161). 통합 테스트와 E2E에는 Docker가 필요하다.
 - `backend/`, `frontend/`, `e2e/`에서 작업하기 전에는 그 폴더의 `CLAUDE.md`를 먼저 읽는다. 새 파일만 만드는 작업도 마찬가지다.
-- `scripts/verify.sh`: 모든 검증의 단일 진입점
+- `scripts/verify.sh`: 모든 검증의 단일 진입점. CI(`.github/workflows/ci.yml`)도 이것을 부른다. 아래 '명령'의 'CI' 참고
 - `.claude/settings.json`, `.claude/hooks/stop-verify.sh`: 작업을 끝낼 때 `verify.sh quick`을 실행하는 Stop 훅
 - `.claude/settings.json`, `.claude/hooks/guard-main-checkout.sh`: `Edit`·`Write`·`NotebookEdit`로 메인 체크아웃의 파일을 고치려 하면 막는 PreToolUse 훅.
   링크된 워크트리와 저장소 밖 파일은 막지 않는다. Bash로 쓰는 것은 막지 못한다. 아래 '작업 흐름'의 'Issue별 세션' 참고
@@ -74,13 +74,21 @@
 - 테스트 하나만 빠르게 돌리는 명령은 각 폴더의 `CLAUDE.md`에 있다.
 - 실패하면 출력 끝의 실패 요약과 실패 상세(첫 오류로 보이는 줄, 로그 끝부분)를 먼저 읽고, 요약에 적힌 리포트 경로에서 상세 내용을 확인한다.
 
+### CI
+
+- `.github/workflows/ci.yml`이 PR(열기·새 커밋)과 main push마다 GitHub Actions(ubuntu-24.04)에서 `verify.sh`를 실행한다. 검사 이름은 `verify`다.
+  main push는 늘 전체, PR은 바꾼 파일이 모두 `docs/` 아래면 하네스만 실행한다(결정 0190). 같은 PR에 새 커밋을 올리면 이전 실행은 취소된다.
+- 워크플로에는 도구 설치와 캐시만 두고, 검증 명령은 `verify.sh`에만 둔다. 액션은 GitHub 공식 `actions/*`를 커밋 SHA로 고정해 쓴다(결정 0191, 하네스가 검사).
+- 결과는 `gh pr checks <PR 번호>`로 본다. 실패하면 실행 화면의 요약(Job Summary)에 검증 요약과 실패 상세가 있고, 터미널에서는 `gh run view <실행 id> --log-failed`로 본다.
+  로그와 리포트(`.verify-logs/`, 테스트 리포트, Playwright 리포트·트레이스, `backend.log`)는 산출물로 7일 남는다: `gh run download <실행 id> -D <폴더>`
+
 ## 작업 흐름
 
 1. 모든 작업은 GitHub Issue에서 시작한다. Issue에 관련 규칙 번호와 완료 조건이 없으면 작업 전에 사람에게 확인한다.
    Issue를 만들 때는 이미 정한 정책과 아직 정하지 않은 정책을 나눠 적는다. 아직 정하지 않은 정책은 구현 전에 아래 '정책 결정'대로 묻는다.
 2. 브랜치는 `<type>/<이슈번호>-<짧은-설명>`으로 만든다. type은 `feat`, `fix`, `test`, `refactor`, `docs`, `chore`.
 3. 완료 조건마다 실패하는 테스트를 먼저 쓰고, 실패하는 것을 확인한 뒤 구현한다.
-4. 작업 중에는 `verify.sh quick`, PR 전에는 `verify.sh` 전체를 통과시킨다.
+4. 작업 중에는 `verify.sh quick`, PR 전에는 `verify.sh` 전체를 통과시킨다. PR을 만든 뒤에는 CI 결과를 확인하고, 실패하면 '실패 처리'대로 고쳐 다시 통과시킨다.
 5. 커밋은 작은 단위로 하고, 메시지는 `<type>: <요약> (#이슈번호)` 형식으로 쓴다.
 6. PR은 `.github/pull_request_template.md`를 채워 `gh pr create`로 만들고, 본문에 `Closes #이슈번호`를 넣는다.
 7. PR을 리뷰할 때는 아래 '리뷰' 절대로 강도를 정한다.
@@ -142,7 +150,8 @@
 
 ## 실패 처리
 
-1. 실패 요약에서 실패한 테스트와 첫 오류 메시지를 확인한다.
+1. 실패 요약에서 실패한 테스트와 첫 오류 메시지를 확인한다. CI 실패는 실행 화면의 요약과 산출물로 같은 절차를 따른다.
+   로컬에서 통과하고 CI에서만 실패하면 환경 차이(Linux, UTC 시간대, 영어 로캘)를 먼저 의심하고, 로컬에서 재현해 본다.
 2. 원인 가설을 한 문장으로 세우고, 가능하면 그 가설을 확인하는 가장 작은 테스트로 재현한다.
 3. 고친 뒤에는 실패했던 테스트 → `verify.sh quick` → 해당 영역 전체 순으로 다시 검증한다.
 4. 같은 실패를 고치는 시도는 최대 3번이다. 그래도 실패하면 아래 인계 절차를 따른다.
@@ -193,7 +202,7 @@
 
 ## 완료 조건
 
-- `./scripts/verify.sh` 전체 통과
+- `./scripts/verify.sh` 전체 통과(로컬과 CI)
 - Issue의 완료 조건마다 대응 테스트가 있음
 - `docs/test-matrix.md` 갱신
 - `docs/history/`의 Issue 파일 갱신, 결정이 있으면 `docs/decisions/` 파일 추가

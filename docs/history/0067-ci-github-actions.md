@@ -1,0 +1,65 @@
+# #67 CI(GitHub Actions): PR과 main push마다 verify.sh 전체 실행, 캐시, 이전 실행 취소
+
+- 기간: 2026-11-28 ~
+- Issue: [#67](https://github.com/Rasit-NP/curtain-call/issues/67), PR: 아직 없음
+- 관련 결정: 기존 [0001](../decisions/0001-verify-single-entry.md), [0002](../decisions/0002-stop-hook-quick.md), [0161](../decisions/0161-e2e-environment.md),
+  [0162](../decisions/0162-e2e-setup-impl.md), [0183](../decisions/0183-github-actions.md), [0186](../decisions/0186-handoff-roadmap-issue-scope.md)을 따른다. 이 Issue의 결정은 0190부터 쓴다
+
+## 배경
+
+로드맵 2 [#64](https://github.com/Rasit-NP/curtain-call/issues/64)의 1단계 첫 항목이다. 사람이 GitHub Actions 도입을 정했다(결정 0183).
+지금까지 검증은 각 세션이 로컬에서 돌린 `verify.sh`와 Stop 훅뿐이었고, 결과는 PR 본문에만 남았다.
+
+- `verify.sh`와 하네스(`scripts/harness.test.sh`)는 macOS에서만 돌았다. 통합 테스트와 E2E는 Testcontainers로 DB를 띄워 Docker가 필요하다.
+- 저장소가 비공개라 Actions 실행 시간에 월 한도가 있다.
+- 결정 0162는 'CI(GitHub Actions)로 돌리는 것은 범위 밖'이라고 적었다. 이 Issue에서 새 결정으로 대체한다.
+
+## 진행
+
+1. Issue, 루트·영역별 `CLAUDE.md`, 결정 목차와 관련 결정(0001, 0002, 0161, 0162, 0183, 0186), `verify.sh`·하네스·PR 템플릿을 읽었다.
+   워크트리 브랜치는 이미 `origin/main`(`4349942`)과 같아 이름만 `chore/67-ci-github-actions`로 바꿨다.
+2. 물을 때 보일 사실을 모았다.
+   - 저장소는 비공개다. Actions 설정은 '모든 액션 허용', SHA 고정 강제 없음, 워크플로 기본 토큰 권한 read이고, 워크플로는 하나도 없다.
+   - 계정 요금제는 API(`gh api user`)로 보이지 않았다(`plan`이 null). 사람에게 묻는다.
+   - 로드맵 1의 PR은 25개(2026-11-26~27, 약 36시간)였고 PR마다 커밋이 1~11개였다. `docs/`만 바꾼 PR은 #40, #49 두 개였다.
+   - 루트 `CLAUDE.md`는 백엔드 `ErrorCodeTest`와 프론트엔드 `errorMessages.test.ts`가 읽는다(오류 코드 표). `docs/`를 읽는 테스트는 없다.
+   - 다른 워크트리에 남은 `.verify-logs/`의 파일 시각으로 보면 이 Mac에서 전체 검증은 2분 안팎이다(통합 테스트 36초, 프론트엔드 9초, E2E 15초).
+3. Issue의 '아직 정하지 않은 정책' 1~3번을 구현 전에 한 번에 물었다(아래 '정책 결정(사람)'). 사람이 모두 추천안을 골랐다.
+4. 브랜치 보호를 쓸 수 있는지 API로 확인했다. `GET /repos/…/branches/main/protection`이 403("Upgrade to GitHub Pro or make this repository public to enable this feature")이었다.
+   Free 요금제의 비공개 저장소에서는 브랜치 보호를 쓸 수 없어, 사람이 저장소를 공개로 바꾼 뒤에 설정할 수 있다. 사람에게 알린다.
+5. 하네스 테스트 6개부터 썼다(워크플로 규칙 검사 4개, `docs/`만 바뀌었는지 판단하는 스크립트 2개). 워크플로와 스크립트가 없어 6개 모두 실패하는 것을 확인했다.
+6. 쓸 액션의 최신 판과 커밋 SHA를 API로 확인했다(2026-11-28): checkout v7.0.1, setup-java v6.3.0, setup-node v7.1.0, cache v6.1.0, upload-artifact v7.0.2.
+   모두 node24로 돈다. 판마다 `action.yml`의 입력 이름과 큰 판의 릴리스 노트를 읽고 썼다.
+   upload-artifact는 v4.4부터 점으로 시작하는 파일을 빼므로 `.verify-logs/`를 올리려면 `include-hidden-files: true`가 필요하다.
+7. 워크플로(`.github/workflows/ci.yml`)와 범위 판단 스크립트(`scripts/ci-scope.sh`)를 써서 6개를 통과시켰다(결정 [0193](../decisions/0193-ci-workflow-impl.md)).
+8. 검사가 실제 위반을 잡는지 워크플로와 스크립트를 하나씩 망가뜨려 확인하고 되돌렸다. 14가지 모두 해당 테스트가 실패했다.
+   - 워크플로: checkout을 태그(`@v7`)로, 공식이 아닌 액션, `persist-credentials` 줄 삭제, `contents: write`, `pull-requests: write` 추가, 잡에 `write-all`,
+     `pull_request_target` 트리거, `./gradlew test`·`npm run test` 직접 호출, 요약 표시 줄 불일치.
+   - 스크립트: `--no-renames` 삭제(코드를 `docs/`로 옮긴 PR이 하네스만 돎), `core.quotePath` 기본값(한글 파일 이름이 따옴표로 나와 문서 PR이 전체로 돎),
+     '바뀐 파일 없음'과 '알 수 없음'을 하네스로.
+   - 처음에는 `contents: write` 변형이 통과했다. 변형이 워크플로 맨 위 주석의 같은 문구를 바꿨기 때문이었고, 권한 줄을 바꾸자 실패했다.
+9. 러너는 UTC·영어 로캘이고 이 Mac은 KST·한국어(JVM `ko_KR`)다. CI 실행 횟수를 줄이려고 먼저 로컬에서 환경을 바꿔 돌렸다.
+   - 백엔드: `JAVA_TOOL_OPTIONS='-Duser.language=en -Duser.country=US -Duser.timezone=UTC'`, `TZ=UTC`로 단위 153개·통합 307개 모두 통과(49초).
+     Gradle 데몬을 쓰지 않아(`-Dorg.gradle.daemon=false`) 다른 세션의 데몬에 이 설정이 남지 않게 했다.
+   - 프론트엔드: `TZ=UTC`로 220개 모두 통과.
+10. 결정 기록(0190~0193), 루트 `CLAUDE.md`('구성', '명령'의 'CI', '작업 흐름' 4번, '실패 처리' 1번, '완료 조건'), PR 템플릿('검증 결과'의 CI 줄, 체크리스트)을 고쳤다.
+    루트 `CLAUDE.md`는 이미 224줄로 맨 위 주석의 '200줄 이하'를 넘어 있어, CI 내용은 꼭 필요한 것만 7줄로 더했다.
+
+## 정책 결정(사람)
+
+Issue의 '아직 정하지 않은 정책' 1~3번을 구현 전에 한 번에 물었다. 질문마다 선택지, 추천, 근거를 붙였다.
+
+1. **요금제와 실행 시간(1번)**: 계정 요금제를 물었다. 어림(전체 검증 1회 6~10분, PR 하나에 push 2~3번과 병합 뒤 main 1번으로 20~40분, PR 40개면 800~1,600분)을 함께 보였다.
+   - 답: "Free입니다만, 이후에 public으로 공개해야 하기 때문에, 요금제는 크게 걱정하지 않아도 될 듯 합니다."(원문)
+   - 공개 저장소는 표준 러너 실행 시간이 무료다. 공개 전까지는 월 2,000분 안에서 쓴다.
+2. **문서만 바뀐 PR(1번)**: (1) PR이 바꾼 파일이 모두 `docs/` 아래면 `verify.sh harness`만(추천), (2) 늘 전체, (3) 건너뛰기.
+   근거: 하네스가 결정·진행 기록 목차를 검사한다. 루트 `CLAUDE.md`는 백엔드·프론트엔드 테스트가 오류 코드 표를 읽어 문서로 치지 않는다. 같은 잡이 늘 돌아 결과를 남기므로 필수 검사로 걸어도 '대기'로 남지 않는다.
+   - 답: (1).
+3. **워크플로 보안(2번)**: (1) GitHub 공식 `actions/*`만, 커밋 SHA로 고정하고 버전은 주석에, 토큰은 `contents: read`, checkout이 토큰을 디스크에 남기지 않음, 하네스가 이 규칙을 검사(추천),
+   (2) 도구 제작사 공식 액션까지, SHA 고정, (3) 공식 `actions/*`만, 태그 고정.
+   근거: 필요한 일(체크아웃, Java·Node 설치와 캐시, 브라우저 캐시, 산출물 올리기)이 공식 액션으로 다 된다. 태그는 옮겨질 수 있다(2025년 tj-actions/changed-files 사건).
+   - 답: (1).
+4. **작업 흐름(3번)**: (1) PR 전 로컬 `verify.sh` 전체는 그대로 두고, PR을 만든 뒤 CI 결과를 확인하고 실패하면 고쳐 다시 통과시키는 것까지 완료 조건에(추천),
+   (2) CI가 로컬 전체를 대신(PR 전에는 quick만), (3) 지금 흐름 그대로(CI는 참고만).
+   근거: 이 Mac에서 로컬 전체는 2분 안팎이라 먼저 잡으면 CI 시간을 아낀다. CI에서만 나는 실패는 환경 차이라 분석해 기록할 거리다.
+   - 답: (1).

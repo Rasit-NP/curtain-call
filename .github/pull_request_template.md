@@ -12,10 +12,14 @@ Closes #
 
 ## 검증 결과
 
-<!-- ./scripts/verify.sh 전체 실행 결과의 '검증 요약'을 붙인다 -->
+<!-- 로컬: ./scripts/verify.sh 전체 실행 결과의 '검증 요약'을 붙인다 -->
 
 ```
 ```
+
+<!-- CI: PR을 만든 뒤 실행 링크와 결과를 적는다(gh pr checks). CI에서만 실패해 고쳤으면 '실패와 수정 이력'에도 적는다 -->
+
+- CI:
 
 ## 실패와 수정 이력
 
@@ -49,7 +53,8 @@ Closes #
 
 ## 체크리스트
 
-- [ ] `./scripts/verify.sh` 전체 통과
+- [ ] `./scripts/verify.sh` 전체 통과(로컬)
+- [ ] CI(`verify`) 통과, 실행 링크를 '검증 결과'에 적음
 - [ ] Issue의 완료 조건마다 대응 테스트가 있음
 - [ ] `docs/test-matrix.md` 갱신
 - [ ] 결함을 찾아 고쳤다면 `docs/agent-log.md`에 기록
