@@ -40,3 +40,4 @@
 | [0056](0056-backend-idempotency.md) | 백엔드 멱등 키(R5): 결제 결과 저장과 재사용, 같은 키 동시 요청 | 완료 |
 | [0059](0059-e2e-setup.md) | E2E 첫 설정(R1·R2·R6): Playwright 골격, e2e 프로필 데이터 초기화 API, 시나리오 1~4 | 진행 중 |
 | [0061](0061-history-review-cleanup.md) | 정리: 병합된 Issue의 진행 기록 상태·결과 최신화, PR #38에서 남긴 리뷰 지적(R6) | 진행 중 |
+| [0065](0065-roadmap2-transition.md) | 로드맵 2 전환(0단계): 회원가입을 범위에 넣고, Issue 등록 전 승인 규칙과 CI·배포 넘김 조건 정리 | 진행 중 |

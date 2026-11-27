@@ -23,7 +23,7 @@ CGV 예매 방식을 따른다.
 
 | 엔티티 | 주요 속성 | 설명 |
 |---|---|---|
-| 사용자(User) | `id`, `username`, `passwordHash` | `username`은 고유하다. 회원가입은 없고 시드로만 만든다. |
+| 사용자(User) | `id`, `username`, `passwordHash` | `username`은 고유하다. 지금은 시드로만 만든다(2.5). 회원가입은 로드맵 2([#64](https://github.com/Rasit-NP/curtain-call/issues/64))의 3단계 Issue에서 정한다([결정 0181](decisions/0181-signup-in-scope.md)). |
 | 공연장(Venue) | `id`, `name`, 좌석 배치 | `name`은 고유하고 공연 응답의 `venue`로 나간다. 좌석 배치는 공연장마다 다르고, 통로와 빈자리까지 표현한다. |
 | 공연장 좌석 배치(VenueSeat) | `id`, `venueId`, `row`, `number`, `gridRow`, `gridColumn` | 공연장 배치의 좌석 하나다. 같은 공연장에서 (`row`, `number`)는 고유하고 (`gridRow`, `gridColumn`)은 겹치지 않는다. |
 | 공연(Performance) | `id`, `title`, `venueId`, `startsAt`, `price` | 날짜와 시간이 정해진 한 회차다. 한 공연장에서 열린다. `price`는 1석 가격(원)이고 전석이 같다. |
@@ -579,10 +579,14 @@ Idempotency-Key: 6f1c2e7a-0b5d-4c1e-9a7f-2d3b4c5e6f70
 
 ## 8. 만들지 않는 것
 
-- 규칙에 없어 두지 않는 것: 예매 취소, 선점 시간 연장, 이미 시작한 공연의 예매 제한, 좌석 등급별 가격,
+- 규칙에 없어 두지 않는 것: 선점 시간 연장, 이미 시작한 공연의 예매 제한, 좌석 등급별 가격,
   화면에서 결제 거절을 일으키는 방법, 내 선점 목록 API. 필요하면 새 Issue에서 사람이 정한다.
   - 내 선점 목록 API가 없으므로, 창을 닫았다가 5분 안에 돌아오면 내 좌석도 '선택 불가'로 보이고 보유 좌석 수에 들어간다. 5분 뒤 만료로 풀린다.
-- 루트 `CLAUDE.md`의 범위 밖: 대기열, Redis, Kafka, 실제 PG 연동, 회원가입, 관리자 화면.
+- 예매 취소: 지금은 없다. 로드맵 2([#64](https://github.com/Rasit-NP/curtain-call/issues/64))의 5단계(선택)에서 사람이 정한다.
+- 루트 `CLAUDE.md`의 범위 밖: 대기열, Redis, Kafka, 실제 PG 연동, 공연 등록, 관리자 화면([결정 0182](decisions/0182-no-queue-no-performance-registration.md)).
+  - 대기열: 서버 과부하 대책이지 정확성 문제가 아니다. 같은 좌석은 한 명만 잡는다는 R1은 DB 잠금으로 이미 보장한다(2.4). 제대로 만들려면 Redis가 필요하다.
+  - 공연 등록: 관리자 역할과 권한이 필요하고, 핵심 규칙(R1~R6)과 거리가 멀다. 공연과 좌석은 시드로 만든다(2.5).
+- 회원가입은 로드맵 2에서 범위에 넣었다. 세부 정책(받는 항목, 아이디·비밀번호 규칙, API, 오류 코드, 새 규칙, 화면 흐름)은 3단계 Issue에서 정한다(2.1).
 
 ## 9. 결정 기록
 
