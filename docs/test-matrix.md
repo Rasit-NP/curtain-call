@@ -3,7 +3,7 @@
 R1~R6(루트 `CLAUDE.md`)마다 정상·실패·경계값 테스트를 어느 계층에서 검증할지 정한다.
 동작의 기준은 [`spec.md`](spec.md)이고, 괄호 안의 숫자는 그 문서의 절 번호다.
 
-현황(2026-11-27): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 조회 단계에서 백엔드(#35)는 공연 목록·상세 API(공개 경로 R6 포함), 공연장별 좌석 배치, 공연·좌석 시드 테스트를, 프론트엔드(#36)는 공연 목록·내 예매 화면, 공통 헤더와 로그아웃, 내 예매 화면의 실제 경로로 R6 가드 테스트를 썼다. 선점 단계에서 프론트엔드(#42)는 공연 상세·선점 API 함수, 좌석 선택 화면(격자 배치, 4석 선택, 선점 요청의 응답별 처리), 좌석 선택 화면의 실제 경로로 R1·R2·R6 프론트 테스트를 썼다. 백엔드(#41)는 선점 생성 API(R1·R2·R3·R6), 같은 좌석·같은 사용자 동시 요청, 선점 스키마, 공연 상세의 만료 반영 테스트를 썼다. 선점 조회·해제(4단계)와 예매(5단계)에 기대는 R2·R3·R6 백엔드 행과 R4·R5 백엔드 테스트, 결제 화면이 있어야 하는 R6 행과 R3~R5 프론트 테스트는 미작성이다.
+현황(2026-11-27): 백엔드 첫 설정(#5)에서 공통 오류 응답, 상태 확인, 테스트 기반 테스트를 썼다. 프론트엔드 첫 설정(#6)에서 공통 API 클라이언트·토큰 저장·안내 문구 테스트와 R6 토큰 첨부 테스트(프론트)를 썼다. 인증 단계에서 백엔드(#27)는 로그인 API·토큰 검증·401 AUTH_REQUIRED·계정 시드 테스트를, 프론트엔드(#28)는 로그인 화면·인증 가드(테스트용 화면)·401 AUTH_REQUIRED 공통 처리 테스트를 썼다. 조회 단계에서 백엔드(#35)는 공연 목록·상세 API(공개 경로 R6 포함), 공연장별 좌석 배치, 공연·좌석 시드 테스트를, 프론트엔드(#36)는 공연 목록·내 예매 화면, 공통 헤더와 로그아웃, 내 예매 화면의 실제 경로로 R6 가드 테스트를 썼다. 선점 단계에서 프론트엔드(#42)는 공연 상세·선점 API 함수, 좌석 선택 화면(격자 배치, 4석 선택, 선점 요청의 응답별 처리), 좌석 선택 화면의 실제 경로로 R1·R2·R6 프론트 테스트를 썼다. 백엔드(#41)는 선점 생성 API(R1·R2·R3·R6), 같은 좌석·같은 사용자 동시 요청, 선점 스키마, 공연 상세의 만료 반영 테스트를 썼다. 3단계 뒤 점검 수정에서 백엔드(#45)는 경로 long 값의 엄격한 해석(공연 상세, 모든 경로)과 공연 상세·선점 응답의 좌석 row 정렬 통합 테스트를 썼다. 선점 조회·해제(4단계)와 예매(5단계)에 기대는 R2·R3·R6 백엔드 행과 R4·R5 백엔드 테스트, 결제 화면이 있어야 하는 R6 행과 R3~R5 프론트 테스트는 미작성이다.
 
 ## 읽는 법
 
@@ -188,14 +188,17 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 로그인(6.1) | 없는 아이디와 틀린 비밀번호는 모두 401 INVALID_CREDENTIALS다(설명도 같다) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/api/LoginApiTest.java`) |
 | 로그인(6.1) | 아이디 대소문자나 앞뒤 공백이 다르면 다른 아이디로 보고, 비밀번호가 BCrypt 한도(72바이트)를 넘어도 500이 아니라 401 INVALID_CREDENTIALS다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/api/LoginApiTest.java`) |
 | 로그인(6.1) | 아이디나 비밀번호가 없거나 비었거나 공백뿐이면, 또는 본문이 없거나 JSON이 아니면 400 INVALID_INPUT이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/api/LoginApiTest.java`) |
-| 공연(6.2, 6.3) | 공연 목록은 시작 시각 오름차순(같으면 id 순)이고, 없는 공연의 상세는 404 NOT_FOUND다(0·음수 포함) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
+| 공연(6.2, 6.3) | 공연 목록은 시작 시각 오름차순(같으면 id 순)이고, 없는 공연의 상세는 404 NOT_FOUND다(0·음수, `-0`·`+0`·`00`, long 범위 끝 포함) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
 | 공연(6.2) | 공연이 없으면 공연 목록은 빈 목록이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
 | 공연(5, 6.2) | 공연 목록 항목은 PerformanceSummary(id, title, venue, startsAt, price)이고 venue는 공연장 이름이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
 | 공연(5, 6.3) | 공연 상세는 PerformanceSummary에 seats를 더하고, 좌석은 id·row·number·gridRow·gridColumn·status다. 좌석은 row, number 오름차순(number는 숫자 순)이고 그 공연의 좌석만 나온다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
 | 공연(6.3) | 좌석 status는 API 상태다: AVAILABLE·SOLD는 저장 상태 그대로이고 HELD는 실제 선점으로 만든다. 선점 전 단계(#35)의 저장 상태 테스트를 지우지 않고 R3 행('공연 상세는 만료 시각 1초 전까지 HELD, 만료 시각부터 AVAILABLE')의 테스트로 바꿨다(#41) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
 | 공연(6.3) | performanceId가 정수가 아니면(long 범위 밖 포함) 400 INVALID_INPUT이다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
+| 공연(6.3) | performanceId가 ASCII 10진 정수 표기가 아니면(공백, 16진수 `0x`·`0X`·`#`, ASCII가 아닌 숫자) 있는 공연을 가리키는 값이라도 400 INVALID_INPUT이다(결정 0090) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
+| 공연(6.3) | performanceId에 + 부호나 앞자리 0이 있어도(`+{id}`, `0{id}`, `00{id}`, `+0{id}`) 그 공연의 상세다(200, 결정 0090) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/api/PerformanceApiTest.java`) |
 | 좌석(2.1) | 같은 공연에서 (row, number)와 (gridRow, gridColumn)은 겹치지 않고(다른 공연은 겹쳐도 됨), 공연장 배치도 같은 공연장 안에서 같다. 번호와 위치는 1 이상, row는 빈 문자열이 아니고, 저장 상태는 AVAILABLE·HELD·SOLD만이다. 저장 상태가 HELD인 좌석에만 holdId가 있고, holdId는 있는 선점만 가리킨다(DB 제약) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/domain/SeatSchemaTest.java`) |
-| 좌석(5) | 좌석 row는 코드 포인트 순서로 비교한다(보충 문자는 String.compareTo와 달리 BMP의 마지막 글자들보다 뒤). 선점 응답의 좌석 정렬이 공연 상세의 DB 정렬과 같다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/performance/domain/SeatOrderTest.java`) |
+| 좌석(5) | 좌석 row는 코드 포인트 순서로 비교한다(보충 문자는 String.compareTo와 달리 BMP의 마지막 글자들보다 뒤). 자바 비교(선점 응답의 정렬)만 본다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/performance/domain/SeatOrderTest.java`) |
+| 좌석(5) | 공연 상세(DB 정렬)와 선점 응답(자바 정렬)의 좌석은 row 코드 포인트 순서이고 서로 같다(대소문자가 섞인 row `a`·`B`, U+FFFD와 보충 문자). V2의 `COLLATE "C"`를 빼면 실패한다(#45에서 확인) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/performance/SeatListOrderTest.java`) |
 | 선점(2.1) | 선점 저장 상태는 ACTIVE·RELEASED·PAID만이다(만료는 저장하지 않는다, DB 제약) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldSchemaTest.java`) |
 | 선점(2.1, 2.2) | 선점은 서로 다른 좌석 1~4석의 묶음으로만 만들고, 해제·결제된 선점은 만료 시각 전이라도 유효하지 않다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/hold/domain/HoldTest.java`) |
 | 선점(6.4) | 선점에 성공하면 201 Hold다: status ACTIVE, performance는 PerformanceSummary, seats는 row·number 오름차순의 SeatRef, amount는 가격 × 좌석 수, expiresAt은 요청 시각 + 5분 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/hold/api/HoldApiTest.java`) |
@@ -215,6 +218,8 @@ R1~R6에 직접 속하지 않지만 명세에 정한 동작이다. 테스트 이
 | 내 예매(6.8) | 내 예매만 최신순(같으면 id 내림차순)으로 돌려준다 | 백엔드 통합 | 미작성 |
 | 오류 형식(3.1) | 오류 응답은 ProblemDetail에 code가 있고, 500 응답에 스택 트레이스가 없다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
 | 오류 형식(3.1) | 잘못된 JSON, 형식이 틀린 경로·쿼리 값, 필수 쿼리 값 없음, 검증 실패(본문 필드, 쿼리 값, `@Validated` 빈), 지원하지 않는 메서드(405)·`Content-Type`(415)은 400 INVALID_INPUT이고, 없는 경로는 404 NOT_FOUND다(MVC 안의 오류 변환. 서블릿 필터를 끈 MockMvc) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
+| 오류 형식(3.1) | 어느 경로든 long 경로 값은 ASCII 10진 정수 표기만 받는다: 공백·16진수·ASCII가 아닌 숫자는 400 INVALID_INPUT, + 부호나 앞자리 0은 그 수다(공연 상세와 관계없는 시험용 경로. 이후의 holdId도 같은 규칙, 결정 0090·0091) | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
+| 오류 형식(3.1) | 경로·쿼리의 long 값 해석: ASCII 10진 정수 표기이고 long 범위 안이면 그 수(`+2`·`02`는 2), 공백·16진수·ASCII가 아닌 숫자·범위 밖은 실패, 빈 문자열은 Long이면 값 없음이고 long이면 실패 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/common/api/StrictLongEditorTest.java`) |
 | 오류 형식(3.1) | `ApiException`으로 알린 오류는 그 코드의 상태·code·설명으로 응답하고, 코드를 정하지 않은 상태 예외(`ResponseStatusException`)는 500 INTERNAL_ERROR다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorResponseTest.java`) |
 | 오류 형식(3.1) | 오류 코드와 상태는 루트 `CLAUDE.md`의 오류 코드 표와 같다 | 백엔드 단위 | 작성(`backend/src/test/java/com/curtaincall/common/api/ErrorCodeTest.java`) |
 | 오류 형식(3.1) | 공개 API에 잘못된 토큰을 붙이면 401 AUTH_REQUIRED이고, 토큰 검사를 지난 공개 경로에서도 지원하지 않는 메서드는 400 INVALID_INPUT, 없는 경로는 404 NOT_FOUND다 | 백엔드 통합 | 작성(`backend/src/test/java/com/curtaincall/auth/AuthenticationTest.java`) |

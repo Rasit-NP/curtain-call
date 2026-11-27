@@ -12,6 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
@@ -76,6 +79,26 @@ class ErrorResponseTest extends IntegrationTest {
     @DisplayName("경로 값의 형식이 틀리면(숫자 자리에 문자) 400 INVALID_INPUT이다")
     void malformedPathVariable() throws Exception {
         expectProblem(mockMvc.perform(get(BASE + "/items/abc")), 400, "INVALID_INPUT");
+    }
+
+    /**
+     * 결정 0090, 0091: long 경로 값의 해석은 한 곳(모든 컨트롤러의 바인더에 편집기를 등록하는 StrictLongBinding)에서 정해, 공연 상세의 performanceId뿐 아니라
+     * 이후의 holdId 같은 모든 long 경로 값이 같은 규칙을 따른다. 이 시험용 경로는 공연 상세와 관계없는 long 경로 값이다.
+     */
+    @ParameterizedTest(name = "\"{0}\"")
+    @ValueSource(strings = {"0x1", "#1", " 1", "1 ", "1 0", "１"})
+    @DisplayName("어느 경로든 long 경로 값은 ASCII 10진 정수 표기만 받는다(공백, 16진수, ASCII가 아닌 숫자는 400 INVALID_INPUT)")
+    void pathLongAcceptsOnlyAsciiDecimalEverywhere(String id) throws Exception {
+        expectProblem(mockMvc.perform(get(BASE + "/items/{id}", id)), 400, "INVALID_INPUT");
+    }
+
+    @ParameterizedTest(name = "\"{0}\" → {1}")
+    @CsvSource({"+1, item-1", "01, item-1", "-1, item--1"})
+    @DisplayName("어느 경로든 long 경로 값에 + 부호나 앞자리 0이 있으면 그 수다")
+    void pathLongAcceptsSignAndLeadingZerosEverywhere(String id, String expected) throws Exception {
+        mockMvc.perform(get(BASE + "/items/{id}", id))
+                .andExpect(status().isOk())
+                .andExpect(content().string(expected));
     }
 
     @Test

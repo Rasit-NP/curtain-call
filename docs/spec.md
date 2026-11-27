@@ -134,7 +134,9 @@ CGV 예매 방식을 따른다.
 - 엔드포인트마다 오류 표에 적은 순서대로 검사해 처음 걸린 오류 하나만 돌려준다.
 - 모든 엔드포인트에 공통으로 적용한다.
   - `400 INVALID_INPUT`: 본문이 올바른 JSON이 아님, 본문의 숫자 필드에 JSON 숫자가 아닌 값이나 정수 자리에 소수가 옴(예: `"1"`, `1.5`, `1e3`.
-    잘라 받거나 바꿔 받지 않는다, [결정 0072](decisions/0072-json-numbers-strict.md)), 경로·쿼리 값의 형식이 틀림(예: 숫자 자리에 문자), 필드 검증 실패,
+    잘라 받거나 바꿔 받지 않는다, [결정 0072](decisions/0072-json-numbers-strict.md)), 경로·쿼리 값의 형식이 틀림(예: 숫자 자리에 문자.
+    정수 값은 ASCII 10진 정수 표기 `[+-]?[0-9]+`이고 long 범위 안일 때만 받는다. 공백·16진수(`0x2`, `#2`)·ASCII가 아닌 숫자(`２`)는
+    형식 오류이고, `+2`·`02`는 2다, [결정 0090](decisions/0090-path-id-ascii-decimal.md)), 필드 검증 실패,
     지원하지 않는 메서드나 `Content-Type`. 마지막 두 경우는 Spring 기본값(405, 415) 대신 400으로 응답한다. 표에 있는 코드만 쓰기 위해서다.
   - `401 AUTH_REQUIRED`: 로그인이 필요한 API에 토큰이 없거나, 서명·형식이 잘못됐거나, 만료됨(R6).
     공개 API라도 잘못되거나 만료된 토큰을 붙이면 401이다(Spring Security 리소스 서버의 기본 동작).
@@ -252,7 +254,7 @@ Reservation        { id, performance: PerformanceSummary, seats: SeatRef[], amou
 
 | 순서 | 상태 | code | 상황 |
 |---|---|---|---|
-| 1 | 400 | `INVALID_INPUT` | `performanceId`가 정수가 아님(long 범위를 넘는 값 포함, [결정 0050](decisions/0050-performance-detail-id-errors.md)) |
+| 1 | 400 | `INVALID_INPUT` | `performanceId`가 정수가 아님(long 범위를 넘는 값 포함, [결정 0050](decisions/0050-performance-detail-id-errors.md). 공백·16진수·ASCII가 아닌 숫자 포함, [결정 0090](decisions/0090-path-id-ascii-decimal.md)) |
 | 2 | 404 | `NOT_FOUND` | 공연이 없음(0이나 음수 포함) |
 
 ### 6.4 `POST /api/holds` 좌석 묶음 선점
@@ -301,7 +303,7 @@ Reservation        { id, performance: PerformanceSummary, seats: SeatRef[], amou
 | 순서 | 상태 | code | 상황 |
 |---|---|---|---|
 | 1 | 401 | `AUTH_REQUIRED` | 토큰이 없거나 잘못됨(R6) |
-| 2 | 400 | `INVALID_INPUT` | `holdId`가 정수가 아님 |
+| 2 | 400 | `INVALID_INPUT` | `holdId`가 정수가 아님(6.3의 `performanceId`와 같은 규칙, [결정 0090](decisions/0090-path-id-ascii-decimal.md)) |
 | 3 | 404 | `NOT_FOUND` | 선점이 없음, 다른 사용자의 선점, 해제됐거나 결제된 선점 |
 
 ### 6.6 `DELETE /api/holds/{holdId}` 내 선점 해제
@@ -311,7 +313,7 @@ Reservation        { id, performance: PerformanceSummary, seats: SeatRef[], amou
 | 순서 | 상태 | code | 상황 |
 |---|---|---|---|
 | 1 | 401 | `AUTH_REQUIRED` | 토큰이 없거나 잘못됨(R6) |
-| 2 | 400 | `INVALID_INPUT` | `holdId`가 정수가 아님 |
+| 2 | 400 | `INVALID_INPUT` | `holdId`가 정수가 아님(6.3의 `performanceId`와 같은 규칙, [결정 0090](decisions/0090-path-id-ascii-decimal.md)) |
 | 3 | 404 | `NOT_FOUND` | 선점이 없음, 다른 사용자의 선점, 이미 해제됐거나 결제된 선점 |
 
 - 만료된 내 선점도 `204`로 해제한다.
