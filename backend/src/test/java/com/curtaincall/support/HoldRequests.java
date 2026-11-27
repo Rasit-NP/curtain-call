@@ -1,5 +1,7 @@
 package com.curtaincall.support;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import java.io.UnsupportedEncodingException;
@@ -13,7 +15,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import com.jayway.jsonpath.JsonPath;
 
 /**
- * 선점 API({@code POST /api/holds}) 요청 도우미. 인증은 {@link AuthRequests#asUser(long)}로 붙인다.
+ * 선점 API(생성 {@code POST /api/holds}, 조회 {@code GET}·해제 {@code DELETE /api/holds/{holdId}}) 요청 도우미.
+ * 인증은 {@link AuthRequests#asUser(long)}로 붙인다.
  *
  * <pre>{@code
  * long holdId = HoldRequests.holdId(mockMvc.perform(HoldRequests.hold(userId, performanceId, seatA, seatB))
@@ -31,6 +34,16 @@ public final class HoldRequests {
                 .with(AuthRequests.asUser(userId))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body(performanceId, seatIds));
+    }
+
+    /** 사용자 userId로 선점을 조회하는 요청(spec 6.5). */
+    public static MockHttpServletRequestBuilder getHold(long userId, long holdId) {
+        return get("/api/holds/{holdId}", holdId).with(AuthRequests.asUser(userId));
+    }
+
+    /** 사용자 userId로 선점을 해제하는 요청(spec 6.6). */
+    public static MockHttpServletRequestBuilder release(long userId, long holdId) {
+        return delete("/api/holds/{holdId}", holdId).with(AuthRequests.asUser(userId));
     }
 
     /** spec 6.4 요청 본문: {@code {"performanceId": 1, "seatIds": [101, 104]}}. */
