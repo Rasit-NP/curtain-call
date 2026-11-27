@@ -1,5 +1,11 @@
-# 로컬 개발·E2E용 PostgreSQL. 루트에서 `docker compose up -d --wait db`로 띄운다.
-# 접속 정보는 개발 전용 값이다(실제 비밀번호가 아님). 백엔드 local·e2e 프로필과 같은 값을 쓴다.
+# 로컬 개발용 PostgreSQL(개발 DB). 루트에서 `docker compose up -d --wait db`로 띄운다.
+# 접속 정보는 개발 전용 값이다(실제 비밀번호가 아님). 백엔드 local 프로필과 같은 값을 쓴다.
+# E2E는 이 DB를 쓰지 않는다. E2E 백엔드는 실행마다 임시 DB를 새로 띄운다(결정 0161, 0162).
+#
+# 프로젝트 이름을 정해 둔다. 없으면 폴더 이름이 프로젝트 이름이 되어, 워크트리에서 띄울 때 DB를 하나 더 만들려다 5432에서 충돌한다.
+# 메인 체크아웃의 폴더 이름과 같은 이름이라 이미 쓰던 컨테이너와 볼륨(curtain-call_db-data)을 그대로 쓴다.
+name: curtain-call
+
 services:
   db:
     image: postgres:17

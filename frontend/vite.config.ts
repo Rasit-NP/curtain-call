@@ -2,12 +2,15 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
+// 코드는 /api로 시작하는 상대 경로만 쓰고, 개발 서버가 백엔드로 넘긴다(frontend/CLAUDE.md).
+// 넘길 곳은 로컬 개발 백엔드(8080)다. E2E는 자기가 띄운 백엔드로 바꾼다(CURTAINCALL_API_TARGET, 결정 0161·0162).
+const apiTarget = process.env.CURTAINCALL_API_TARGET || 'http://localhost:8080';
+
 export default defineConfig({
   plugins: [react()],
   server: {
-    // 코드는 /api로 시작하는 상대 경로만 쓰고, 개발 서버가 백엔드로 넘긴다(frontend/CLAUDE.md).
     proxy: {
-      '/api': 'http://localhost:8080',
+      '/api': apiTarget,
     },
   },
   test: {

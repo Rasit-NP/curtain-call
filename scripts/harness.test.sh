@@ -154,6 +154,44 @@ EOF
     assert_contains "$out" "1:HoldService.java:10: error: cannot find symbol"
 }
 
+test_e2e_runs_playwright_without_dev_db() {
+  local dir out code
+  dir="$(new_repo e2e)"
+  echo '{}' > "$dir/e2e/package.json"
+  # compose.yaml이 있어도 E2E는 개발 DB를 띄우지 않는다(결정 0161). docker는 info만 받고, 그 밖의 호출(compose 등)은 실패한다.
+  echo 'services: {}' > "$dir/compose.yaml"
+  cat > "$dir/bin/docker" <<'EOF'
+#!/usr/bin/env bash
+[ "$1" = info ] && { echo "fake docker info"; exit 0; }
+echo "unexpected call: docker $*" >&2
+exit 99
+EOF
+  # npx: 브라우저 설치는 통과하고, playwright test는 FAKE_NPX_EXIT(기본 0)로 끝난다.
+  cat > "$dir/bin/npx" <<'EOF'
+#!/usr/bin/env bash
+echo "fake npx $*"
+case "$*" in
+  "playwright install chromium") exit 0 ;;
+  "playwright test") exit "${FAKE_NPX_EXIT:-0}" ;;
+esac
+echo "unexpected call: npx $*" >&2
+exit 99
+EOF
+  chmod +x "$dir/bin/docker" "$dir/bin/npx"
+  out="$(run_verify "$dir" e2e)"; code=$?
+  assert_exit "$code" 0 "$out" &&
+    assert_contains "$out" "PASS  e2e-docker" &&
+    assert_contains "$out" "PASS  e2e-frontend-install" &&
+    assert_contains "$out" "PASS  e2e-typecheck" &&
+    assert_contains "$out" "PASS  e2e-test" || return 1
+  [ -d "$dir/frontend/node_modules" ] || fail "E2E 전에 프론트엔드 의존성을 설치하지 않음" || return 1
+
+  out="$(cd "$dir" && FAKE_NPX_EXIT=1 PATH="$dir/bin:$PATH" bash scripts/verify.sh e2e 2>&1)"; code=$?
+  assert_exit "$code" 1 "$out" &&
+    assert_contains "$out" "FAIL  e2e-test" &&
+    assert_contains "$out" "리포트: e2e/playwright-report/index.html"
+}
+
 test_all_runs_harness_tests() {
   local dir out code
   dir="$(new_repo harness)"
@@ -408,6 +446,7 @@ run_test "verify.sh: 실행 권한이 있다" test_verify_is_executable
 run_test "verify.sh: 표식 파일이 없는 영역은 CLAUDE.md가 있어도 SKIP하고 통과한다" test_skip_areas_without_marker
 run_test "verify.sh: 표식 파일이 있는 영역은 실행하고, 실패하면 종료 코드 1로 끝난다" test_run_areas_with_marker
 run_test "verify.sh: 실패 상세에 로그 앞쪽의 첫 오류 줄을 줄 번호와 함께 보여 준다" test_failure_shows_first_error_line
+run_test "verify.sh: E2E는 개발 DB를 띄우지 않고 Docker 확인·프론트엔드 의존성·타입 검사 뒤 Playwright를 돌리며, 실패하면 리포트 경로를 보여 준다" test_e2e_runs_playwright_without_dev_db
 run_test "verify.sh: 전체 검증은 하네스 테스트를 실행하고, 실패하면 전체를 실패로 본다" test_all_runs_harness_tests
 run_test "Stop 훅: settings.json에 등록돼 있고 훅 스크립트를 실행할 수 있다" test_hook_registered
 run_test "Stop 훅: verify.sh가 통과하면 아무것도 출력하지 않고 멈춤을 허용한다" test_hook_passes_silently

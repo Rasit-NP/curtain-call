@@ -6,7 +6,7 @@
 #   harness   검증 스크립트와 Stop 훅 자체 테스트 (scripts/harness.test.sh)
 #   backend   백엔드 단위·통합 테스트, 빌드, 커버리지
 #   frontend  프론트엔드 타입 검사, 린트, 테스트(커버리지), 빌드
-#   e2e       DB를 띄우고 Playwright E2E 테스트
+#   e2e       Playwright E2E 테스트(이 체크아웃의 백엔드·프론트엔드·임시 DB를 빈 포트에 띄운다. 개발 DB는 쓰지 않는다)
 #   all       harness → backend → frontend → e2e (기본값, PR 전에 반드시 통과)
 #
 # - 단계별 전체 로그는 .verify-logs/<단계>.log 에 남는다.
@@ -123,11 +123,13 @@ frontend_all() {
 
 e2e_all() {
   area_ready e2e e2e/package.json || return 0
-  if [ -f "$ROOT/compose.yaml" ]; then
-    run_step e2e-db . "-" docker compose up -d --wait db || return 1
-  fi
+  # E2E 백엔드는 실행마다 임시 DB를 Docker 컨테이너로 띄운다(결정 0162). 개발 DB(compose db)는 띄우지 않는다(결정 0161).
+  run_step e2e-docker . "-" docker info || return 1
+  # E2E가 이 체크아웃의 프론트엔드 개발 서버를 띄우므로 프론트엔드 의존성도 있어야 한다.
+  run_step e2e-frontend-install frontend "-" ensure_node_modules || return 1
   run_step e2e-install e2e "-" ensure_e2e_deps || return 1
-  run_step e2e-test e2e "e2e/playwright-report/index.html" npx playwright test
+  run_step e2e-typecheck e2e "-" npm run typecheck
+  run_step e2e-test e2e "e2e/playwright-report/index.html (백엔드 로그: e2e/test-results/backend.log)" npx playwright test
 }
 
 case "$MODE" in
