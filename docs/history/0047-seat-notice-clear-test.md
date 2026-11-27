@@ -1,6 +1,6 @@
 # #47 프론트엔드 좌석 선택 화면 테스트 보강(R2): 좌석을 고르면 안내 문구를 지운다
 
-- 기간: 2026-11-27 ~
+- 기간: 2026-11-27
 - Issue: [#47](https://github.com/Rasit-NP/curtain-call/issues/47), PR: [#48](https://github.com/Rasit-NP/curtain-call/pull/48)
 - 관련 결정: [0110](../decisions/0110-seat-notice-clear-on-select-test.md)
 
@@ -33,7 +33,8 @@
 
 ## 결과
 
-- PR [#48](https://github.com/Rasit-NP/curtain-call/pull/48): `./scripts/verify.sh` 전체 통과(E2E는 아직 영역이 없어 SKIP). 좌석을 고를 때 문구를 지우는 코드를 지우면 새 테스트가 실패한다. 병합은 사람이 한다.
+- PR [#48](https://github.com/Rasit-NP/curtain-call/pull/48): `./scripts/verify.sh` 전체 통과(E2E는 아직 영역이 없어 SKIP). 좌석을 고를 때 문구를 지우는 코드를 지우면 새 테스트가 실패한다.
+- **병합**: 사람이 PR #48을 main에 병합했다(병합 커밋 `cadfb47`). 같은 점검에서 나온 #46(PR #49), #45(PR #50)보다 먼저 병합돼, 두 PR이 그 위에 리베이스했다.
 
 ## 배운 점
 

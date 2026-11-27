@@ -94,7 +94,7 @@ PR [#58](https://github.com/Rasit-NP/curtain-call/pull/58)을 `/code-review high
 
 `./scripts/verify.sh` 전체 통과(하네스, 백엔드 단위 149개·통합 298개, 프론트엔드. E2E는 아직 없어 SKIP). 같은 사용자가 같은 키로 다시 보내면 저장한 응답(상태 코드와 본문)을 그대로 받고,
 같은 키 동시 요청은 하나씩 처리돼 예매가 하나만 생긴다. 저장 여부(201·402·404·409는 저장, 400·500은 저장하지 않음), 사용자별 키, 유니크 제약을 각각 되돌리면 R5 테스트가 실패한다.
-병합은 사람이 한다.
+PR [#58](https://github.com/Rasit-NP/curtain-call/pull/58)을 리뷰한 뒤, 사람이 main에 병합했다(병합 커밋 `70bb9cc`).
 
 ## 배운 점
 

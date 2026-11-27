@@ -88,7 +88,8 @@ PR [#53](https://github.com/Rasit-NP/curtain-call/pull/53)을 `/code-review high
 
 ## 결과
 
-`./scripts/verify.sh` 전체 통과. 선점 조회·해제 API와 해제 동시성이 명세 6.5·6.6·2.4대로 동작하고, R2·R3 테스트와 동시성 테스트가 각 구현 부분을 되돌리면 실패한다. 병합은 사람이 한다.
+`./scripts/verify.sh` 전체 통과. 선점 조회·해제 API와 해제 동시성이 명세 6.5·6.6·2.4대로 동작하고, R2·R3 테스트와 동시성 테스트가 각 구현 부분을 되돌리면 실패한다.
+PR [#53](https://github.com/Rasit-NP/curtain-call/pull/53)을 리뷰한 뒤, 사람이 main에 병합했다(병합 커밋 `4ba6b76`).
 
 ## 배운 점
 

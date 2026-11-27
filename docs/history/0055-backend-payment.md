@@ -108,7 +108,8 @@ PR [#57](https://github.com/Rasit-NP/curtain-call/pull/57)을 `/code-review high
 ## 결과
 
 `./scripts/verify.sh` 전체 통과(하네스, 백엔드 단위 147개·통합 281개, 프론트엔드. E2E는 아직 없어 SKIP). 결제·예매·내 예매 API가 명세 6.7·6.8·2.4대로 동작하고,
-R2·R4·R5(헤더)·R6 테스트와 동시성 테스트가 각 구현 부분을 되돌리면 실패한다. 멱등 기록(같은 키의 결과 저장·재사용, 같은 키 동시 요청)은 #56에서 한다. 병합은 사람이 한다.
+R2·R4·R5(헤더)·R6 테스트와 동시성 테스트가 각 구현 부분을 되돌리면 실패한다. 멱등 기록(같은 키의 결과 저장·재사용, 같은 키 동시 요청)은 #56에서 했다([0056](0056-backend-idempotency.md)).
+PR [#57](https://github.com/Rasit-NP/curtain-call/pull/57)을 리뷰한 뒤, 사람이 main에 병합했다(병합 커밋 `491f89a`).
 
 ## 배운 점
 

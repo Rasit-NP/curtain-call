@@ -1,6 +1,6 @@
 # #46 결제 동시성 설계 정정(R2·R4): 결제도 사용자 행을 먼저 잠근다, 진행 기록 목차 상태 정정
 
-- 기간: 2026-11-27 ~
+- 기간: 2026-11-27
 - Issue: [#46](https://github.com/Rasit-NP/curtain-call/issues/46), PR: [#49](https://github.com/Rasit-NP/curtain-call/pull/49)
 - 관련 결정: [0100](../decisions/0100-hold-concurrency-v2.md)(대체한 결정 [0073](../decisions/0073-hold-concurrency.md))
 
@@ -69,5 +69,6 @@ Issue의 '에이전트가 정하는 것'(결제의 잠금 순서, 교착 상태�
   리뷰 지적을 고친 뒤 `origin/main` 위에 리베이스했다. 충돌은 두 목차(`docs/decisions/README.md`, `docs/history/README.md`)와 `docs/agent-log.md`뿐이었고,
   main 쪽 행(결정 0110, 진행 기록 0047, 결함 기록 1줄)을 그대로 두고 이 PR의 행을 번호 순서(결함 기록은 그 뒤)로 더했다. 명세와 대응표는 자동으로 합쳐졌고 양쪽 내용이 모두 남은 것을 확인했다.
   리베이스 뒤 `./scripts/verify.sh` 전체를 다시 통과했다(하네스·백엔드·프론트엔드 PASS, E2E SKIP).
+- **병합**: 사람이 PR #49를 main에 병합했다(병합 커밋 `18e0add`).
 
 ## 배운 점
