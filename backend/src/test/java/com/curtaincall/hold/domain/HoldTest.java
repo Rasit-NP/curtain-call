@@ -51,6 +51,29 @@ class HoldTest {
     }
 
     @Test
+    @DisplayName("선점을 해제하면 저장 상태가 RELEASED가 되어 만료 시각 전이라도 유효하지 않다")
+    void releaseMakesHoldReleased() {
+        // 해제는 현재 시각을 받지 않는다. 만료된 선점의 해제는 통합 테스트(releasingMyExpiredHold)가 본다.
+        Hold hold = Hold.create(7L, 30L, List.of(101L), CREATED_AT);
+
+        hold.release();
+
+        assertThat(hold.getStatus()).isEqualTo(HoldStatus.RELEASED);
+        assertThat(hold.isValidAt(CREATED_AT)).isFalse();
+        // 만든 때의 좌석 묶음은 그대로다.
+        assertThat(hold.getSeatIds()).containsExactly(101L);
+    }
+
+    @Test
+    @DisplayName("ACTIVE가 아닌 선점(해제·결제됨)은 해제할 수 없다")
+    void onlyActiveHoldCanBeReleased() {
+        assertThatThrownBy(() -> new Hold(7L, 30L, List.of(101L), HoldStatus.RELEASED, CREATED_AT).release())
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> new Hold(7L, 30L, List.of(101L), HoldStatus.PAID, CREATED_AT).release())
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
     @DisplayName("선점은 서로 다른 좌석 1~4석의 묶음으로만 만든다(0석, 5석, 같은 좌석 두 번은 거부)")
     void holdIsBundleOfOneToFourDistinctSeats() {
         assertThatThrownBy(() -> Hold.create(7L, 30L, List.of(), CREATED_AT))

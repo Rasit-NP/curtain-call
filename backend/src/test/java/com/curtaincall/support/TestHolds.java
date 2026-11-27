@@ -71,6 +71,15 @@ public class TestHolds {
                 holdId);
     }
 
+    /** 선점의 저장 상태(ACTIVE·RELEASED·PAID). 만료는 저장하지 않으므로 만료된 선점도 ACTIVE다. */
+    public String holdStatus(long holdId) {
+        String status = jdbcTemplate.queryForObject("SELECT status FROM holds WHERE id = ?", String.class, holdId);
+        if (status == null) {
+            throw new IllegalStateException("선점이 없다: " + holdId);
+        }
+        return status;
+    }
+
     /** 선점을 만든 사용자. */
     public long userIdOf(long holdId) {
         Long userId = jdbcTemplate.queryForObject("SELECT user_id FROM holds WHERE id = ?", Long.class, holdId);

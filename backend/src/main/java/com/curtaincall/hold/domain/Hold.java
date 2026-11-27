@@ -100,6 +100,18 @@ public class Hold {
         return status == HoldStatus.ACTIVE && now.isBefore(expiresAt);
     }
 
+    /**
+     * 해제(spec 2.3): ACTIVE → RELEASED. 만료된 선점도 저장 상태는 ACTIVE이므로 해제한다(spec 6.6). 현재 시각을 쓰지 않는다.
+     * 좌석은 호출하는 쪽이 선점 행과 좌석을 잠근 뒤, holdId가 이 선점인 좌석만 되돌린다(만료 뒤 다른 선점이 덮어쓴 좌석은 건드리지 않는다).
+     * 만든 때의 좌석 묶음({@code seatIds})은 그대로 둔다.
+     */
+    public void release() {
+        if (status != HoldStatus.ACTIVE) {
+            throw new IllegalStateException("ACTIVE 선점만 해제한다: " + status);
+        }
+        this.status = HoldStatus.RELEASED;
+    }
+
     public Long getId() {
         return id;
     }

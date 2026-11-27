@@ -34,3 +34,4 @@
 | [0045](0045-backend-input-validation.md) | 백엔드 입력 검증 보강: 경로 id 엄격 해석, 좌석 row 정렬 통합 테스트 | 진행 중 |
 | [0046](0046-payment-lock-order.md) | 결제 동시성 설계 정정(R2·R4): 결제도 사용자 행을 먼저 잠근다, 진행 기록 목차 상태 정정 | 진행 중 |
 | [0047](0047-seat-notice-clear-test.md) | 프론트엔드 좌석 선택 화면 테스트 보강(R2): 좌석을 고르면 안내 문구를 지운다 | 진행 중 |
+| [0051](0051-backend-hold-query-release.md) | 백엔드 선점 조회·해제(R2·R3·R6): 내 선점 조회 API, 내 선점 해제 API, 해제 동시성 | 진행 중 |
