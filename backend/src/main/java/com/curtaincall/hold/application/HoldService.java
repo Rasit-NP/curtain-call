@@ -21,6 +21,7 @@ import com.curtaincall.performance.domain.PerformanceRepository;
 import com.curtaincall.performance.domain.Seat;
 import com.curtaincall.performance.domain.SeatOrder;
 import com.curtaincall.performance.domain.SeatRepository;
+import com.curtaincall.reservation.domain.ReservationRepository;
 
 /**
  * 좌석 묶음 선점(spec 6.4), 내 선점 조회(6.5)·해제(6.6). 선점은 한 트랜잭션에서 처리해 전부 잡거나 하나도 잡지 않는다.
@@ -44,14 +45,16 @@ public class HoldService {
     private final PerformanceRepository performanceRepository;
     private final SeatRepository seatRepository;
     private final HoldRepository holdRepository;
+    private final ReservationRepository reservationRepository;
 
     public HoldService(Clock clock, UserRepository userRepository, PerformanceRepository performanceRepository,
-            SeatRepository seatRepository, HoldRepository holdRepository) {
+            SeatRepository seatRepository, HoldRepository holdRepository, ReservationRepository reservationRepository) {
         this.clock = clock;
         this.userRepository = userRepository;
         this.performanceRepository = performanceRepository;
         this.seatRepository = seatRepository;
         this.holdRepository = holdRepository;
+        this.reservationRepository = reservationRepository;
     }
 
     /**
@@ -72,9 +75,12 @@ public class HoldService {
             throw new ApiException(ErrorCode.NOT_FOUND, "공연에 없는 좌석이 있습니다.");
         }
 
+        // 보유 좌석 수(R2) = 유효한 선점의 좌석 + 예매 좌석. 두 문장으로 읽어도 그 사이에 같은 사용자의 결제가 커밋되지 않는다(결제도 사용자 행을
+        // 먼저 잠근다, 결정 0100). 해제는 끼어들 수 있지만 예매를 바꾸지 않으므로 결과는 해제 전이나 뒤 중 하나와 같다.
         Instant now = clock.instant();
         List<Hold> activeHolds = holdRepository.findByUserIdAndPerformanceIdAndStatus(userId, performanceId, HoldStatus.ACTIVE);
-        if (!HoldLimit.allows(HoldLimit.heldSeatCount(activeHolds, now), seatIds.size())) {
+        long reservedSeats = reservationRepository.countSeatsByUserIdAndPerformanceId(userId, performanceId);
+        if (!HoldLimit.allows(HoldLimit.ownedSeatCount(activeHolds, reservedSeats, now), seatIds.size())) {
             throw new ApiException(ErrorCode.HOLD_LIMIT_EXCEEDED);
         }
 
@@ -98,7 +104,7 @@ public class HoldService {
     @Transactional(readOnly = true)
     public HoldDetail get(long userId, long holdId) {
         Hold hold = holdRepository.findWithSeatIdsById(holdId)
-                .filter(found -> isOpenHoldOf(found, userId))
+                .filter(found -> found.isOpenFor(userId))
                 .orElseThrow(HoldService::holdNotFound);
         Performance performance = performanceRepository.findWithVenueById(hold.getPerformanceId()).orElseThrow();
         List<Seat> seats = seatRepository.findAllById(hold.getSeatIds()).stream().sorted(SeatOrder.BY_ROW_AND_NUMBER).toList();
@@ -119,21 +125,13 @@ public class HoldService {
     @Transactional
     public void release(long userId, long holdId) {
         Hold hold = holdRepository.lockById(holdId)
-                .filter(found -> isOpenHoldOf(found, userId))
+                .filter(found -> found.isOpenFor(userId))
                 .orElseThrow(HoldService::holdNotFound);
         List<Seat> seats = seatRepository.lockByPerformanceIdAndIdInOrderById(hold.getPerformanceId(), hold.getSeatIds());
         seats.stream()
                 .filter(seat -> hold.getId().equals(seat.getHoldId()))
                 .forEach(Seat::release);
         hold.release();
-    }
-
-    /**
-     * 조회·해제할 수 있는 선점: 요청한 사용자의 선점이고 저장 상태가 ACTIVE다(만료된 선점 포함, spec 5·6.5·6.6).
-     * 다른 사용자의 선점과 해제·결제된 선점은 없는 선점과 같게 404다.
-     */
-    private static boolean isOpenHoldOf(Hold hold, long userId) {
-        return hold.getUserId() == userId && hold.getStatus() == HoldStatus.ACTIVE;
     }
 
     private static ApiException holdNotFound() {
