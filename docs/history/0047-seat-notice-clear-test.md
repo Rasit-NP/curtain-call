@@ -29,11 +29,11 @@
 
 ## 리뷰
 
-(PR 뒤 `/code-review low`)
+- `/code-review low`(테스트 보강만이라 낮은 강도, 루트 `CLAUDE.md` '리뷰'): 지적 없음. 이 강도는 테스트 파일 변경을 보지 않으므로, 테스트의 검증력은 되돌림 확인으로 본다.
 
 ## 결과
 
-(PR 뒤 갱신)
+- PR [#48](https://github.com/Rasit-NP/curtain-call/pull/48): `./scripts/verify.sh` 전체 통과(E2E는 아직 영역이 없어 SKIP). 좌석을 고를 때 문구를 지우는 코드를 지우면 새 테스트가 실패한다. 병합은 사람이 한다.
 
 ## 배운 점
 
