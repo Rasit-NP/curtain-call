@@ -65,5 +65,9 @@ Issue의 '에이전트가 정하는 것'(결제의 잠금 순서, 교착 상태�
 ## 결과
 
 - PR [#49](https://github.com/Rasit-NP/curtain-call/pull/49)를 만들었다. `./scripts/verify.sh` 전체 통과(2026-11-27, 하네스·백엔드·프론트엔드 PASS, E2E는 영역이 없어 SKIP). 문서만 고쳐 테스트 수는 바뀌지 않았다.
+- **main에 리베이스(2026-11-27)**: 같은 점검에서 나온 #47의 PR [#48](https://github.com/Rasit-NP/curtain-call/pull/48)이 먼저 병합돼(병합 커밋 `cadfb47`) PR #49가 충돌했다.
+  리뷰 지적을 고친 뒤 `origin/main` 위에 리베이스했다. 충돌은 두 목차(`docs/decisions/README.md`, `docs/history/README.md`)와 `docs/agent-log.md`뿐이었고,
+  main 쪽 행(결정 0110, 진행 기록 0047, 결함 기록 1줄)을 그대로 두고 이 PR의 행을 번호 순서(결함 기록은 그 뒤)로 더했다. 명세와 대응표는 자동으로 합쳐졌고 양쪽 내용이 모두 남은 것을 확인했다.
+  리베이스 뒤 `./scripts/verify.sh` 전체를 다시 통과했다(하네스·백엔드·프론트엔드 PASS, E2E SKIP).
 
 ## 배운 점
