@@ -13,8 +13,8 @@ import com.curtaincall.performance.domain.Seat;
  */
 public record HoldDetail(Hold hold, Performance performance, List<Seat> seats, boolean valid) {
 
-    /** spec 2.2 '결제 금액': 공연 가격 × 선점 좌석 수. */
+    /** spec 2.2 '결제 금액': 공연 가격 × 선점 좌석 수(결제 금액과 같은 규칙, {@link Hold#amount}). */
     public long amount() {
-        return (long) performance.getPrice() * seats.size();
+        return hold.amount(performance.getPrice());
     }
 }

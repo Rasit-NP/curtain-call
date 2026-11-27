@@ -30,4 +30,36 @@ class SeatTest {
 
         assertThatThrownBy(seat::release).isInstanceOf(IllegalStateException.class);
     }
+
+    @Test
+    @DisplayName("결제가 승인되면 선점이 잡은 좌석은 SOLD가 되고 holdId를 비운다")
+    void sellMakesSeatSold() {
+        Seat seat = new Seat();
+        seat.holdBy(31L);
+
+        seat.sell(31L);
+
+        assertThat(seat.getStatus()).isEqualTo(SeatStatus.SOLD);
+        assertThat(seat.getHoldId()).isNull();
+    }
+
+    @Test
+    @DisplayName("결제하는 선점이 잡지 않은 좌석(다른 선점이 잡은 좌석, AVAILABLE, 이미 SOLD)은 팔 수 없다")
+    void onlySeatHeldByThePayingHoldCanBeSold() {
+        Seat heldByOther = new Seat();
+        heldByOther.holdBy(32L);
+        assertThatThrownBy(() -> heldByOther.sell(31L)).isInstanceOf(IllegalStateException.class);
+        assertThat(heldByOther.getStatus()).isEqualTo(SeatStatus.HELD);
+        assertThat(heldByOther.getHoldId()).isEqualTo(32L);
+
+        Seat available = new Seat();
+        available.holdBy(31L);
+        available.release();
+        assertThatThrownBy(() -> available.sell(31L)).isInstanceOf(IllegalStateException.class);
+
+        Seat sold = new Seat();
+        sold.holdBy(31L);
+        sold.sell(31L);
+        assertThatThrownBy(() -> sold.sell(31L)).isInstanceOf(IllegalStateException.class);
+    }
 }

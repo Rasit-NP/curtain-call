@@ -80,6 +80,20 @@ public class Seat {
         this.holdId = null;
     }
 
+    /**
+     * 결제 승인(spec 2.3): 결제하는 선점이 잡은 좌석을 SOLD로 바꾸고 holdId를 비운다. 판매한 좌석은 다시 바뀌지 않는다(취소 없음, spec 8).
+     * 호출하는 쪽은 좌석을 잠근 뒤, 판정 시각에 유효한 선점의 좌석만 판다. 유효한 선점의 좌석은 언제나 그 선점이 잡고 있다.
+     *
+     * @throws IllegalStateException 저장 상태가 HELD가 아니거나 다른 선점이 잡은 좌석이면
+     */
+    public void sell(long holdId) {
+        if (status != SeatStatus.HELD || this.holdId == null || this.holdId != holdId) {
+            throw new IllegalStateException("결제하는 선점(" + holdId + ")이 잡은 좌석만 판다: " + status + ", holdId " + this.holdId);
+        }
+        this.status = SeatStatus.SOLD;
+        this.holdId = null;
+    }
+
     public Long getId() {
         return id;
     }

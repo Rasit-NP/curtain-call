@@ -85,4 +85,54 @@ class HoldTest {
         assertThatCode(() -> Hold.create(7L, 30L, List.of(1L), CREATED_AT)).doesNotThrowAnyException();
         assertThatCode(() -> Hold.create(7L, 30L, List.of(1L, 2L, 3L, 4L), CREATED_AT)).doesNotThrowAnyException();
     }
+
+    @Test
+    @DisplayName("R4: 만료 시각 1초 전에는 결제할 수 있고, 같은 순간부터는 결제할 수 없다고 판정한다")
+    void payableOnlyWhenJudgedBeforeExpiresAt() {
+        // 결제는 모든 잠금 뒤에 읽은 현재 시각(판정 시각)을 넘긴다. 그 시각에 만료됐으면 PAID로 바꾸지 않는다.
+        Hold judgedBeforeExpiry = Hold.create(7L, 30L, List.of(101L), CREATED_AT);
+        judgedBeforeExpiry.pay(judgedBeforeExpiry.getExpiresAt().minusSeconds(1));
+        assertThat(judgedBeforeExpiry.getStatus()).isEqualTo(HoldStatus.PAID);
+
+        Hold judgedAtExpiry = Hold.create(7L, 30L, List.of(101L), CREATED_AT);
+        assertThatThrownBy(() -> judgedAtExpiry.pay(judgedAtExpiry.getExpiresAt())).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> judgedAtExpiry.pay(judgedAtExpiry.getExpiresAt().plusSeconds(1)))
+                .isInstanceOf(IllegalStateException.class);
+        assertThat(judgedAtExpiry.getStatus()).isEqualTo(HoldStatus.ACTIVE);
+    }
+
+    @Test
+    @DisplayName("결제하면 저장 상태가 PAID가 되어 만료 시각 전이라도 유효하지 않고, ACTIVE가 아닌 선점(해제·결제됨)은 결제할 수 없다")
+    void payMakesHoldPaid() {
+        Hold hold = Hold.create(7L, 30L, List.of(101L, 102L), CREATED_AT);
+
+        hold.pay(CREATED_AT.plusSeconds(60));
+
+        assertThat(hold.getStatus()).isEqualTo(HoldStatus.PAID);
+        assertThat(hold.isValidAt(CREATED_AT.plusSeconds(61))).isFalse();
+        assertThat(hold.getSeatIds()).containsExactlyInAnyOrder(101L, 102L);
+        assertThatThrownBy(() -> hold.pay(CREATED_AT.plusSeconds(62))).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> new Hold(7L, 30L, List.of(101L), HoldStatus.RELEASED, CREATED_AT).pay(CREATED_AT))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    @DisplayName("결제 금액은 공연 가격 × 선점 좌석 수다")
+    void amountIsPriceTimesSeatCount() {
+        assertThat(Hold.create(7L, 30L, List.of(101L, 102L, 103L), CREATED_AT).amount(30000)).isEqualTo(90000L);
+        assertThat(Hold.create(7L, 30L, List.of(101L), CREATED_AT).amount(0)).isZero();
+        // 가격 × 4석이 int 범위를 넘어도 넘치지 않는다.
+        assertThat(Hold.create(7L, 30L, List.of(1L, 2L, 3L, 4L), CREATED_AT).amount(Integer.MAX_VALUE))
+                .isEqualTo(4L * Integer.MAX_VALUE);
+    }
+
+    @Test
+    @DisplayName("조회·해제·결제할 수 있는 선점은 요청한 사용자의 ACTIVE 선점이다(만료 포함, 해제·결제됨과 다른 사용자의 선점 제외)")
+    void openOnlyForOwnerWhileActive() {
+        assertThat(Hold.create(7L, 30L, List.of(101L), CREATED_AT).isOpenFor(7L)).isTrue();
+        assertThat(Hold.create(7L, 30L, List.of(101L), CREATED_AT.minus(Hold.VALIDITY)).isOpenFor(7L)).isTrue();
+        assertThat(Hold.create(7L, 30L, List.of(101L), CREATED_AT).isOpenFor(8L)).isFalse();
+        assertThat(new Hold(7L, 30L, List.of(101L), HoldStatus.RELEASED, CREATED_AT).isOpenFor(7L)).isFalse();
+        assertThat(new Hold(7L, 30L, List.of(101L), HoldStatus.PAID, CREATED_AT).isOpenFor(7L)).isFalse();
+    }
 }
