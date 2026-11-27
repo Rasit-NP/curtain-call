@@ -134,7 +134,7 @@ describe('로그아웃', () => {
 });
 
 describe('401 AUTH_REQUIRED와 헤더', () => {
-  it('AUTH_REQUIRED로 토큰이 지워지면 헤더가 바로 로그인으로 바뀐다', async () => {
+  it('R6: AUTH_REQUIRED로 토큰이 지워지면 헤더가 바로 로그인으로 바뀐다', async () => {
     saveAccessToken('expired-token');
     server.use(http.get(RESERVATIONS_PATH, () => problem(401, 'AUTH_REQUIRED')));
 
@@ -145,7 +145,7 @@ describe('401 AUTH_REQUIRED와 헤더', () => {
     expect(header().queryByRole('button', { name: '로그아웃' })).not.toBeInTheDocument();
   });
 
-  it('로그인 화면에 있어 화면 이동이 없어도, AUTH_REQUIRED로 토큰이 지워지면 헤더가 바로 로그인으로 바뀐다', async () => {
+  it('R6: 로그인 화면에 있어 화면 이동이 없어도, AUTH_REQUIRED로 토큰이 지워지면 헤더가 바로 로그인으로 바뀐다', async () => {
     saveAccessToken('expired-token');
     server.use(http.get(RESERVATIONS_PATH, () => problem(401, 'AUTH_REQUIRED')));
     const { router } = renderApp('/login');
