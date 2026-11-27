@@ -1,7 +1,7 @@
 # #61 정리: 병합된 Issue의 진행 기록 상태·결과 최신화, PR #38에서 남긴 리뷰 지적(R6)
 
 - 기간: 2026-11-28
-- Issue: [#61](https://github.com/Rasit-NP/curtain-call/issues/61)
+- Issue: [#61](https://github.com/Rasit-NP/curtain-call/issues/61), PR: [#62](https://github.com/Rasit-NP/curtain-call/pull/62)
 - 관련 결정: 없음
 
 ## 배경
@@ -69,3 +69,8 @@
   #52가 `AUTH_REQUIRED` 문구 감추기 테스트 3개에 `R6:`을 붙일 때 R6 행으로 옮긴 것과 같다.
 - **결함 기록(`docs/agent-log.md`)에 더하지 않았다.** 되돌림 확인에서 테스트 결함이 나오지 않았다. 0036의 잘못 적은 기록은 PR #38 리뷰가 이미 찾은 것이고, 진행 기록 정정(#39·#46)도 결함 기록에 올리지 않았다.
 - **결정 기록을 만들지 않았다.** 진행 기록 문장과 테스트 이름만 바꿨고, 결정 파일의 상태는 Issue대로 그대로 두었다.
+
+## 결과
+
+`./scripts/verify.sh` 전체 통과(2026-11-28, 하네스, 백엔드 단위 149개·통합 298개, 프론트엔드 220개. E2E는 이 브랜치에 영역이 없어 SKIP). 테스트 수는 바뀌지 않았다.
+PR [#62](https://github.com/Rasit-NP/curtain-call/pull/62)를 만들었다.
