@@ -1,4 +1,4 @@
--- 운영(prod) 시연 계정(Issue #71, 결정 0210). prod 프로필의 Flyway 위치(db/demo)에서만 적용한다. local·e2e·test는 읽지 않는다.
+-- 운영(prod) 시연 계정(Issue #71, 결정 0211·0213). prod 프로필의 Flyway 위치(db/demo)에서만 적용한다. local·e2e·test는 읽지 않는다.
 -- 시연 전용 계정이라 비밀번호를 저장소에 둔다(루트 CLAUDE.md '금지 사항'의 예외, README 안내). 실제 서비스 계정이 아니다.
 --   demo1 ~ demo5 / demo1234
 -- E2E 계정(e2e-user1, e2e-user2)과 로컬 시드의 demo는 넣지 않는다.

@@ -81,7 +81,7 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   flyway:
-    # 스키마 마이그레이션과 운영 시연 데이터(시연 계정 demo1~demo5, 공연장·배치. Issue #71, 결정 0210·0211).
+    # 스키마 마이그레이션과 운영 시연 데이터(시연 계정 demo1~demo5, 공연장·배치. Issue #71, 결정 0211·0213).
     # local·e2e 시드(db/seed: E2E 계정, 공연)는 쓰지 않는다. 시연 데이터는 반복 마이그레이션(R__)이라 버전 순서에 끼지 않으므로,
     # out-of-order를 끈 채로 나중에 더한 스키마 마이그레이션(V6 등)도 초기화하지 않는 운영 DB에 그대로 적용된다.
     locations: classpath:db/migration, classpath:db/demo

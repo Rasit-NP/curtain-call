@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# 백엔드 컨테이너 이미지(Issue #71, 결정 0212). 배포 서버(2GB VM)에서 prod 프로필로 돈다.
+# 백엔드 컨테이너 이미지(Issue #71, 결정 0214). 배포 서버(2GB VM)에서 prod 프로필로 돈다.
 #
 #   빌드: docker build --tag curtain-call-backend backend      (저장소 루트에서. 빌드 맥락은 backend/)
 #   실행: 환경변수 DB_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET(이름은 루트 .env.example)이 필요하다. 없으면 시작하지 않는다.
@@ -36,7 +36,7 @@ USER 10001:10001
 ENV SPRING_PROFILES_ACTIVE=prod
 # 2GB VM에 웹(Caddy)·PostgreSQL과 함께 둔다. 힙 상한을 고정하고(컨테이너 메모리 제한과 상관없이), 힙이 작고 요청이 적어
 # 메모리를 덜 쓰는 Serial GC를 쓴다. 메모리가 모자라면 망가진 채 남지 않고 끝나서 재시작 정책이 다시 띄우게 한다.
-# java 실행기가 읽는 변수다. Compose 환경변수로 통째로 바꿀 수 있다(값은 결정 0212의 메모리 계산을 따른다).
+# java 실행기가 읽는 변수다. Compose 환경변수로 통째로 바꿀 수 있다(값은 결정 0214의 메모리 계산을 따른다).
 ENV JDK_JAVA_OPTIONS="-Xmx512m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
 EXPOSE 8080
 # 상태 확인: Compose의 depends_on(service_healthy)과 docker ps가 쓴다. 시작하는 동안(최대 60초)은 2초마다, 그 뒤에는 15초마다 본다.

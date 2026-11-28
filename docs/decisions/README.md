@@ -124,3 +124,9 @@
 | [0202](0202-pit-when-to-run.md) | 뮤테이션 테스트 실행 시점: 로컬 수동 명령(verify.sh mutation)과 수동 실행 워크플로. 전체 검증·quick·PR CI에는 넣지 않고, 측정 대상을 바꾼 PR은 돌려 PR 본문에 적는다 | 채택 |
 | [0203](0203-pit-threshold.md) | 뮤테이션 점수 기준: 보강 후 재측정 점수의 소수점 버림(93%)보다 낮으면 실패한다. 실패시키는 곳은 verify.sh mutation과 수동 실행 워크플로 | 채택 |
 | [0204](0204-pit-survivor-classification.md) | 살아남은 변이는 다섯 갈래로 나누고 설정으로 빼지 않는다. 스프링 시작 코드는 손으로 변이를 넣어 통합 테스트로 확인하고, 직접 만들 수 있으면 단위 테스트를 더한다 | 에이전트 결정 |
+| [0210](0210-deploy-hosting.md) | 배포 호스팅: AWS Lightsail 서울 리전 2GB VM 한 대에 Docker Compose로 웹(Caddy)·백엔드·PostgreSQL 17, 프론트엔드와 API는 같은 출처 | 채택 |
+| [0211](0211-prod-demo-data.md) | 운영 데이터: 공연장·배치와 시연 계정 demo1~demo5(demo1234), E2E 계정과 공연은 넣지 않고, 배포 서버의 데이터는 초기화하지 않는다 | 채택 |
+| [0212](0212-prod-reset-api-closed.md) | 운영에서 E2E 초기화 API: 토큰이 없으면 401 AUTH_REQUIRED, 유효한 토큰이 있으면 404 NOT_FOUND(명세 6.9 그대로)를 prod 프로필 테스트로 고정한다 | 채택 |
+| [0213](0213-prod-demo-data-impl.md) | 운영 시연 데이터 구현: prod 전용 Flyway 위치 db/demo에 반복 마이그레이션(R__)으로 두고 없는 행만 넣는다. 공연장은 local 시드와 같은 두 곳 | 에이전트 결정 |
+| [0214](0214-backend-image.md) | 백엔드 이미지: 다단계 Dockerfile(JDK에서 bootJar, JRE에 층으로), 기반 이미지 다이제스트 고정, 비루트 uid 10001, prod 고정, 힙 512MiB·Serial GC, HEALTHCHECK | 에이전트 결정 |
+| [0215](0215-deploy-check-methods.md) | 배포 준비 확인 방법: prod 프로필 통합 테스트는 공유 컨테이너의 새 DB에 환경변수 이름으로 붙이고, 이미지는 verify.sh 밖의 확인 스크립트로 본다 | 에이전트 결정 |
