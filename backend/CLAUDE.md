@@ -18,6 +18,7 @@
 - 로컬 실행: 루트에서 `docker compose up -d db` 후 `./gradlew bootRun`
 - E2E용 실행: `./gradlew bootE2eRun --args='--server.address=127.0.0.1 --server.port=<포트>'`(e2e 프로필, 실행마다 새 PostgreSQL 컨테이너).
   보통은 E2E(`e2e/playwright.config.ts`)가 띄운다.
+- 컨테이너 이미지 확인: `scripts/check-image.sh`(아래 '컨테이너 이미지'). 이미지를 만들어 prod 프로필로 PostgreSQL 17에 붙여 띄우고 확인한 뒤 지운다.
 - 리포트: `build/reports/tests/test/`, `build/reports/tests/integrationTest/`, `build/reports/jacoco/test/html/`, `build/reports/pitest/`(`index.html`, `mutations.xml`)
 
 ## 빌드 설정 (첫 설정 Issue에서 만든다)
@@ -57,7 +58,8 @@
 - `e2e`: 시드를 넣고 E2E 지원 엔드포인트가 켜진다. DB 주소를 정하지 않는다(초기화가 개발 DB를 지우지 않게).
   E2E 실행기(`src/e2eRun`, `bootE2eRun`)가 실행마다 새 PostgreSQL 컨테이너를 붙여 띄운다(결정 0161, 0162).
 - `test`: 통합 테스트. Testcontainers DB를 쓰고 시드 데이터를 넣지 않는다.
-- `prod`: 배포용. DB 접속 정보와 `JWT_SECRET`은 환경변수로만 받는다.
+- `prod`: 배포용. DB 접속 정보와 `JWT_SECRET`은 환경변수로만 받는다. 시드(`db/seed`) 대신 운영 시연 데이터(`db/demo`)를 넣는다.
+  컨테이너 이미지(`Dockerfile`)는 이 프로필로 고정돼 있다. 배포 서버의 DB는 초기화하지 않는다(결정 0211).
 
 ## 인증 (JWT)
 
@@ -72,6 +74,7 @@
   `prod`는 환경변수 `JWT_SECRET`만 쓰고, 값이 없으면 애플리케이션이 시작되지 않게 한다.
 - 비밀번호는 `PasswordEncoderFactories.createDelegatingPasswordEncoder()`로 해시해서 저장한다.
 - 테스트 계정은 시드 데이터로 넣는다. 시연용(README 안내)과 E2E용 계정을 따로 둔다.
+  운영(prod)에는 시연 계정 `demo1`~`demo5`(비밀번호 `demo1234`)만 넣고 E2E 계정은 넣지 않는다(결정 0211).
 - 인증이 필요한 API 테스트는 `spring-security-test`의 `jwt()`로 요청을 만든다.
   로그인부터 토큰 사용까지의 실제 흐름은 별도 통합 테스트로 검증한다.
 
@@ -89,7 +92,21 @@
 - 스키마는 Flyway 마이그레이션(`src/main/resources/db/migration/V{번호}__{설명}.sql`)으로만 바꾼다.
 - 시드 데이터(공연, 좌석, 테스트 계정)는 `src/main/resources/db/seed/`에 두고, 테스트 프로필의 Flyway 위치에서는 뺀다.
 - 시드 파일은 스키마 마이그레이션과 버전 번호가 겹치지 않게 `V1000__`부터 쓴다.
+- 운영 시연 데이터(시연 계정, 공연장·배치)는 `src/main/resources/db/demo/`에 반복 마이그레이션(`R__`)으로 두고 prod의 Flyway 위치에서만 읽는다(결정 0213).
+  - 버전 마이그레이션(`V1000__` 등)으로 두지 않는다. 초기화하지 않는 운영 DB에서 그 뒤에 더한 스키마 마이그레이션(`V6__` 등)이 out-of-order 검증에 걸려 앱이 뜨지 않는다.
+  - 파일이 바뀌면 다음 배포에서 다시 돌므로 모든 `INSERT`에 `ON CONFLICT DO NOTHING`을 붙여 없는 행만 넣는다. 있는 행을 바꾸거나 지우려면 버전 마이그레이션으로 한다.
 - 테스트는 필요한 데이터를 직접 만든다.
+
+## 컨테이너 이미지
+
+- `Dockerfile`(빌드 맥락은 `backend/`, 결정 0214): JDK 단계에서 `bootJar`를 만들어 Spring Boot 층으로 풀고, JRE 이미지에 층으로 복사한다.
+  기반 이미지는 다이제스트로 고정, 비루트 사용자(uid 10001), `SPRING_PROFILES_ACTIVE=prod` 고정, `JDK_JAVA_OPTIONS`로 힙 512MiB·Serial GC, `HEALTHCHECK`가 health를 본다.
+- 실행에는 루트 `.env.example`의 환경변수(`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`)가 필요하다. 없으면 시작하지 않는다.
+- 빌드: 저장소 루트에서 `docker build --tag curtain-call-backend backend`
+- 확인(결정 0215): 저장소 루트에서 `backend/scripts/check-image.sh`. Dockerfile이나 기반 이미지를 바꾸면 돌린다. `verify.sh`에는 없다.
+  - 이미지를 만든 뒤 이 실행만 쓰는 Docker 네트워크에 PostgreSQL 17과 띄우고, 비루트 사용자, `GET /actuator/health`의 `{"status":"UP"}`, HEALTHCHECK healthy,
+    시연 계정 `demo1` 로그인 200, 토큰 없는 초기화 401, `docker stop`의 SIGTERM 종료를 확인한다. 끝나면 컨테이너와 네트워크를 지운다(이미지는 남긴다).
+  - 앱은 127.0.0.1의 빈 포트에만 열어 사람의 8080·5432를 쓰지 않는다. 이미 만든 이미지는 `SKIP_BUILD=1 CHECK_IMAGE=<이미지>`로 확인한다.
 
 ## 테스트 작성
 
@@ -97,6 +114,7 @@
 - 통합 테스트: `@Tag("integration")`을 붙이고 `@SpringBootTest`와 MockMvc로 API부터 DB까지 검증한다.
 - 통합 테스트에서 시간을 바꿔야 하면, 테스트용으로 시각을 옮길 수 있는 `Clock` 빈을 쓴다.
 - PostgreSQL 컨테이너는 모든 통합 테스트가 하나를 공유하고 `@ServiceConnection`으로 연결한다.
+  - 예외: prod 프로필 테스트(`ProdProfileTest`)는 같은 컨테이너에 새 DB(`support.FreshDatabases`)를 만들어 운영과 같은 환경변수 이름(`DB_URL` 등)으로 넘긴다(결정 0215).
 - 통합 테스트에 `@Transactional` 롤백을 쓰지 않는다. 다른 스레드의 트랜잭션과 실제 커밋 동작을 가리기 때문이다.
   대신 각 테스트 전에 테이블을 비운다(Flyway 이력 테이블 제외).
 - 동시성 테스트(R1, R2)는 `CountDownLatch`로 여러 스레드를 동시에 출발시키고, 성공 개수와 DB 최종 상태를 모두 검증한다.

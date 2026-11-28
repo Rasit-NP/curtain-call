@@ -1,0 +1,8 @@
+# 이미지 빌드 맥락(backend/)에서 Dockerfile이 쓰는 것만 보낸다: Gradle 래퍼, 빌드 설정, 운영 소스.
+# build/, .gradle/, 테스트 소스를 보내지 않아 맥락이 작고, 로컬 빌드 결과가 이미지에 섞이지 않는다.
+*
+!gradlew
+!gradle/wrapper/
+!settings.gradle
+!build.gradle
+!src/main/

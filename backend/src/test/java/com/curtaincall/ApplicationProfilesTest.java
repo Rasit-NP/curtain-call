@@ -27,6 +27,7 @@ class ApplicationProfilesTest {
     private static final String JWT_SECRET = "curtaincall.jwt.secret";
     private static final List<String> MIGRATION_ONLY = List.of("classpath:db/migration");
     private static final List<String> MIGRATION_AND_SEED = List.of("classpath:db/migration", "classpath:db/seed");
+    private static final List<String> MIGRATION_AND_DEMO = List.of("classpath:db/migration", "classpath:db/demo");
 
     @Test
     @DisplayName("프로필을 주지 않으면 local로 뜨고 compose DB와 시드를 쓴다")
@@ -92,7 +93,7 @@ class ApplicationProfilesTest {
     }
 
     @Test
-    @DisplayName("prod는 DB 접속 정보를 환경변수로 받고 시드를 쓰지 않는다")
+    @DisplayName("prod는 DB 접속 정보를 환경변수로 받고, local·e2e 시드(db/seed) 대신 운영 시연 데이터(db/demo)를 쓴다")
     void prodReadsDbFromEnvironment() {
         StandardEnvironment env = load(Map.of(
                 "DB_URL", "jdbc:postgresql://db.example:5432/app",
@@ -102,7 +103,8 @@ class ApplicationProfilesTest {
         assertThat(env.getProperty("spring.datasource.url")).isEqualTo("jdbc:postgresql://db.example:5432/app");
         assertThat(env.getProperty("spring.datasource.username")).isEqualTo("app-user");
         assertThat(env.getProperty("spring.datasource.password")).isEqualTo("from-env");
-        assertThat(flywayLocations(env)).isEqualTo(MIGRATION_ONLY);
+        // 운영 시연 데이터(Issue #71): 시연 계정과 공연장·배치. E2E 계정과 공연이 있는 db/seed는 쓰지 않는다.
+        assertThat(flywayLocations(env)).isEqualTo(MIGRATION_AND_DEMO);
     }
 
     @Test
