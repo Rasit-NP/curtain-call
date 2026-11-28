@@ -1,7 +1,7 @@
 # #71 배포 준비(백엔드): 컨테이너 이미지, 운영 시연 데이터, 운영에서 E2E 초기화 API 닫힘 확인
 
 - 기간: 2026-11-28 ~
-- Issue: [#71](https://github.com/Rasit-NP/curtain-call/issues/71), PR: (작성 중)
+- Issue: [#71](https://github.com/Rasit-NP/curtain-call/issues/71), PR: [#75](https://github.com/Rasit-NP/curtain-call/pull/75)
 - 관련 결정: [0210](../decisions/0210-deploy-hosting.md), [0211](../decisions/0211-prod-demo-data.md), [0212](../decisions/0212-prod-reset-api-closed.md)(사람),
   [0213](../decisions/0213-prod-demo-data-impl.md), [0214](../decisions/0214-backend-image.md), [0215](../decisions/0215-deploy-check-methods.md)(에이전트).
   기존 [0013](../decisions/0013-flyway-out-of-order-local.md), [0015](../decisions/0015-health-probes-off.md), [0036](../decisions/0036-seed-accounts.md),
@@ -70,6 +70,14 @@ AWS Lightsail 서울 리전 2GB VM 한 대에 Docker Compose로 웹(Caddy)·백�
    USER 없음(루트), 셸 형식 `ENTRYPOINT`(`docker stop`이 SIGKILL까지 가 종료 코드 137), 프로필 없음(local로 떠 시작 중 종료), HEALTHCHECK 포트 틀림(`starting`에서 멈춤).
 8. 결정 기록(0210~0215), `backend/CLAUDE.md`(명령, 프로필, 인증, 마이그레이션과 데이터, 컨테이너 이미지, 테스트 작성), `.env.example`, 테스트 대응표를 고쳤다.
    새 필수 환경변수는 없다. `.env.example`에는 이미지가 prod로 고정돼 네 값이 필요하다는 것과 선택 변수 `JDK_JAVA_OPTIONS`를 적었다.
+
+9. 자체 점검에서 이미지 확인 스크립트의 `curl`이 연결에 실패하면 `set -e`로 실패 메시지 없이 끝나는 것을 찾아, `|| true`로 받고 값으로 판단하게 고쳤다. 다시 돌려 통과했다.
+10. 로컬 `./scripts/verify.sh` 전체가 통과했다(백엔드 단위 176개, 통합 324개, 프론트엔드, E2E). PR [#75](https://github.com/Rasit-NP/curtain-call/pull/75)를 만들었다.
+11. CI `verify`가 처음 실행에서 통과했다([46149850976](https://github.com/Rasit-NP/curtain-call/actions/runs/46149850976), 3분 3초, 커밋 `583d584`). 진행 기록만 고친 다음 커밋은 문서 PR 규칙대로 하네스만 돈다(결정 0190).
+
+## 리뷰
+
+- 설정·시드·이미지가 중심이고 인증 동작은 바꾸지 않아 루트 `CLAUDE.md` '리뷰' 표대로 `/code-review low`로 했다(테스트 파일 제외, 한 번 읽기). 지적은 없었다.
 
 ## 남은 일
 
