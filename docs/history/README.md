@@ -43,3 +43,4 @@
 | [0065](0065-roadmap2-transition.md) | 로드맵 2 전환(0단계): 회원가입을 범위에 넣고, Issue 등록 전 승인 규칙과 CI·배포 넘김 조건 정리 | 진행 중 |
 | [0067](0067-ci-github-actions.md) | CI(GitHub Actions): PR과 main push마다 verify.sh 전체 실행, 캐시, 이전 실행 취소 | 진행 중 |
 | [0069](0069-pit-baseline.md) | 뮤테이션 테스트(PIT) 기준선: 규칙 코드 점수 측정, 살아남은 변이 분석·테스트 보강, 재측정 | 진행 중 |
+| [0071](0071-backend-deploy-prep.md) | 배포 준비(백엔드): 컨테이너 이미지, 운영 시연 데이터, 운영에서 E2E 초기화 API 닫힘 확인 | 진행 중 |

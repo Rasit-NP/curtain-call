@@ -9,7 +9,7 @@ spring:
     hibernate:
       ddl-auto: validate
   flyway:
-    # 스키마 마이그레이션만 쓴다. 시드는 local·e2e에서만 더한다.
+    # 스키마 마이그레이션만 쓴다. 시드는 local·e2e, 운영 시연 데이터는 prod에서만 더한다.
     locations: classpath:db/migration
   jackson:
     # 요청 본문의 숫자 필드는 JSON 숫자 그대로만 받는다(결정 0072). 끄지 않으면 정수 필드(id)에 온 1.5·1e3을 잘라 1·1000으로,
@@ -81,7 +81,10 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   flyway:
-    locations: classpath:db/migration
+    # 스키마 마이그레이션과 운영 시연 데이터(시연 계정 demo1~demo5, 공연장·배치. Issue #71, 결정 0210·0211).
+    # local·e2e 시드(db/seed: E2E 계정, 공연)는 쓰지 않는다. 시연 데이터는 반복 마이그레이션(R__)이라 버전 순서에 끼지 않으므로,
+    # out-of-order를 끈 채로 나중에 더한 스키마 마이그레이션(V6 등)도 초기화하지 않는 운영 DB에 그대로 적용된다.
+    locations: classpath:db/migration, classpath:db/demo
 curtaincall:
   jwt:
     secret: ${JWT_SECRET}
