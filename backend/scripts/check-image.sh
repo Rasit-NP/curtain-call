@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 백엔드 컨테이너 이미지 확인(Issue #71, 결정 0213).
+# 백엔드 컨테이너 이미지 확인(Issue #71, 결정 0215).
 # backend/Dockerfile로 만든 이미지를 prod 프로필로 PostgreSQL 17에 붙여 띄우고, 배포에 필요한 동작을 확인한다.
 #
 #   1. 이미지를 만든다(docker build backend). 태그는 CHECK_IMAGE(기본 curtain-call-backend:check).
@@ -15,6 +15,7 @@
 # 사용법(어느 폴더에서든): backend/scripts/check-image.sh
 # Docker가 필요하다. 처음 빌드는 Gradle 배포판과 의존성을 내려받아 몇 분 걸린다.
 set -euo pipefail
+# 명령 치환의 실패로 set -e가 조용히 끝내지 않게, 확인에 쓰는 명령은 '|| true'로 받고 값으로 판단해 fail로 알린다.
 
 BACKEND_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGE="${CHECK_IMAGE:-curtain-call-backend:check}"
@@ -83,7 +84,7 @@ docker run --detach --name "$APP_CONTAINER" --network "$NETWORK" --publish 127.0
   --env DB_URL=jdbc:postgresql://db:5432/curtaincall --env DB_USERNAME=curtaincall \
   --env "DB_PASSWORD=${db_password}" --env "JWT_SECRET=${jwt_secret}" \
   "$IMAGE" >/dev/null
-port="$(docker port "$APP_CONTAINER" 8080/tcp | head -n 1 | sed 's/.*://')"
+port="$(docker port "$APP_CONTAINER" 8080/tcp 2>/dev/null | head -n 1 | sed 's/.*://' || true)"
 [ -n "$port" ] || fail "앱 포트를 찾지 못했다."
 base="http://127.0.0.1:${port}"
 
@@ -112,11 +113,11 @@ active_profile="$(docker exec "$APP_CONTAINER" printenv SPRING_PROFILES_ACTIVE |
 log "확인: SPRING_PROFILES_ACTIVE=prod"
 
 login_status="$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 10 \
-  --header 'Content-Type: application/json' --data '{"username":"demo1","password":"demo1234"}' "${base}/api/auth/login")"
+  --header 'Content-Type: application/json' --data '{"username":"demo1","password":"demo1234"}' "${base}/api/auth/login" || true)"
 [ "$login_status" = "200" ] || fail "시연 계정 demo1 로그인이 200이 아니었다(${login_status})."
 log "확인: 시연 계정 demo1 로그인 200"
 
-reset_status="$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 10 --request POST "${base}/api/test-support/reset")"
+reset_status="$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 10 --request POST "${base}/api/test-support/reset" || true)"
 [ "$reset_status" = "401" ] || fail "토큰 없는 POST /api/test-support/reset이 401이 아니었다(${reset_status})."
 log "확인: 토큰 없는 POST /api/test-support/reset 401"
 
